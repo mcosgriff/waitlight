@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Waitlight</string>
+    <!-- Station list -->
+    <string name="list_title">Wait times</string>
 </resources>
