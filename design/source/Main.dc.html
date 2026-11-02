@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nearby emissions stations</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Roboto Flex', system-ui, sans-serif; background: {{t.bg}}; color: {{t.ink}}">
+
+<header style="display: flex; flex-direction: column; gap: 6px; padding: 20px 16px 12px 20px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.3px">Wait times</h1>
+<button onClick="{{refresh}}" disabled="{{refreshDisabled}}" aria-label="{{refreshAria}}" style="width: 48px; height: 48px; border: 0; border-radius: 24px; background: {{refreshBg}}; display: flex; align-items: center; justify-content: center; color: {{refreshFg}}; cursor: {{refreshCursor}}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></svg>
+</button>
+</div>
+<div style="display: flex; align-items: center; gap: 6px; font-size: 14px; flex-wrap: wrap; color: {{t.muted}}">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+<span>Arvada, CO 80003</span>
+<span aria-hidden="true">·</span>
+<span>{{updatedText}}</span>
+</div>
+<span style="font-size: 13px; font-weight: 500; padding-left: 22px; color: {{nextColor}}">{{nextText}}</span>
+</header>
+
+<sc-if value="{{showBest}}" hint-placeholder-val="{{true}}">
+<section style="margin: 0 16px; padding: 16px; border-radius: 20px; color: #FFFFFF; display: flex; align-items: center; gap: 14px; background: {{t.hero}}">
+<div style="width: 56px; height: 56px; border-radius: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; background: {{best.bg}}; color: {{best.fg}}">
+<span style="font-size: 20px; font-weight: 700; line-height: 1">{{best.total}}</span>
+<span style="font-size: 11px; font-weight: 600; line-height: 1.2">min</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: {{t.heroSub}}">Fastest overall right now</span>
+<span style="font-size: 19px; font-weight: 600">{{best.name}}</span>
+<span style="font-size: 14px; color: {{t.heroSub2}}">{{best.drive}} min drive + {{best.wait}} min wait</span>
+</div>
+<a href="{{detailHref}}" aria-label="Open fastest station" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.14); color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+</section>
+</sc-if>
+
+<sc-if value="{{closed}}" hint-placeholder-val="{{false}}">
+<section style="margin: 0 16px; padding: 16px; border-radius: 20px; display: flex; align-items: center; gap: 14px; background: {{t.surface}}; color: {{t.ink}}">
+<div aria-hidden="true" style="width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: {{t.closedBg}}; color: {{t.closedFg}}">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<span style="font-size: 18px; font-weight: 600">All stations are closed</span>
+<span style="font-size: 14px; line-height: 1.4; color: {{t.muted}}">All stations open at 8 AM tomorrow. Mid-to-late afternoon is usually quietest.</span>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{hasBanner}}" hint-placeholder-val="{{false}}">
+<section role="status" style="margin: 0 16px; padding: 14px 16px; border-radius: 16px; display: flex; gap: 12px; align-items: flex-start; background: {{banner.bg}}; color: {{banner.fg}}">
+<span aria-hidden="true" style="display: flex; padding-top: 1px">
+<sc-if value="{{banner.isWarn}}" hint-placeholder-val="{{true}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v4h4"></path><path d="M12 8v4l3 2"></path></svg></sc-if>
+<sc-if value="{{banner.isOffline}}" hint-placeholder-val="{{false}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"></path><path d="M8.5 8.6A5.5 5.5 0 0 0 7 19h11"></path><path d="M12.2 5.1A6 6 0 0 1 17.6 9 4.5 4.5 0 0 1 21 15.6"></path></svg></sc-if>
+<sc-if value="{{banner.isError}}" hint-placeholder-val="{{false}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5"></path><path d="M12 16.3v.01"></path></svg></sc-if>
+</span>
+<div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+<span style="font-size: 15px; font-weight: 600">{{banner.title}}</span>
+<span style="font-size: 13px; line-height: 1.45">{{banner.body}}</span>
+<sc-if value="{{banner.retry}}" hint-placeholder-val="{{true}}">
+<button style="align-self: flex-start; margin-top: 4px; height: 36px; padding: 0 14px; border-radius: 18px; background: transparent; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; color: {{banner.fg}}; border: 1px solid {{banner.fg}}">Try again</button>
+</sc-if>
+</div>
+</section>
+</sc-if>
+
+<div style="display: flex; gap: 8px; padding: 14px 16px 6px 16px; flex-wrap: wrap">
+<button onClick="{{sortDistance}}" style="height: 36px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border: {{chipDist.border}}; background: {{chipDist.bg}}; color: {{chipDist.fg}}">Nearest</button>
+<button onClick="{{sortTotal}}" style="height: 36px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border: {{chipTotal.border}}; background: {{chipTotal.bg}}; color: {{chipTotal.fg}}">Fastest overall</button>
+<button onClick="{{toggleRims}}" style="height: 36px; padding: 0 14px; border-radius: 18px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border: {{chipRims.border}}; background: {{chipRims.bg}}; color: {{chipRims.fg}}">Low-profile rims</button>
+</div>
+
+<div style="display: flex; gap: 14px; padding: 4px 20px 10px 20px; font-size: 12px; align-items: center; color: {{t.muted}}">
+<span style="display: flex; align-items: center; gap: 4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{t.gIc}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.3l2.8 2.8L16.2 9.6"></path></svg>Under {{greenMax}} min</span>
+<span style="display: flex; align-items: center; gap: 4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{t.yIc}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg>{{greenMax}}–{{yellowMax}} min</span>
+<span style="display: flex; align-items: center; gap: 4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{t.rIc}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5L2.5 20h19z"></path><path d="M12 10v4"></path><path d="M12 17.2v.01"></path></svg>Over {{yellowMax}} min</span>
+</div>
+
+<ul style="list-style: none; margin: 0; padding: 0 12px 12px 12px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; overflow-y: auto">
+<sc-for list="{{rows}}" as="s" hint-placeholder-count="8">
+<li>
+<a href="{{detailHref}}" style="display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 16px; text-decoration: none; min-height: 72px; box-sizing: border-box; background: {{t.surface}}; color: {{t.ink}}">
+<div aria-label="{{s.aria}}" role="img" style="position: relative; width: 52px; height: 52px; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; background: {{s.bg}}; color: {{s.fg}}">
+<span style="font-weight: 700; line-height: 1; font-size: {{s.bigSize}}">{{s.big}}</span>
+<span style="font-size: 10px; font-weight: 600; line-height: 1.3">{{s.small}}</span>
+<span aria-hidden="true" style="position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: {{t.surface}}; color: {{s.ic}}">
+<sc-if value="{{s.isG}}" hint-placeholder-val="{{true}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.3l2.8 2.8L16.2 9.6"></path></svg></sc-if>
+<sc-if value="{{s.isY}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg></sc-if>
+<sc-if value="{{s.isR}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2.5 20h19z"></path><path d="M12 10v4"></path><path d="M12 17.2v.01"></path></svg></sc-if>
+<sc-if value="{{s.isN}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path></svg></sc-if>
+<sc-if value="{{s.isS}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v4h4"></path><path d="M12 8v4l3 2"></path></svg></sc-if>
+<sc-if value="{{s.isC}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></sc-if>
+</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+<span style="font-size: 16px; font-weight: 600">{{s.name}}</span>
+<span style="font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: {{t.muted2}}">{{s.addr}}</span>
+<sc-if value="{{s.rims}}" hint-placeholder-val="{{false}}">
+<span style="align-self: flex-start; margin-top: 3px; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 2px 6px; color: {{t.tagFg}}; background: {{t.tagBg}}">Low-profile rims OK</span>
+</sc-if>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0">
+<span style="font-size: 15px; font-weight: 600">{{s.mi}} mi</span>
+<span style="font-size: 12px; color: {{t.muted2}}">{{s.sub}}</span>
+</div>
+</a>
+</li>
+</sc-for>
+</ul>
+
+<footer style="padding: 10px 20px 18px 20px; font-size: 12px; border-top: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.muted2}}">Estimates from AirCare Colorado, refreshed about every 15 min. No diesel testing at any station.</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scenario":{"editor":"enum","options":["live","due","closed","stale","offline","broken"],"default":"live","section":"State"},"dark":{"editor":"boolean","default":false,"section":"State"},"greenMax":{"editor":"int","default":30,"min":5,"max":60,"section":"Thresholds"},"yellowMax":{"editor":"int","default":60,"min":30,"max":120,"section":"Thresholds"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sort: 'distance', rims: false, refreshed: false };
+  }
+  renderVals() {
+    const dark = !!(this.props.dark ?? false);
+    const sc = this.props.scenario ?? 'live';
+    const g = this.props.greenMax ?? 30;
+    const y = this.props.yellowMax ?? 60;
+    const L = {
+      bg: '#F6F7F4', surface: '#FFFFFF', ink: '#17201B', muted: '#4A554F', muted2: '#56615B', line: '#E3E6E1',
+      hero: '#1F4E5F', heroSub: '#CFE3EA', heroSub2: '#E3EEF1', accent: '#1F4E5F', accentFg: '#FFFFFF',
+      chipOffBg: '#FFFFFF', chipOffBorder: '#C9CFCB', tagBg: '#E2EDF0', tagFg: '#1F4E5F',
+      gBg: '#1B7F3B', gFg: '#FFFFFF', gIc: '#1B7F3B', yBg: '#F2B807', yFg: '#2E2300', yIc: '#8A5F00',
+      rBg: '#C62828', rFg: '#FFFFFF', rIc: '#C62828', nBg: '#6B7570', nFg: '#FFFFFF', nIc: '#6B7570',
+      staleBg: '#E3E6E1', staleFg: '#3E4843', staleIc: '#6B7570', closedBg: '#6B7570', closedFg: '#FFFFFF',
+      warnBg: '#FFF1C7', warnFg: '#4A3A00', infoBg: '#E3E6E1', infoFg: '#17201B', errBg: '#FBE3E1', errFg: '#7A1A14',
+      disabledFg: '#A3ABA7', due: '#1F4E5F'
+    };
+    const D = {
+      bg: '#0F1513', surface: '#1A2320', ink: '#E4EBE7', muted: '#A6B2AC', muted2: '#A6B2AC', line: '#26302C',
+      hero: '#16343E', heroSub: '#A9D6E2', heroSub2: '#D3E6EB', accent: '#8CC7D6', accentFg: '#0B2730',
+      chipOffBg: '#1A2320', chipOffBorder: '#3E4B46', tagBg: '#1F3A43', tagFg: '#A9D6E2',
+      gBg: '#6FCF8A', gFg: '#00391A', gIc: '#6FCF8A', yBg: '#F2C94C', yFg: '#2E2300', yIc: '#F2C94C',
+      rBg: '#FF8A80', rFg: '#4A0000', rIc: '#FF8A80', nBg: '#8C9792', nFg: '#101513', nIc: '#8C9792',
+      staleBg: '#2A3430', staleFg: '#C4CEC9', staleIc: '#8C9792', closedBg: '#8C9792', closedFg: '#101513',
+      warnBg: '#2A2410', warnFg: '#F2E3AE', infoBg: '#222D29', infoFg: '#E4EBE7', errBg: '#3A1714', errFg: '#FFC9C3',
+      disabledFg: '#56615B', due: '#8CC7D6'
+    };
+    const t = dark ? D : L;
+    const stations = [
+      { name: 'Arvada', addr: '5185 Marshall St., Arvada', mi: 3.1, drive: 9, wait: 13 },
+      { name: 'Broomfield', addr: '11609 Teller St., Broomfield', mi: 6.4, drive: 13, wait: 19 },
+      { name: 'Golden', addr: '15335 W. 44th Ave., Golden', mi: 8.2, drive: 15, wait: 8 },
+      { name: 'Northglenn', addr: '1950 E. 112th Ave., Northglenn', mi: 9.0, drive: 16, wait: 23 },
+      { name: 'Denver (Lipan)', addr: '2300 S. Lipan St., Denver', mi: 12.6, drive: 22, wait: 9 },
+      { name: 'Sheridan', addr: '2802 W. Mansfield Ave., Sheridan', mi: 14.1, drive: 24, wait: 8, rims: true },
+      { name: 'Aurora', addr: '12042 E. 30th Ave., Aurora', mi: 16.3, drive: 25, wait: 36 },
+      { name: 'Boulder', addr: '5655 Airport Blvd., Boulder', mi: 17.0, drive: 26, wait: 5, rims: true },
+      { name: 'Denver SE (Warren)', addr: '10190 E. Warren Ave., Denver', mi: 19.8, drive: 28, wait: 8 },
+      { name: 'Ken Caryl', addr: '10727 Centennial Rd., Littleton', mi: 21.5, drive: 30, wait: 4, rims: true },
+      { name: 'Dacono', addr: '5222 Silver Peak Ave., Dacono', mi: 22.4, drive: 27, wait: 10 },
+      { name: 'County Line', addr: '8494 S. Colorado Blvd., Littleton', mi: 24.0, drive: 31, wait: 7 },
+      { name: 'Longmont', addr: '4040 Rogers Rd., Longmont', mi: 27.9, drive: 35, wait: null },
+      { name: 'Parker', addr: '10199 Park Glenn Way, Parker', mi: 31.2, drive: 38, wait: 61 },
+      { name: 'Castle Rock', addr: '541 Topeka Way, Castle Rock', mi: 38.5, drive: 42, wait: 9 },
+      { name: 'Loveland', addr: '7001 N. Franklin Ave., Loveland', mi: 46.0, drive: 50, wait: 13 },
+      { name: 'Greeley', addr: '2844 W. 30th St., Greeley', mi: 54.7, drive: 62, wait: 7 },
+      { name: 'Fort Collins', addr: '835 S.E. Frontage Rd., Fort Collins', mi: 56.3, drive: 60, wait: 6, rims: true }
+    ];
+    const stale = sc === 'stale' || sc === 'offline' || sc === 'broken';
+    const closed = sc === 'closed';
+    const asOf = sc === 'broken' ? '11:20 AM' : '2:14 PM';
+    const live = (w) => {
+      if (w == null) return { bg: t.nBg, fg: t.nFg, ic: t.nIc, isN: true, big: 'Open', bigSize: '15px', small: 'no est.', label: 'Open' };
+      if (w > y) return { bg: t.rBg, fg: t.rFg, ic: t.rIc, isR: true, big: y + '+', bigSize: '18px', small: 'min', label: 'Long' };
+      if (w >= g) return { bg: t.yBg, fg: t.yFg, ic: t.yIc, isY: true, big: String(w), bigSize: '18px', small: 'min', label: 'Moderate' };
+      return { bg: t.gBg, fg: t.gFg, ic: t.gIc, isG: true, big: String(w), bigSize: '18px', small: 'min', label: 'Short' };
+    };
+    const off = { isG: false, isY: false, isR: false, isN: false };
+    let rows = stations.map((s) => {
+      let b = live(s.wait);
+      let aria = s.wait == null ? 'Open, no wait estimate' : b.label + ' wait, ' + (s.wait > y ? 'over ' + y : s.wait) + ' minutes';
+      let sub = s.drive + ' min drive';
+      if (closed) {
+        b = { ...off, bg: t.closedBg, fg: t.closedFg, ic: t.closedBg, isC: true, big: 'Closed', bigSize: '12px', small: '', label: 'Closed' };
+        aria = 'Closed';
+        sub = 'Opens 8 AM';
+      } else if (stale) {
+        b = { ...b, ...off, bg: t.staleBg, fg: t.staleFg, ic: t.staleIc, isS: true };
+        aria = 'Last known ' + aria + ' as of ' + asOf + ', may be out of date';
+      }
+      const total = s.wait == null ? 999 : s.drive + Math.min(s.wait, 90);
+      return { ...s, ...b, aria, sub, total, mi: s.mi.toFixed(1), miNum: s.mi, rims: !!s.rims };
+    });
+    if (this.state.rims) rows = rows.filter((r) => r.rims);
+    const byTotal = (a, b) => a.total - b.total || a.miNum - b.miNum;
+    rows.sort(this.state.sort === 'total' && !closed ? byTotal : (a, b) => a.miNum - b.miNum);
+    const best = rows.slice().sort(byTotal)[0] || rows[0];
+    const showBest = !closed && !stale && !!best && best.total < 999;
+
+    const refreshed = this.state.refreshed && (sc === 'live' || sc === 'due');
+    let updatedText = 'Updated 4 min ago';
+    let nextText = 'Next update in ~11 min';
+    let refreshDisabled = true;
+    let nextColor = t.muted2;
+    if (refreshed) { updatedText = 'Updated just now'; nextText = 'Next update in ~15 min'; }
+    else if (sc === 'due') { updatedText = 'Updated 16 min ago'; nextText = 'New data is ready — tap refresh'; refreshDisabled = false; nextColor = t.due; }
+    else if (closed) { updatedText = 'Closed since 5:30 PM'; nextText = 'Waits return when stations open'; }
+    else if (sc === 'stale' || sc === 'offline') { updatedText = 'Last updated ' + asOf; nextText = '48 min old'; refreshDisabled = false; nextColor = dark ? '#F2C94C' : '#8A5F00'; }
+    else if (sc === 'broken') { updatedText = 'Last updated ' + asOf; nextText = 'Waits unavailable'; refreshDisabled = false; nextColor = dark ? '#FFC9C3' : '#B3261E'; }
+
+    const banners = {
+      stale: { bg: t.warnBg, fg: t.warnFg, isWarn: true, retry: true, title: 'Couldn’t refresh', body: 'AirCare’s site didn’t respond. Waits below are from ' + asOf + ' and may be off.' },
+      offline: { bg: t.infoBg, fg: t.infoFg, isOffline: true, retry: true, title: 'You’re offline', body: 'Showing waits from ' + asOf + '. They’ll refresh when you’re back online.' },
+      broken: { bg: t.errBg, fg: t.errFg, isError: true, retry: false, title: 'Wait times unavailable', body: 'AirCare changed their website and the app can’t read it yet. Showing the last good data from ' + asOf + '. Check for an app update.' }
+    };
+    const banner = banners[sc] || null;
+
+    const on = { bg: t.accent, fg: t.accentFg, border: '1px solid ' + t.accent };
+    const offChip = { bg: t.chipOffBg, fg: t.ink, border: '1px solid ' + t.chipOffBorder };
+    return {
+      t, rows, best, showBest, closed, banner, hasBanner: !!banner,
+      greenMax: g, yellowMax: y,
+      detailHref: dark ? 'DetailDark.dc.html' : 'Detail.dc.html',
+      updatedText, nextText, nextColor, refreshDisabled,
+      refreshAria: refreshDisabled ? 'Refresh unavailable, data is current' : 'Refresh wait times',
+      refreshFg: refreshDisabled ? t.disabledFg : (sc === 'due' ? t.accentFg : t.ink),
+      refreshBg: !refreshDisabled && sc === 'due' ? t.accent : 'transparent',
+      refreshCursor: refreshDisabled ? 'default' : 'pointer',
+      refresh: () => { if (!refreshDisabled && (sc === 'live' || sc === 'due')) this.setState({ refreshed: true }); },
+      chipDist: this.state.sort === 'distance' || closed ? on : offChip,
+      chipTotal: this.state.sort === 'total' && !closed ? on : offChip,
+      chipRims: this.state.rims ? on : offChip,
+      sortDistance: () => this.setState({ sort: 'distance' }),
+      sortTotal: () => this.setState({ sort: 'total' }),
+      toggleRims: () => this.setState({ rims: !this.state.rims })
+    };
+  }
+}
+</script>
+</body>
+</html>

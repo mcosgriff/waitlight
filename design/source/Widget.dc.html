@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home-screen widget</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F4E5F}a:hover{color:#163A47}
+</style>
+</helmet>
+<div style="width: 390px; height: 420px; box-sizing: border-box; padding: 40px 16px; display: flex; flex-direction: column; justify-content: center; background: #2C3A36; font-family: 'Roboto Flex', system-ui, sans-serif">
+<div style="background: #F6F7F4; color: #17201B; border-radius: 28px; padding: 18px 18px 14px 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-size: 16px; font-weight: 700">Emissions waits</span>
+<span style="font-size: 12px; color: #56615B">4 min ago</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{rows}}" as="s" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 12px">
+<div role="img" aria-label="{{s.aria}}" style="position: relative; width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; font-weight: 700; background: {{s.bg}}; color: {{s.fg}}">{{s.big}}
+<span aria-hidden="true" style="position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; border-radius: 10px; background: #F6F7F4; color: {{s.ic}}; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{s.isG}}" hint-placeholder-val="{{true}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.3l2.8 2.8L16.2 9.6"></path></svg></sc-if>
+<sc-if value="{{s.isY}}" hint-placeholder-val="{{false}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg></sc-if>
+<sc-if value="{{s.isR}}" hint-placeholder-val="{{false}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5L2.5 20h19z"></path><path d="M12 10v4"></path><path d="M12 17.2v.01"></path></svg></sc-if>
+</span>
+</div>
+<div style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0">
+<span style="font-size: 15px; font-weight: 600">{{s.name}}</span>
+<span style="font-size: 12px; color: #56615B">{{s.mi}} mi</span>
+</div>
+<span style="font-size: 13px; font-weight: 500; color: #4A554F">{{s.label}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":420}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const rows = [
+      { name: 'Arvada', mi: '3.1', big: '13', bg: '#1B7F3B', fg: '#FFFFFF', ic: '#1B7F3B', isG: true, label: 'Short', aria: 'Short wait, 13 minutes' },
+      { name: 'Broomfield', mi: '6.4', big: '19', bg: '#1B7F3B', fg: '#FFFFFF', ic: '#1B7F3B', isG: true, label: 'Short', aria: 'Short wait, 19 minutes' },
+      { name: 'Golden', mi: '8.2', big: '8', bg: '#1B7F3B', fg: '#FFFFFF', ic: '#1B7F3B', isG: true, label: 'Short', aria: 'Short wait, 8 minutes' }
+    ];
+    return { rows };
+  }
+}
+</script>
+</body>
+</html>

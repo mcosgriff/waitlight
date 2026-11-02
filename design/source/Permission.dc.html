@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Location off</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F4E5F}a:hover{color:#163A47}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; padding: 64px 24px 32px 24px; display: flex; flex-direction: column; gap: 24px; background: #F6F7F4; color: #17201B; font-family: 'Roboto Flex', system-ui, sans-serif">
+
+<div aria-hidden="true" style="width: 120px; height: 120px; border-radius: 60px; background: #E2EDF0; color: #1F4E5F; display: flex; align-items: center; justify-content: center; align-self: center; margin-top: 40px">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px; text-align: center">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700">Find the closest station</h1>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #4A554F">Share your location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</p>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px">
+<button style="height: 52px; border: 0; border-radius: 26px; background: #1F4E5F; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer">Use my location</button>
+<div style="display: flex; align-items: center; gap: 12px; color: #56615B; font-size: 13px">
+<span style="flex-grow: 1; height: 1px; background: #D5DAD6"></span>or<span style="flex-grow: 1; height: 1px; background: #D5DAD6"></span>
+</div>
+<label for="zip" style="font-size: 14px; font-weight: 600">ZIP code</label>
+<div style="display: flex; gap: 10px">
+<input id="zip" inputmode="numeric" placeholder="80003" style="flex-grow: 1; min-width: 0; height: 52px; box-sizing: border-box; border: 1px solid #A9B2AD; border-radius: 14px; padding: 0 16px; font: inherit; font-size: 16px; background: #FFFFFF; color: #17201B">
+<button style="height: 52px; padding: 0 20px; border: 1px solid #C9CFCB; border-radius: 14px; background: #FFFFFF; color: #17201B; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Go</button>
+</div>
+</div>
+
+<p style="margin: auto 0 0 0; font-size: 13px; line-height: 1.45; color: #56615B; text-align: center">You can still browse all 18 stations alphabetically without location.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
