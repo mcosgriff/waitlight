@@ -1,12 +1,19 @@
 package io.cosgriff.waitlight.data.di
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import java.io.File
 import java.time.Clock
 import javax.inject.Singleton
 
@@ -25,4 +32,15 @@ object DataModule {
         expectSuccess = true
         install(HttpTimeout) { requestTimeoutMillis = 15_000 }
     }
+
+    @Provides
+    @Singleton
+    @ApplicationScope
+    fun applicationScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** The last waits, in the app's own files and left out of backups (`backup_rules.xml`). */
+    @Provides
+    @Singleton
+    fun waitTimesStore(@ApplicationContext context: Context): WaitTimesStore =
+        WaitTimesStore({ File(context.filesDir, WaitTimesStore.FILE_NAME) })
 }

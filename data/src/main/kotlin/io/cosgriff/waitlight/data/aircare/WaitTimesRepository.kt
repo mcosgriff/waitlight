@@ -1,11 +1,14 @@
 package io.cosgriff.waitlight.data.aircare
 
 import android.util.Log
+import io.cosgriff.waitlight.data.di.ApplicationScope
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.shouldFetch
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,16 +36,26 @@ data class WaitTimes(
     val newestUpdate: Instant? get() = waits.values.maxOfOrNull { it.second }
 }
 
-/** Fetches and reads AirCare's page, only during opening hours, and keeps the latest [WaitTimes]. */
+/**
+ * Fetches and reads AirCare's page, only during opening hours, and keeps the latest [WaitTimes], on disk too
+ * ([WaitTimesStore]), so they survive a restart. The stored waits load in [scope] as soon as the repository
+ * starts; until then [waitTimes] is empty, and a [refresh] waits for them.
+ */
 @Singleton
 class WaitTimesRepository @Inject constructor(
     private val client: AirCareClient,
     private val clock: Clock,
+    private val store: WaitTimesStore,
+    @param:ApplicationScope scope: CoroutineScope,
 ) {
     private val state = MutableStateFlow(WaitTimes())
     private val fetching = Mutex()
 
     val waitTimes: StateFlow<WaitTimes> = state.asStateFlow()
+
+    private val loaded = scope.async {
+        store.load()?.let { stored -> state.compareAndSet(WaitTimes(), stored) }
+    }
 
     /**
      * Fetches the page if it's worth it: while open and the data is due ([shouldFetch]), or, for a tap on the
@@ -50,6 +63,14 @@ class WaitTimesRepository @Inject constructor(
      * fetched. Calls made while a fetch is running wait for it, then find the data fresh.
      */
     suspend fun refresh(manual: Boolean = false): Boolean = fetching.withLock {
+        loaded.await()
+        val before = state.value
+        val fetched = fetch(manual)
+        if (state.value != before) store.save(state.value)
+        fetched
+    }
+
+    private suspend fun fetch(manual: Boolean): Boolean {
         val now = clock.instant()
         val worthIt = if (manual) AirCareHours.isOpen(now) else shouldFetch(now, state.value.newestUpdate)
         if (!worthIt) return false
@@ -76,7 +97,7 @@ class WaitTimesRepository @Inject constructor(
                 state.value.copy(lastOutcome = FetchOutcome.UNREADABLE)
             }
         }
-        true
+        return true
     }
 
     private fun Throwable.causes() = generateSequence(this) { it.cause }
