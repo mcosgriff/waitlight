@@ -76,6 +76,18 @@ test there.
   when due; enabled as a retry when stale, offline or broken; disabled while closed.
 - Fetch only while open, and only when the newest data is at least 15 minutes old (`shouldFetch`).
 
+## Background refresh
+
+- With the app closed, WorkManager checks every 15 minutes (its shortest period) while the stations are open,
+  and only with a network. Each check goes through `shouldFetch`, never as a manual refresh, so it fetches only
+  when the newest data is at least 15 minutes old: never more often than AirCare updates, never outside hours.
+- No wakes while closed (`backgroundPlan`): once a check 15 minutes on would find the stations closed (from
+  17:15 on a weekday, 12:45 on a Saturday), the checks stop and one wake is set for `AirCareHours.nextOpening`,
+  which starts them again; it fetches nothing itself. Evenings, Sundays and holidays cost one wake, at opening.
+- The plan is set again at every app start and after every check, so it survives reboots, updates and a
+  cancelled job. Android may run a check late (Doze, battery saver); the waits then just age as usual.
+- A background fetch is saved like any other (`waits.json`). It will update the widget once there is one.
+
 ## Sorting and the hero
 
 - Distance is straight-line, for sorting. Drive minutes are an estimate from it (`DriveEstimate`: 5 minutes plus
