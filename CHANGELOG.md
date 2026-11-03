@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/mcosgriff/waitlight/compare/v0.2.0...v0.3.0) (2026-11-03)
+
+
+### Features
+
+* ask for precise location ([#32](https://github.com/mcosgriff/waitlight/issues/32)) ([6f57404](https://github.com/mcosgriff/waitlight/commit/6f57404b656016030504704cb2c01af7216514e9))
+
 ## [0.2.0](https://github.com/mcosgriff/waitlight/compare/v0.1.0...v0.2.0) (2026-11-03)
 
 
