@@ -48,7 +48,10 @@ object DataModule {
     @Provides
     @Singleton
     fun zipCodes(@ApplicationContext context: Context): ZipCodes =
-        ZipCodes({ context.assets.open(ZipCodes.ASSET).bufferedReader().use { it.readText() } })
+        ZipCodes(
+            read = { context.assets.open(ZipCodes.ASSET).bufferedReader().use { it.readText() } },
+            readOutlines = { context.assets.open(ZipCodes.OUTLINES_ASSET).bufferedReader().use { it.readText() } },
+        )
 
     @Provides
     @Singleton

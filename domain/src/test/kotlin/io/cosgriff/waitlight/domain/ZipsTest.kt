@@ -84,4 +84,60 @@ class ZipsTest {
         assertEquals(arvada, zip.place)
         assertNull(Here.Device(GeoPoint(41.14, -104.82), null).place)
     }
+
+    // Two squares, in 1e-4 degrees, both 105.10 to 105.00 W: A from 39.80 to 39.90 N, with a hole from 39.84 to
+    // 39.86 N, and B from 39.90 to 40.00 N. Each ring's first point is absolute, the rest changes from the last.
+    // B's centroid is far north, so the south edge of B is nearer A's centroid than its own.
+    private val squares = ZipTable(
+        listOf(
+            ZipPlace("80001", GeoPoint(39.82, -105.05), "A"),
+            ZipPlace("80002", GeoPoint(39.99, -105.05), "B"),
+            ZipPlace("80009", GeoPoint(39.70, -105.05), "C"),
+        ),
+    )
+    private val outlined = ZipTable.withOutlines(
+        squares,
+        """
+        # A comment.
+        80001|398000,-1051000 0,1000 1000,0 0,-1000|398400,-1050600 0,200 200,0 0,-200
+        80002|399000,-1051000 0,1000 1000,0 0,-1000
+        """.trimIndent(),
+    )
+
+    @Test
+    fun `the ZIP a point is in, not the one whose centroid is nearest`() {
+        val southEdgeOfB = GeoPoint(39.902, -105.05) // 0.082° from A's centroid, 0.088° from B's
+        assertEquals("80001", outlined.nearest(southEdgeOfB)?.zip)
+        assertEquals("80002", outlined.placeOf(southEdgeOfB)?.zip)
+        assertEquals("80001", outlined.placeOf(GeoPoint(39.89, -105.05))?.zip)
+    }
+
+    @Test
+    fun `a hole isn't in the ZIP, and outside every outline the nearest centroid names it`() {
+        // In A's hole: in no outline, so the nearest centroid, A's.
+        assertEquals("80001", outlined.placeOf(GeoPoint(39.85, -105.05))?.zip)
+        // South of both squares: C's centroid.
+        assertEquals("80009", outlined.placeOf(GeoPoint(39.72, -105.05))?.zip)
+        // Without outlines, placeOf is nearest.
+        assertEquals("80001", squares.placeOf(GeoPoint(39.902, -105.05))?.zip)
+        // Far from everything, nothing.
+        assertNull(outlined.placeOf(GeoPoint(41.14, -104.82)))
+    }
+
+    @Test
+    fun `here names the ZIP the fix is in`() {
+        val fix = GeoPoint(39.902, -105.05)
+        assertEquals(Here.Device(fix, outlined["80002"]), here(permitted = true, fix = fix, zip = null, table = outlined))
+    }
+
+    @Test
+    fun `outlines that don't read are a build mistake`() {
+        assertThrows(IllegalArgumentException::class.java) { ZipTable.withOutlines(squares, "80001") }
+        assertThrows(IllegalArgumentException::class.java) { ZipTable.withOutlines(squares, "80001|398000,-1051000 0,1000") }
+        assertThrows(IllegalArgumentException::class.java) { ZipTable.withOutlines(squares, "80001|398000 0,1000 1000,0") }
+        // An outline for a ZIP the table hasn't.
+        assertThrows(IllegalArgumentException::class.java) {
+            ZipTable.withOutlines(squares, "80777|398000,-1051000 0,1000 1000,0 0,-1000")
+        }
+    }
 }

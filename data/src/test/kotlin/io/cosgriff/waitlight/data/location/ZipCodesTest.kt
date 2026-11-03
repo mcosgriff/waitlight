@@ -13,8 +13,9 @@ import java.io.File
 /** The bundled table as shipped (`src/main/assets`), and how it's loaded. */
 class ZipCodesTest {
     private val asset = File("src/main/assets/${ZipCodes.ASSET}")
+    private val outlines = File("src/main/assets/${ZipCodes.OUTLINES_ASSET}")
 
-    private fun bundled() = ZipCodes({ asset.readText() }, Dispatchers.Unconfined)
+    private fun bundled() = ZipCodes({ asset.readText() }, Dispatchers.Unconfined, readOutlines = { outlines.readText() })
 
     @Test
     fun `the bundled table has every Colorado ZIP with a Census area, and only Colorado's`() = runTest {
@@ -45,6 +46,31 @@ class ZipCodesTest {
             assertTrue("${station.name} is near no ZIP", nearest != null && nearest.point.milesTo(station.location) < 5)
         }
         assertEquals("80003", table.nearest(GeoPoint(39.8277, -105.0656))?.zip)
+    }
+
+    @Test
+    fun `every ZIP has an outline, and each ZIP's Census point is in its own`() = runTest {
+        val table = bundled().table()
+        val outlined = outlines.readLines().filterNot { it.startsWith("#") }.map { it.substringBefore('|') }
+        val zips = asset.readLines().filterNot { it.startsWith("#") }.map { it.substringBefore('|') }
+        assertEquals(zips, outlined)
+        val misplaced = zips.filter { zip -> table.placeOf(table[zip]!!.point)?.zip != zip }
+        assertTrue("Census points outside their own ZIP: $misplaced", misplaced.isEmpty())
+    }
+
+    @Test
+    fun `north Arvada is Arvada, though a Westminster centroid is nearer`() = runTest {
+        val table = bundled().table()
+        val north = GeoPoint(39.856, -105.064) // inside 80003, near its border with 80031
+        assertEquals("80031", table.nearest(north)?.zip)
+        assertEquals("80003", table.placeOf(north)?.zip)
+    }
+
+    @Test
+    fun `outlines that can't be read leave the table, named by nearest centroid`() = runTest {
+        val table = ZipCodes({ asset.readText() }, Dispatchers.Unconfined, readOutlines = { "80003|garbage" }).table()
+        assertEquals(527, table.size)
+        assertEquals("80031", table.placeOf(GeoPoint(39.856, -105.064))?.zip)
     }
 
     @Test

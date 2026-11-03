@@ -47,7 +47,7 @@ with a comment saying why.
   `refreshButton`, `shouldFetch`), when the background refresh runs (`backgroundPlan`), sorting and the hero
   (`arrange`, `fastestOverall`).
 - `:data` — fetching and reading AirCare's page (`AirCareClient`, `AirCarePage`, `WaitTimesRepository`, on Ktor
-  with OkHttp), location (`LocationSource`, precise or approximate, the user's choice; `HereSource`, fix or ZIP; `ZipCodes`, the bundled table), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
+  with OkHttp), location (`LocationSource`, precise or approximate, the user's choice; `HereSource`, fix or ZIP; `ZipCodes`, the bundled table and outlines), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
   `./gradlew :data:testDebugUnitTest` runs its tests.
 - `:app` — Compose UI, navigation (Navigation 3), ViewModels, theme, the background refresh (WorkManager, `background/`), and
   later the Glance widget.
