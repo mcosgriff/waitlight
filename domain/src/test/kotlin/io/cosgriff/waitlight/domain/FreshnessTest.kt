@@ -58,6 +58,14 @@ class FreshnessTest {
     }
 
     @Test
+    fun `a phone clock behind AirCare's reads live with a countdown of at most 15 minutes`() {
+        // AirCare says 14:40 while the phone says 14:18: the next update reads 37 minutes away, uncapped.
+        val ahead = denver("2026-11-02T14:40")
+        assertEquals(ListState.LIVE, listState(now, ahead, FetchOutcome.OK))
+        assertEquals(15, refreshButton(ListState.LIVE, now, ahead).nextUpdateInMinutes)
+    }
+
+    @Test
     fun `refresh is filled when due, plain as a retry, off while closed`() {
         assertEquals(RefreshButton(true, true, null), refreshButton(ListState.DUE, now, null))
         for (state in listOf(ListState.STALE, ListState.OFFLINE, ListState.BROKEN)) {
