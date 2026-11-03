@@ -44,7 +44,6 @@ android {
         release {
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
             if (System.getenv("WAITLIGHT_KEYSTORE") != null) {
                 signingConfig = signingConfigs.getByName("release")

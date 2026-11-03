@@ -13,6 +13,10 @@ import java.time.LocalDateTime
 internal fun savedPage(): String =
     checkNotNull(AirCarePageTest::class.java.getResource("/aircare/wait-times-2026-11-02.html")).readText()
 
+/** The same page after closing that day: every station "Station Closed". */
+internal fun closedPage(): String =
+    checkNotNull(AirCarePageTest::class.java.getResource("/aircare/wait-times-2026-11-02-closed.html")).readText()
+
 internal fun denver(text: String): Instant = LocalDateTime.parse(text).atZone(AirCareHours.zone).toInstant()
 
 class AirCarePageTest {
@@ -28,6 +32,21 @@ class AirCarePageTest {
         assertEquals(WaitReading.MoreThan(60) to denver("2026-11-02T17:04:47"), read.waits[50]) // Parker
         // Longmont words its wait and its time differently from the rest.
         assertEquals(WaitReading.NoEstimate to denver("2026-11-02T17:16"), read.waits[43])
+    }
+
+    @Test
+    fun `a page where every station says it's closed reads, with no waits`() {
+        val read = read(closedPage())
+        assertTrue(read.waits.isEmpty())
+        assertTrue(read.hoursAsStated)
+    }
+
+    @Test
+    fun `a station that says it's closed has no reading, and the rest read`() {
+        val page = savedPage().replace(""""name":"Arvada: Wait is 10 mins"""", """"name":"Arvada: Station Closed"""")
+        val read = read(page)
+        assertEquals(17, read.waits.size)
+        assertEquals(null, read.waits[38])
     }
 
     @Test

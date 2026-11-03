@@ -86,4 +86,24 @@ class FreshnessTest {
         assertTrue(shouldFetch(now, denver("2026-11-02T14:03")))
         assertFalse(shouldFetch(now, denver("2026-11-02T14:04")))
     }
+
+    @Test
+    fun `a launch always fetches, open or closed, fresh or not`() {
+        assertTrue(worthFetching(FetchReason.LAUNCH, denver("2026-11-08T10:00"), null))
+        assertTrue(worthFetching(FetchReason.LAUNCH, denver("2026-11-02T19:50"), denver("2026-11-02T17:29")))
+        assertTrue(worthFetching(FetchReason.LAUNCH, now, denver("2026-11-02T14:10")))
+    }
+
+    @Test
+    fun `a tap on refresh fetches whenever open, and never while closed`() {
+        assertTrue(worthFetching(FetchReason.MANUAL, now, denver("2026-11-02T14:10")))
+        assertFalse(worthFetching(FetchReason.MANUAL, denver("2026-11-08T10:00"), null))
+    }
+
+    @Test
+    fun `an unprompted check goes by shouldFetch`() {
+        assertTrue(worthFetching(FetchReason.DUE, now, denver("2026-11-02T14:03")))
+        assertFalse(worthFetching(FetchReason.DUE, now, denver("2026-11-02T14:04")))
+        assertFalse(worthFetching(FetchReason.DUE, denver("2026-11-08T10:00"), null))
+    }
 }

@@ -10,6 +10,7 @@ import io.cosgriff.waitlight.data.location.LastLocationStore
 import io.cosgriff.waitlight.data.location.LocationSource
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
+import io.cosgriff.waitlight.domain.FetchReason
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.ListState
@@ -48,7 +49,8 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 /**
- * The list's tick: every 30 seconds while the screen is showing, it fetches only when [shouldFetch] says so. Robolectric
+ * The list's tick: the first fetches whatever the time; then, every 30 seconds while the screen is showing, it
+ * fetches only when AirCare's next update is due. Robolectric
  * for [LocationSource]'s Context (no location permission, so the tick never looks for one); AirCare is a [MockEngine].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -97,14 +99,20 @@ class StationListViewModelTest {
         dir.deleteRecursively()
     }
 
-    /** Shows the list (something collects its state) for the length of [block], then lets the ticks stop. */
-    private fun TestScope.showing(block: TestScope.(StationListViewModel) -> Unit) {
+    private fun newViewModel(): StationListViewModel {
         val location = LocationSource(
             RuntimeEnvironment.getApplication(),
             LastLocationStore({ File(dir, LastLocationStore.FILE_NAME) }, Dispatchers.Unconfined),
         )
         val here = HereSource(location, settings, ZipCodes({ ZIPS }, Dispatchers.Unconfined), settingsScope)
-        val viewModel = StationListViewModel(repository, location, here, settings, clock)
+        return StationListViewModel(repository, location, here, settings, clock)
+    }
+
+    /** Shows the list (something collects its state) for the length of [block], then lets the ticks stop. */
+    private fun TestScope.showing(
+        viewModel: StationListViewModel = newViewModel(),
+        block: TestScope.(StationListViewModel) -> Unit,
+    ) {
         val screen = launch { viewModel.ui.collect {} }
         runCurrent()
         block(viewModel)
@@ -130,13 +138,20 @@ class StationListViewModelTest {
     }
 
     @Test
-    fun `the tick doesn't fetch while the data is fresh, and does once AirCare's next update is due`() = runTest(dispatcher) {
-        repository.refresh(manual = true) // "Last updated" 2:14 PM, read at 2:20
+    fun `opening the list fetches even when the data is fresh`() = runTest(dispatcher) {
+        repository.refresh(FetchReason.MANUAL) // "Last updated" 2:14 PM, read at 2:20
         assertEquals(1, fetches)
 
         showing { viewModel ->
             assertEquals(ListState.LIVE, viewModel.ui.value.state)
-            assertEquals(1, fetches)
+            assertEquals(2, fetches)
+        }
+    }
+
+    @Test
+    fun `later ticks don't fetch while the data is fresh, and do once AirCare's next update is due`() = runTest(dispatcher) {
+        showing {
+            assertEquals(1, fetches) // the launch fetch; "Last updated" 2:14 PM, read at 2:20
             tick("2026-11-02T14:21")
             tick("2026-11-02T14:29:14")
             assertEquals(1, fetches)
@@ -148,14 +163,24 @@ class StationListViewModelTest {
     }
 
     @Test
-    fun `the tick never fetches while the stations are closed, even with no data at all`() = runTest(dispatcher) {
+    fun `opening the list fetches while the stations are closed, and later ticks don't`() = runTest(dispatcher) {
         clock.now = denver("2026-11-08T10:00") // a Sunday
         showing { viewModel ->
             assertEquals(ListState.CLOSED, viewModel.ui.value.state)
+            assertEquals(1, fetches)
             tick("2026-11-08T10:01")
             tick("2026-11-08T10:30")
-            assertEquals(0, fetches)
+            assertEquals(1, fetches)
         }
+    }
+
+    @Test
+    fun `the list coming back to the screen doesn't fetch again`() = runTest(dispatcher) {
+        clock.now = denver("2026-11-08T10:00") // a Sunday
+        val viewModel = newViewModel()
+        showing(viewModel) { assertEquals(1, fetches) }
+        clock.now = denver("2026-11-08T10:05")
+        showing(viewModel) { assertEquals(1, fetches) }
     }
 
     @Test

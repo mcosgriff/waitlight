@@ -10,8 +10,8 @@ import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.widget.WidgetUpdater
 
 /**
- * One background check, while the stations are open. It fetches only when [WaitTimesRepository.refresh]'s
- * `shouldFetch` says the data is due, never as a manual refresh, so it never fetches more often than AirCare
+ * One background check, while the stations are open. It fetches only when the data is due
+ * ([io.cosgriff.waitlight.domain.FetchReason.DUE]), never as a manual refresh or a launch, so it never fetches more often than AirCare
  * updates. Afterwards it asks [BackgroundRefresh] what comes next, which near closing time means sleeping until
  * the next opening. It redraws the widget too, fetched or not, so its badges and age follow the clock.
  */

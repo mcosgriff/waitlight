@@ -53,10 +53,13 @@ test there.
   show as stale or closed with no special case. A stored reading for a station no longer in `Stations`, or one
   that can't be a wait, is dropped; a file that can't be read is logged and the app starts empty, never crashes.
 - Stated hours that differ from `AirCareHours.STATED_HOURS` are logged, and the waits still read.
-- A tap on refresh fetches whenever the stations are open; otherwise only when `shouldFetch` says so.
+- Why a fetch happens decides whether it does (`FetchReason`, `worthFetching`): **opening the list at app start
+  always fetches**, open or closed, fresh or not, once per list (the screen coming back doesn't count); a tap on
+  refresh fetches whenever the stations are open; anything else only when `shouldFetch` says so.
 - Wait wording seen: `Wait is 13 mins` (also `0 mins`, `1 min`), `Station Open` (no estimate),
-  `The wait is more than 60 minutes. …`. Any other wording reads as nothing, and the page counts as
-  unreadable.
+  `The wait is more than 60 minutes. …`, and `Station Closed` (every station after hours; a fixture of that
+  page is saved too). A closed station has no reading and keeps its last good one; a page with every station
+  closed still reads. Any other wording reads as nothing, and the page counts as unreadable.
 - "Last updated" is Denver's local time, in two formats seen on the same page: `11/2/2026 4:14:15 PM` and
   `11/02/2026 04:16 PM`.
 
@@ -81,7 +84,8 @@ test there.
 - Refresh button: disabled while live, with "Next update in ~N min" rounded up, never 0 and never over 15 (a
   phone clock behind AirCare's puts the newest update in the future; that reads as live); enabled and filled
   when due; enabled as a retry when stale, offline or broken; disabled while closed.
-- Fetch only while open, and only when the newest data is at least 15 minutes old (`shouldFetch`).
+- Apart from the launch fetch and a tap on refresh, fetch only while open, and only when the newest data is at
+  least 15 minutes old (`shouldFetch`). Outside hours the launch fetch is saved, and the list still shows closed.
 
 ## Background refresh
 

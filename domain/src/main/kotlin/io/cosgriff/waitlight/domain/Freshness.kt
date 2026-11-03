@@ -93,9 +93,28 @@ fun refreshButton(state: ListState, now: Instant, newestUpdate: Instant?): Refre
         RefreshButton(enabled = true, emphasized = false, nextUpdateInMinutes = null)
 }
 
+/** Why the app is thinking of fetching the page. */
+enum class FetchReason {
+    /** The list's tick or a background check: only when AirCare's next update is due ([shouldFetch]). */
+    DUE,
+
+    /** A tap on refresh or "Try again": whenever the stations are open. */
+    MANUAL,
+
+    /** The list opening at app start: always, open or closed, so a launch shows what AirCare has now. */
+    LAUNCH,
+}
+
+/** Whether to fetch the page now, for [reason]. */
+fun worthFetching(reason: FetchReason, now: Instant, newestUpdate: Instant?): Boolean = when (reason) {
+    FetchReason.DUE -> shouldFetch(now, newestUpdate)
+    FetchReason.MANUAL -> AirCareHours.isOpen(now)
+    FetchReason.LAUNCH -> true
+}
+
 /**
- * Whether the app should fetch now. Never outside opening hours; otherwise when the newest data is at least a
- * refresh interval old, or there is none.
+ * Whether the app should fetch now, unprompted. Never outside opening hours; otherwise when the newest data is at
+ * least a refresh interval old, or there is none.
  */
 fun shouldFetch(now: Instant, newestUpdate: Instant?): Boolean {
     if (!AirCareHours.isOpen(now)) return false

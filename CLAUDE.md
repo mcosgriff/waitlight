@@ -58,7 +58,7 @@ Each has an ADR in `docs/adr/` with its reasons and the options turned down.
 
 - **The phone reads AirCare's page itself** ([ADR-0001](docs/adr/0001-phone-reads-aircare-directly.md)). No
   server of our own. Fetch only during opening hours, and no more often than AirCare updates
-  (`shouldFetch`). The page is the one network host the app talks to.
+  (`shouldFetch`), except once at every app launch, whatever the time (`FetchReason.LAUNCH`). The page is the one network host the app talks to.
 - **No Google Play services or Google SDKs** ([ADR-0002](docs/adr/0002-no-play-services.md)): Android's own
   `LocationManager`, not FusedLocationProvider; no Maps SDK; no Routes API. Drive times are estimated from
   straight-line distance (`DriveEstimate`) and always shown as estimates. Directions open Google Maps by link.

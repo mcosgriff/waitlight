@@ -18,7 +18,8 @@ import java.time.Instant
 sealed interface PageRead {
     /**
      * Every station on the page read. [waits] is keyed by AirCare's `locationID` ([Stations]); a station AirCare
-     * added since the app was built is left out. [hoursAsStated] is false when any station's stated hours differ
+     * added since the app was built is left out, and so is one that says "Station Closed", which has no reading
+     * (all of them after hours, so [waits] can be empty). [hoursAsStated] is false when any station's stated hours differ
      * from [AirCareHours.STATED_HOURS], which the hard-coded hours should then be checked against.
      */
     data class Read(val waits: Map<Int, Pair<WaitReading, Instant>>, val hoursAsStated: Boolean) : PageRead
@@ -53,6 +54,7 @@ object AirCarePage {
         if (entries.isEmpty()) return PageRead.Unreadable("no stations")
 
         val waits = mutableMapOf<Int, Pair<WaitReading, Instant>>()
+        var known = 0
         var hoursAsStated = true
         for (entry in entries) {
             val station = entry as? JsonObject ?: return PageRead.Unreadable("a station isn't an object")
@@ -61,15 +63,19 @@ object AirCarePage {
             val info = station.text("infoWindow")?.let(::plainText)
                 ?: return PageRead.Unreadable("station $id has no infoWindow")
 
-            val reading = WaitText.parse(name) ?: return PageRead.Unreadable("station $id: new wording \"$name\"")
+            val closed = WaitText.saysClosed(name)
+            val reading = WaitText.parse(name)
+            if (reading == null && !closed) return PageRead.Unreadable("station $id: new wording \"$name\"")
             val at = updated.find(info)?.groupValues?.get(1)?.let(AirCareTimestamp::parse)
                 ?: return PageRead.Unreadable("station $id: no readable \"Last updated\"")
             val stated = hours.find(info)?.groupValues?.get(1)?.let(::normalize)
             if (stated != normalize(AirCareHours.STATED_HOURS)) hoursAsStated = false
 
-            if (Stations[id] != null) waits[id] = reading to at
+            if (Stations[id] == null) continue
+            known++
+            if (reading != null) waits[id] = reading to at
         }
-        if (waits.isEmpty()) return PageRead.Unreadable("none of the stations is one the app knows")
+        if (known == 0) return PageRead.Unreadable("none of the stations is one the app knows")
         return PageRead.Read(waits, hoursAsStated)
     }
 
