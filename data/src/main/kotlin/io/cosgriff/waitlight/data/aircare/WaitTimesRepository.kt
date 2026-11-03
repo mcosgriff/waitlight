@@ -57,6 +57,12 @@ class WaitTimesRepository @Inject constructor(
         store.load()?.let { stored -> state.compareAndSet(WaitTimes(), stored) }
     }
 
+    /** The waits once the stored ones are loaded: for the widget, which may be drawn in a process just started. */
+    suspend fun current(): WaitTimes {
+        loaded.await()
+        return state.value
+    }
+
     /**
      * Fetches the page if it's worth it: while open and the data is due ([shouldFetch]), or, for a tap on the
      * refresh button ([manual]), any time the stations are open. Never outside opening hours. Returns whether it

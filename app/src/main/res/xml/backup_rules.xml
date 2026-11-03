@@ -5,4 +5,6 @@
 <full-backup-content>
     <!-- The last waits (WaitTimesStore.FILE_NAME): minutes old at best, so not worth restoring. -->
     <exclude domain="file" path="waits.json" />
+    <!-- The last location found (LastLocationStore.FILE_NAME), for the widget: it stays on this phone. -->
+    <exclude domain="file" path="location.txt" />
 </full-backup-content>
