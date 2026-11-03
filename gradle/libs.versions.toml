@@ -13,6 +13,8 @@ navigation3 = "1.2.0"
 compose-bom = "2026.09.00"
 
 hilt = "2.60.1"
+
+ktor = "3.6.1"
 hilt-androidx = "1.4.0"
 
 junit = "4.13.2"
@@ -41,6 +43,10 @@ compose-material-icons = { module = "androidx.compose.material:material-icons-ex
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifecycle-viewmodel-compose", version.ref = "hilt-androidx" }
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
 

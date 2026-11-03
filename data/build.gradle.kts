@@ -17,6 +17,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // android.util.Log does nothing in unit tests instead of throwing.
+    testOptions.unitTests.isReturnDefaultValues = true
+
     // As in :app: no warnings are kept, and version news is left to Dependabot.
     lint {
         abortOnError = true
@@ -35,10 +38,16 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+
+    // api: Hilt generates the app's component in :app, so it must see the HttpClient binding's type.
+    api(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
 }

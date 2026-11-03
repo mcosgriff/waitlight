@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- For AirCare's wait-times page only (ADR-0001). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".WaitlightApp"
         android:allowBackup="true"
