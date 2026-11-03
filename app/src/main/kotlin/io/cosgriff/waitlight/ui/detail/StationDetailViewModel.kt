@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
-import io.cosgriff.waitlight.data.location.LocationSource
+import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.domain.StationRow
 import io.cosgriff.waitlight.domain.WaitThresholds
 import io.cosgriff.waitlight.domain.rowsFor
@@ -30,7 +30,7 @@ data class StationDetailUi(
 @HiltViewModel
 class StationDetailViewModel @Inject constructor(
     waitTimes: WaitTimesRepository,
-    location: LocationSource,
+    hereSource: HereSource,
     private val clock: Clock,
 ) : ViewModel() {
     private val ticks = flow {
@@ -40,15 +40,15 @@ class StationDetailViewModel @Inject constructor(
         }
     }
 
-    val ui: StateFlow<StationDetailUi> = combine(ticks, waitTimes.waitTimes, location.here) { now, times, here ->
-        StationDetailUi(now, rowsFor(times.waits, here).associateBy { it.station.id }, times.dataUsable, THRESHOLDS)
+    val ui: StateFlow<StationDetailUi> = combine(ticks, waitTimes.waitTimes, hereSource.here) { now, times, here ->
+        StationDetailUi(now, rowsFor(times.waits, here?.point).associateBy { it.station.id }, times.dataUsable, THRESHOLDS)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(STOP_AFTER_MILLIS),
         waitTimes.waitTimes.value.let { times ->
             StationDetailUi(
                 clock.instant(),
-                rowsFor(times.waits, location.here.value).associateBy { it.station.id },
+                rowsFor(times.waits, hereSource.here.value?.point).associateBy { it.station.id },
                 times.dataUsable,
                 THRESHOLDS,
             )

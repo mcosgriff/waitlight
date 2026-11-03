@@ -10,6 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.cosgriff.waitlight.data.location.LastLocationStore
+import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -42,6 +43,13 @@ object DataModule {
     @Singleton
     fun settings(@ApplicationContext context: Context): SettingsStore =
         SettingsStore(PreferenceDataStoreFactory.create { context.preferencesDataStoreFile("settings") })
+
+    /** The bundled Colorado ZIP codes (ADR-0005), read on first use. */
+    @Provides
+    @Singleton
+    fun zipCodes(@ApplicationContext context: Context): ZipCodes =
+        ZipCodes({ context.assets.open(ZipCodes.ASSET).bufferedReader().use { it.readText() } })
+
     @Provides
     @Singleton
     @ApplicationScope

@@ -109,6 +109,21 @@ test there.
 - Hero ("Fastest overall right now"): least drive + wait among the shown stations with a fresh estimate. Hidden
   while closed, stale, offline or broken, without a location, or when no station has an estimate.
 
+## Where "here" is
+
+- **Location permission wins:** with location allowed and a fix found, distances are from the fix. Otherwise
+  from the saved ZIP code's centroid, if there is one. Otherwise there's no "here" and the list is
+  alphabetical (`here`). A ZIP saved before location was allowed stays saved, unused, until location goes.
+- ZIP codes come from the bundled table (ADR-0005): every Colorado ZIP with a Census area, 800xx–816xx. A typed
+  ZIP is five digits and in the table; otherwise it's refused, "Enter a 5-digit ZIP code" or "… isn't a
+  Colorado ZIP code". The field takes digits only, at most five, on a number keyboard.
+- **Go** saves the ZIP, answers the prompt and opens the list. The prompt opened again shows the saved ZIP and
+  offers to stop using it, which clears it.
+- The header names where "here" is, as "Arvada, CO 80003": for a ZIP, that ZIP's place; for a fix, the place of
+  the nearest ZIP centroid, or "Near you" when none is within 25 miles. Allowed but no fix and no ZIP: "Finding
+  your location…". Neither: "Location off". A ZIP and "Location off" are links to the prompt.
+- Drive times from a ZIP are estimates like any others ("≈").
+
 ## The widget
 
 - The three nearest stations (`widgetContent`, `WIDGET_STATIONS`), nearest first by straight-line distance, each
@@ -128,8 +143,3 @@ test there.
   goes stale or at closing, whichever is first. No redraws while closed beyond the opening one.
 - Colours from `waitColors(dark)`, following the phone's light or dark; the system font; 28dp corners.
 - A tap on a station opens its detail over the list; anywhere else opens the list.
-
-## Open questions
-
-- **ZIP entry** needs a ZIP's coordinates without a geocoding service: a bundled table of Front Range ZIP
-  centroids is the likely answer.

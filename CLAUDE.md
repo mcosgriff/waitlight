@@ -20,10 +20,12 @@ Modules, theme, the business rules (`:domain`, tested), fetching and reading Air
 prompt screens are in. The list fetches while it's on screen, WorkManager refreshes in the background during
 opening hours (`background/`, `backgroundPlan`), and the last waits are kept across restarts (`WaitTimesStore`,
 a JSON file in `filesDir`). Settings (`:data`, `settings/`, DataStore, tested) remember the location prompt's
-answer and the list's sort and rims chips. The Glance home-screen widget (`widget/`, `widgetContent`) shows the
-three nearest stations and redraws after each background check. The detail's map is a bundled image per
-station drawn from OpenStreetMap data (ADR-0006, `scripts/station_maps.py`). Not built yet: ZIP entry (an open
-question in `docs/rules/wait-times.md`). `./gradlew build` is green
+answer, the list's sort and rims chips and a typed ZIP code. ZIP entry uses a bundled Census table of Colorado ZIP
+centroids and place names (ADR-0005; `scripts/colorado_zips.py` makes it, `ZipTable` reads it), and `HereSource`
+picks "here" for the list and detail: the fix, else the ZIP. The Glance home-screen widget (`widget/`,
+`widgetContent`) shows the three nearest stations and redraws after each background check. The detail's map is
+a bundled image per station drawn from OpenStreetMap data (ADR-0006; `scripts/station_maps.py` makes them).
+`./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
 with a comment saying why.
@@ -41,11 +43,11 @@ with a comment saying why.
 
 - `:domain` — pure Kotlin, **no Android imports**. All business rules live here and get unit tests: the station
   list (`Stations`), opening hours and holidays (`AirCareHours`, `Holiday`), AirCare's wording
-  (`WaitText`, `AirCareTimestamp`), badges (`badgeFor`), freshness and the list's states (`listState`,
+  (`WaitText`, `AirCareTimestamp`), ZIP codes and "here" (`ZipTable`, `here`), badges (`badgeFor`), freshness and the list's states (`listState`,
   `refreshButton`, `shouldFetch`), when the background refresh runs (`backgroundPlan`), sorting and the hero
   (`arrange`, `fastestOverall`).
 - `:data` — fetching and reading AirCare's page (`AirCareClient`, `AirCarePage`, `WaitTimesRepository`, on Ktor
-  with OkHttp), location (`LocationSource`, approximate only), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
+  with OkHttp), location (`LocationSource`, approximate only; `HereSource`, fix or ZIP; `ZipCodes`, the bundled table), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
   `./gradlew :data:testDebugUnitTest` runs its tests.
 - `:app` — Compose UI, navigation (Navigation 3), ViewModels, theme, the background refresh (WorkManager, `background/`), and
   later the Glance widget.
@@ -66,6 +68,9 @@ Each has an ADR in `docs/adr/` with its reasons and the options turned down.
   time. The fetch compares the page's stated hours with `AirCareHours.STATED_HOURS` and logs a change.
 - **Freshness comes from each station's own AirCare "Last updated" time**, never the fetch time. A station's
   badge goes stale on its own timestamp, even when the others are fresh.
+- **ZIP codes come from a bundled Census table** ([ADR-0005](docs/adr/0005-bundled-zip-table.md)): every
+  Colorado ZIP's centroid and place name, public domain, no geocoding service. Location permission wins over a
+  saved ZIP.
 - **applicationId `io.cosgriff.waitlight` must never change. The release signing key must never change**
   ([ADR-0004](docs/adr/0004-application-id-and-signing-key-are-permanent.md)).
 - **IDE is Android Studio.** Keep AGP current (Studio's Upgrade Assistant).

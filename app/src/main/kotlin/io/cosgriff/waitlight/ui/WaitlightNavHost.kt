@@ -44,7 +44,7 @@ private fun WaitlightNavDisplay(start: NavKey, openStation: Int?, onLocationProm
             entry<StationList> {
                 StationListScreen(
                     onOpenStation = { backStack.add(StationDetail(it)) },
-                    onTurnOnLocation = { backStack.add(LocationPrompt) },
+                    onChangeLocation = { backStack.add(LocationPrompt) },
                 )
             }
             entry<StationDetail> { key -> StationDetailScreen(key.stationId, onBack = { backStack.removeLastOrNull() }) }
