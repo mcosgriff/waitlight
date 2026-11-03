@@ -31,6 +31,17 @@ test there.
 
 ## Reading AirCare
 
+- One GET of `https://aircarecolorado.com/locations/wait-times/wait-times-interactive`, user agent
+  `Waitlight (+https://github.com/mcosgriff/waitlight)`, nothing else sent. The waits come from the page's
+  `var latlngs = [...]` script array: each object's `locationID`, `name` (station name and wait wording) and
+  `infoWindow` (HTML with the stated hours and "Last updated"). The test fixture is that array as served on
+  2026-11-02 (`data/src/test/resources/aircare/`).
+- **All or nothing:** a page without the array, or with any station whose wording or time can't be read, is
+  unreadable as a whole. A station whose `locationID` isn't in `Stations` is left out.
+- A failed fetch or an unreadable page keeps each station's last good reading; an unreadable one marks it
+  unusable, so every badge shows it as stale. No network is told from a failed fetch by a failed DNS lookup.
+- Stated hours that differ from `AirCareHours.STATED_HOURS` are logged, and the waits still read.
+- A tap on refresh fetches whenever the stations are open; otherwise only when `shouldFetch` says so.
 - Wait wording seen: `Wait is 13 mins` (also `0 mins`, `1 min`), `Station Open` (no estimate),
   `The wait is more than 60 minutes. …`. Any other wording reads as nothing, and the page counts as
   unreadable.
