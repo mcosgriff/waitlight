@@ -20,7 +20,8 @@ import io.cosgriff.waitlight.domain.fastestOverall
 import io.cosgriff.waitlight.domain.listState
 import io.cosgriff.waitlight.domain.refreshButton
 import io.cosgriff.waitlight.domain.rowsFor
-import io.cosgriff.waitlight.domain.shouldFetch
+import io.cosgriff.waitlight.domain.FetchReason
+import io.cosgriff.waitlight.domain.worthFetching
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -59,8 +60,9 @@ data class StationListUi(
 private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refreshing: Boolean)
 
 /**
- * The station list. While the screen is showing, it ticks every [TICK_MILLIS] to re-age the data, and fetches
- * when AirCare's next update is due ([shouldFetch]); a tap on refresh fetches whenever the stations are open.
+ * The station list. Its first tick fetches whatever the time ([FetchReason.LAUNCH]); after that, while the screen
+ * is showing, it ticks every [TICK_MILLIS] to re-age the data, and fetches when AirCare's next update is due. A
+ * tap on refresh fetches whenever the stations are open ([worthFetching]).
  */
 @HiltViewModel
 class StationListViewModel @Inject constructor(
@@ -74,11 +76,15 @@ class StationListViewModel @Inject constructor(
     private val refreshing = MutableStateFlow(false)
     private val choices = combine(saved, refreshing) { s, r -> Choices(s.order, s.rimsOnly, r) }
 
+    /** Whether this list has made its launch fetch; later ticks, also after the screen comes back, only check. */
+    private var launched = false
+
     private val ticks = flow {
         while (true) {
             val now = clock.instant()
             emit(now)
-            refresh(manual = false)
+            refresh(if (launched) FetchReason.DUE else FetchReason.LAUNCH)
+            launched = true
             delay(TICK_MILLIS)
         }
     }
@@ -99,22 +105,23 @@ class StationListViewModel @Inject constructor(
     }
 
     /** A tap on refresh or "Try again". */
-    fun refresh() = refresh(manual = true)
+    fun refresh() = refresh(FetchReason.MANUAL)
 
     /** The screen came back, perhaps with location newly allowed. */
     fun onShown() {
         if (location.here.value == null && location.permitted()) viewModelScope.launch { location.update() }
     }
 
-    private fun refresh(manual: Boolean) {
-        val due = shouldFetch(clock.instant(), waitTimes.waitTimes.value.newestUpdate)
+    private fun refresh(reason: FetchReason) {
+        val fetches = worthFetching(reason, clock.instant(), waitTimes.waitTimes.value.newestUpdate)
+        val manual = reason == FetchReason.MANUAL
         val needsLocation = location.here.value == null && location.permitted()
-        if (!manual && !due && !needsLocation) return
+        if (!manual && !fetches && !needsLocation) return
         viewModelScope.launch {
-            if (manual || due) refreshing.value = true
+            if (manual || fetches) refreshing.value = true
             try {
                 if (manual || needsLocation) launch { location.update() }
-                waitTimes.refresh(manual)
+                waitTimes.refresh(reason)
             } finally {
                 refreshing.value = false
             }

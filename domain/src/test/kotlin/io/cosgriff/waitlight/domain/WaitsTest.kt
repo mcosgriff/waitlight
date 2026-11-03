@@ -1,7 +1,9 @@
 package io.cosgriff.waitlight.domain
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDateTime
@@ -22,6 +24,15 @@ class WaitsTest {
                 "Parker: The wait is more than 60 minutes. THIS TIME DOES NOT INCLUDE TIME IN LINE OUTSIDE OF THE TICKET GATE.",
             ),
         )
+    }
+
+    @Test
+    fun `"Station Closed" is no reading, and isn't new wording`() {
+        assertNull(WaitText.parse("Arvada: Station Closed"))
+        assertTrue(WaitText.saysClosed("Arvada: Station Closed"))
+        assertTrue(WaitText.saysClosed("Denver SE (Warren): Station Closed"))
+        assertFalse(WaitText.saysClosed("Arvada: Wait is 10 mins"))
+        assertFalse(WaitText.saysClosed("Longmont:  Station Open"))
     }
 
     @Test

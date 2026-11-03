@@ -1,0 +1,982 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+
+	<meta property="og:site_name" content="AirCare Colorado">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="Interactive Map of Locations &amp; Wait Times">
+	<meta property="og:url" content="https://aircarecolorado.com/locations/wait-times/wait-times-interactive">
+	
+<title>Interactive Map of Locations &amp; Wait Times :: AirCare Colorado</title>
+
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="generator" content="Concrete CMS">
+<meta name="msapplication-TileImage" content="https://aircarecolorado.com/application/files/1214/9265/1429/AClogo_Windows8.png">
+<link rel="shortcut icon" href="https://aircarecolorado.com/application/files/4215/0076/3065/aircareicon1.png" type="image/x-icon">
+<link rel="icon" href="https://aircarecolorado.com/application/files/4215/0076/3065/aircareicon1.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="https://aircarecolorado.com/application/files/6114/9265/1419/AClogo_iPhone.png">
+<link rel="canonical" href="https://aircarecolorado.com/locations/wait-times/wait-times-interactive">
+<script type="text/javascript">
+    var CCM_DISPATCHER_FILENAME = "/index.php";
+    var CCM_CID = 1202;
+    var CCM_EDIT_MODE = false;
+    var CCM_ARRANGE_MODE = false;
+    var CCM_IMAGE_PATH = "/concrete/images";
+    var CCM_APPLICATION_URL = "https://aircarecolorado.com";
+    var CCM_REL = "";
+    var CCM_ACTIVE_LOCALE = "en_US";
+    var CCM_USER_REGISTERED = false;
+</script>
+
+<style type="text/css" data-area-style-area-handle="Footer Lvl2 Col2" data-block-style-block-id="2029" data-style-set="99">.ccm-custom-style-container.ccm-custom-style-footerlvl2col2-2029{padding-left:25px}</style><style type="text/css" data-area-style-area-handle="Footer Lvl2 Col3" data-block-style-block-id="188" data-style-set="38">.ccm-custom-style-container.ccm-custom-style-footerlvl2col3-188{border-style:none}</style>
+<link href="https://aircarecolorado.com/ccm/system/css/layout/79?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<link href="/concrete/css/fontawesome/all.css?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<script type="text/javascript" src="/concrete/js/jquery.js?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10"></script>
+<link href="/concrete/css/features/imagery/frontend.css?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<link href="/packages/barrier_package/blocks/barrier_block/view.css?ccm_nocache=2a37029d3b209a09446b919c7f279d240921175b" rel="stylesheet" type="text/css" media="all">
+<link href="/packages/barrier_package/blocks/barrier_block/css/dvaccess.min.css?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<link href="/concrete/css/features/basics/frontend.css?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<link href="/concrete/css/features/navigation/frontend.css?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<link href="/packages/msv_location_map/blocks/msv_location_map/view.css?ccm_nocache=42704efaab30f12de5c0285ccc75504ea044c444" rel="stylesheet" type="text/css" media="all">
+<link href="/concrete/css/features/social/frontend.css?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10" rel="stylesheet" type="text/css" media="all">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SXD9GSPHST"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SXD9GSPHST');
+</script>    <style type="text/css">.site-alerts-info { background-color: #CDDFEE; }
+.site-alerts-alert {
+    color: #78c257;
+}
+.site-alerts-danger {
+    background-color: #eb4c34;
+}
+.site-alerts-success {
+    background-color: #34ebd9;
+}
+
+/* Legend Button 
+Changed in the bootstrap css
+#btn .btn-primary {
+  background-color: #357ABB;
+}
+*/
+
+/*Tab button not selected */
+.jl_magic_tabs_ok_to_primary ul.nav-tabs.nav li a.btn.success {
+        background-color: #00855A; 
+}
+
+/*Tab button selected */
+.jl_magic_tabs_ok_to_primary ul.nav-tabs.nav li a.btn.success.primary {
+    background-color: #347AB7;
+}
+
+/*Page Link */
+#searchResults .pageLink {
+    color: #000000;
+}
+
+.underlinewcag {
+   text-decoration: underline;
+}
+.text-muted {
+ color: #B30000 !important;
+}
+
+.btn-info {
+    background-color: #1E7999 !important;
+}
+
+.shareheader {
+        font-size: 20px;
+    font-family: Verdana, sans-serif;
+    font-weight: 400;
+    color: #6a6f7b;
+}
+
+.page-date {
+    color: #287C9A !important;
+}
+.ccm-file-selector {
+    background-color: #207BB6 !important;
+}
+#skip a
+{
+position:absolute;
+left:-10000px;
+top:auto;
+width:1px;
+height:1px;
+overflow:hidden;
+}
+ 
+#skip a:focus
+{
+position:static;
+color:black !important;
+width:auto;
+height:auto;
+}
+
+
+.aircare:hover,.aircare:active
+{color:#ffffff}
+.alert-success-aircare
+{color:#ffffff;background-color:#3267b1;border-color:#3267b1}
+.alert-success-aircare:hover,.alert-success-aircare:active
+{color:#3267b1;background-color:#c7dff4;border-color:#c7dff4}
+.ccm-page .info-box-grid-edit-mode-disabled p
+{margin-top:8px;margin-bottom:0}
+.ccm-page .info-box-grid
+{display:flex;flex-direction:row;flex-wrap:wrap;margin-top:-15px;margin-left:-15px;margin-right:-15px;max-width:100%}
+.ccm-page .info-box-grid *{box-sizing:border-box}
+.ccm-page .info-box-grid a.info-box-item[data-role="static"]{transition:opacity .39s ease-in-out}
+.ccm-page .info-box-grid a.info-box-item:hover
+{text-decoration:none;opacity:.75 !important}
+.ccm-page .info-box-grid .info-box-item
+{flex:1 0 auto;min-width:300px;display:flex;flex-direction:column;margin:15px;max-width:100%}
+.ccm-page .info-box-grid .info-box-item .info-box-item-window
+{min-height:250px;background-color:#f9f9f9;display:flex}
+.ccm-page .info-box-grid .info-box-item .info-box-item-window.nocontent
+{flex:1 0 auto}
+.ccm-page .info-box-grid .info-box-item .info-box-item-window .info-box-item-image{flex:1 0 auto}.ccm-page .info-box-grid .info-box-item .info-box-item-content{flex:1 0 auto;background-color:#f9f9f9;min-height:96px;color:#1a1a1a;text-align:center;padding:14px 24px;display:flex;flex-direction:column;justify-content:flex-start}.ccm-page .info-box-grid .info-box-item .info-box-item-content .info-box-item-content-container{width:0;min-width:100%}.ccm-page .info-box-grid .info-box-item .info-box-item-content .title{margin-bottom:8px}.ccm-page .info-box-grid .info-box-item .info-box-item-content .info-box-item-content-content{max-width:0;min-width:100%}.ccm-page .info-box-grid .info-box-item .info-box-item-content h4{text-transform:uppercase;font-size:20px;margin:0;color:#1a1a1a}.ccm-page .info-box-grid .info-box-item .info-box-item-content p{margin:0}.ccm-page .info-box-grid .info-box-item .info-box-item-content p + p{margin-top:16px}.ccm-page .info-box-grid .info-box-item .info-box-item-content h3{font-sizes:24px;text-transform:uppercase}
+
+
+.master-container .alert {
+  display: inline-block !important;
+}
+
+.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+  padding-right: 25px !important;
+}
+
+.jl_magic_tabs_ok_to_primary ul.nav-tabs.nav li a.btn.success {
+font-size: 16px !important;   
+font-weight: normal !important;
+}
+
+a.btn.success {
+font-weight: bold !important;
+}
+iframe {
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+.mfp-iframe-scaler iframe {
+	background: #fff !important;
+}
+
+.image-adbanner {
+  margin: 20px auto 0 auto; /* 10px top margin for spacing */
+  display: flex;
+  justify-content: center;
+}
+
+.image-banner {
+  display: flex;
+  justify-content: center;
+}
+</style>
+       
+    <!-- BOOTSTRAP -->
+    <link href="/packages/c5box_responsive/themes/responsive/css/bootstrap.css" rel="stylesheet">
+
+    <link href="/application/files/cache/css/responsive/main.css?ts=1786062530" rel="stylesheet" type="text/css" media="all">    
+</head>
+
+<body>
+<div class="backgroundimage" style="background: url('/application/files/5215/4102/7133/AirCare-background.jpg') no-repeat center center fixed; 
+          -webkit-background-size: cover;
+          -moz-background-size: cover;
+          -o-background-size: cover;
+          background-size: cover;background-attachment: scroll">
+        
+</div>
+<div class="ccm-page ccm-page-id-1202 page-type-page page-template-right-sidebar">
+<div class="container">
+    <div class="master-container">
+        <header id="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-4" id="logo">
+                        
+
+    <div id="skip"><a href="#innerwrapper">Skip to main content</a></div>
+
+
+
+    
+<script>
+    var dv_accessibility_options_raw = {"language":"en","moduleLegibleFonts":["dvaccess-legible-fonts","dvaccess-legible-fonts-1"],"snippets":{"en":{"copyright":"powered by <a href=\"//designverign.de\" target=\"_blank\" rel=\"noopener\" title=\"designverign\">designverign</a>","close":"close","app.toggle.label":"Toggle Accessibility Tool","menu.title":"Accessibility support tools","menu.button.move":"Move icon","menu.button.page-structure":"Page Structure","menu.button.reset":"Reset","menu.header.headers":"Headers","menu.header.landmarks":"Landmarks","menu.header.links":"Links","menu.position.left-top":"left top","menu.position.left-center":"left center","menu.position.left-bottom":"left bottom","menu.position.right-top":"right top","menu.position.right-center":"right center","menu.position.right-bottom":"right bottom","menu.position.center-top":"center top","menu.position.center-bottom":"center bottom","module.button.bigger-text":"Bigger Text","module.button.bigger-text.0":"Bigger Text","module.button.bigger-text.1":"Bigger Text","module.button.bigger-text.2":"Bigger Text","module.button.bigger-text.3":"Bigger Text","module.button.cursor":"Cursor","module.button.cursor.0":"Big Cursor","module.button.contrast":"Contrast +","module.button.contrast.0":"Invert Colors","module.button.contrast.1":"Dark Contrast","module.button.contrast.2":"Light Contrast","module.button.contrast.3":"Desaturate","module.button.highlight-links":"Highlight Links","module.button.keyboard-nav":"Navigation by tab-key","module.button.legible-fonts":"Font","module.button.legible-fonts.0":"Legible font","module.button.legible-fonts.1":"Dyslexia friendly","module.button.pause-animations":"Pause Animations","module.button.pause-animations.0":"Play Animations","module.button.reading-guide":"Reading-Guide","module.button.text-spacing":"Text Spacing","module.button.text-spacing.0":"Light Spacing","module.button.text-spacing.1":"Moderate Spacing","module.button.text-spacing.2":"Heavy Spacing","module.button.tooltips":"Additional description"}},"enabledModules":{"keyboardNav":"1","contrast":"1","highlightLinks":"1","biggerText":"1","textSpacing":"1","legibleFonts":"1","bigCursor":"1","readingGuide":"1","tooltips":"1","pauseAnimations":"1"},"enablePositionButton":"1","enablePageStructureButton":"1","enableResetButton":"1","moduleKeyboardNav":{"frameColor":"#ff0000"},"moduleContrast":{"useInvertColors":"1","useDarkContrast":"1","useLightContrast":"1","useDesaturate":"1"},"moduleHighlightLinks":{"color":"#ff0000","background":"#00d1113a","highlightColor":"#000000"},"moduleBiggerText":{"factor":"5"},"moduleTextSpacing":{"factor":"1"},"moduleBigCursor":{"imageURL":"data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSIyOS4xODhweCIgaGVpZ2h0PSI0My42MjVweCIgdmlld0JveD0iMCAwIDI5LjE4OCA0My42MjUiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI5LjE4OCA0My42MjUiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxnPjxwb2x5Z29uIGZpbGw9IiNGRkZGRkYiIHN0cm9rZT0iI0Q5REFEOSIgc3Ryb2tlLXdpZHRoPSIxLjE0MDYiIHN0cm9rZS1taXRlcmxpbWl0PSIxMCIgcG9pbnRzPSIyLjgsNC41NDkgMjYuODQ3LDE5LjkwMiAxNi45NjQsMjIuNzAxIDI0LjIzOSwzNy43NDkgMTguMjc4LDQyLjAxNyA5Ljc0MSwzMC43MjQgMS4xMzgsMzUuODA5ICIvPjxnPjxnPjxnPjxwYXRoIGZpbGw9IiMyMTI2MjciIGQ9Ik0yOS4xNzUsMjEuMTU1YzAuMDcxLTAuNjEzLTAuMTY1LTEuMjUzLTAuNjM1LTEuNTczTDIuMTY1LDAuMjU4Yy0wLjQyNC0wLjMyLTAuOTg4LTAuMzQ2LTEuNDM1LTAuMDUzQzAuMjgyLDAuNDk3LDAsMS4wMywwLDEuNjE3djM0LjE3MWMwLDAuNjEzLDAuMzA2LDEuMTQ2LDAuNzc2LDEuNDM5YzAuNDcxLDAuMjY3LDEuMDU5LDAuMjEzLDEuNDgyLTAuMTZsNy40ODItNi4zNDRsNi44NDcsMTIuMTU1YzAuMjU5LDAuNDgsMC43MjksMC43NDYsMS4yLDAuNzQ2YzAuMjM1LDAsMC40OTQtMC4wOCwwLjcwNi0wLjIxM2w2Ljk4OC00LjU4NWMwLjMyOS0wLjIxMywwLjU2NS0wLjU4NiwwLjY1OS0xLjAxM2MwLjA5NC0wLjQyNiwwLjAyNC0wLjg4LTAuMTg4LTEuMjI2bC02LjM3Ni0xMS4zODJsOC42MTEtMi43NDVDMjguNzA1LDIyLjI3NCwyOS4xMDUsMjEuNzY4LDI5LjE3NSwyMS4xNTV6IE0xNi45NjQsMjIuNzAxYy0wLjQyNCwwLjEzMy0wLjc3NiwwLjUwNi0wLjk0MSwwLjk2Yy0wLjE2NSwwLjQ4LTAuMTE4LDEuMDEzLDAuMTE4LDEuNDM5bDYuNTg4LDExLjc4MWwtNC41NDEsMi45ODVsLTYuODk0LTEyLjMxNWMtMC4yMTItMC4zNzMtMC41NDEtMC42NC0wLjk0MS0wLjcyYy0wLjA5NC0wLjAyNy0wLjE2NS0wLjAyNy0wLjI1OS0wLjAyN2MtMC4zMDYsMC0wLjU4OCwwLjEwNy0wLjg0NywwLjMyTDIuOCwzMi41OVY0LjU0OWwyMS41OTksMTUuODA2TDE2Ljk2NCwyMi43MDF6Ii8+PC9nPjwvZz48L2c+PC9nPjwvc3ZnPg=="},"moduleReadingGuide":{"color":"#ff0000","background":"#000000"},"filters":[],"generalSettings":[]};
+</script>
+
+
+    <a href="https://aircarecolorado.com/"><img src="/application/files/6217/4432/7759/ACC_30Logo.png" alt="AirCare Colorado: Caring for Colorado&#039;s air since 1995" width="488" height="271" class="ccm-image-block img-fluid bID-3702"></a>
+
+     
+                    </div>
+                    <div class="col-sm-8">
+                        <div class="navcontrol">
+                            <div role="navigation" aria-label="headmenu" class="navbar navbar-default navbar-fixed-top">
+                                <div class="navbar-header">
+                                    <button data-target=".navbar-collapse" data-toggle="collapse" class="navbar-toggle collapsed" type="button">
+                                        <span class="sr-only">Toggle navigation</span>
+                                        <span class="icon-bar"></span>
+                                        <span class="icon-bar"></span>
+                                        <span class="icon-bar"></span>
+                                    </button>
+                                </div>
+                                <div class="navbar-collapse collapse custom-nav-class">
+                            
+
+    <ul class="nav nav-style2"><li class=""><a href="https://aircarecolorado.com/need-know" target="_self" class="">Need to Know</a><ul><li class=""><a href="https://aircarecolorado.com/need-know/faq" target="_self" class="">FAQ</a></li></ul></li><li class="nav-path-selected"><a href="https://aircarecolorado.com/locations" target="_self" class="nav-path-selected">Where to Go</a><ul><li class="nav-path-selected"><a href="https://aircarecolorado.com/locations/wait-times" target="_self" class="nav-path-selected">Locations &amp; Wait Times</a></li><li class=""><a href="https://aircarecolorado.com/locations/van-locations" target="_self" class="">Rapid Screen Locations</a></li><li class=""><a href="https://aircarecolorado.com/locations/re-1" target="_self" class="">Repair Facilities</a></li><li class=""><a href="https://aircarecolorado.com/locations/county-motor-vehicle-offices" target="_self" class="">Motor Vehicle Offices</a></li></ul></li><li class=""><a href="https://aircarecolorado.com/how-it-works" target="_self" class="">How it Works</a><ul><li class=""><a href="https://aircarecolorado.com/how-it-works/rapidscreen" target="_self" class="">Rapid Screen Info</a></li></ul></li><li class=""><a href="https://aircarecolorado.com/about" target="_self" class="">About</a><ul><li class=""><a href="https://aircarecolorado.com/about/Opus" target="_self" class="">Opus</a></li><li class=""><a href="https://aircarecolorado.com/about/employment" target="_self" class="">Employment Opportunities</a></li><li class=""><a href="https://aircarecolorado.com/about/aircare-colorado-blog" target="_self" class="">Aircare Colorado Blog</a></li><li class=""><a href="https://aircarecolorado.com/about/air-care-team" target="_self" class="">Resources</a></li></ul></li><li class=""><a href="https://aircarecolorado.com/search-results" target="_self" class="">Search</a></li></ul>
+                            </div>
+                                <!--/.nav-collapse -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+<div id="innerwrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                           
+                    </div>
+                </div>
+                <div class="row">
+                    <div role="presentation" class="col-md-12">
+                        
+
+<div class="container"><div class="row"><div class="col-sm-12">    <picture><!--[if IE 9]><video style='display: none;'><![endif]--><source srcset="https://aircarecolorado.com/application/files/thumbnails/large/3315/4748/6890/Monument-wait-times.jpg" media="(min-width: 900px)" width="1148" height="250"><source srcset="https://aircarecolorado.com/application/files/thumbnails/medium/3315/4748/6890/Monument-wait-times.jpg" media="(min-width: 768px)" width="1148" height="250"><source srcset="https://aircarecolorado.com/application/files/thumbnails/small/3315/4748/6890/Monument-wait-times.jpg" width="1148" height="250"><!--[if IE 9]></video><![endif]--><img src="/application/files/3315/4748/6890/Monument-wait-times.jpg" alt="A visualization of an emission checking station and wait time" width="1148" height="250" class="ccm-image-block img-fluid bID-3312"></picture>
+
+</div></div></div>                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-10">
+                                            </div>
+                    <div class="col-md-2">
+                                            </div>
+                </div>
+
+                <div role="presentation" class="row">
+                    <div class="col-md-9">
+                                            </div>
+                    <div class="col-md-3">
+                                            </div>
+                </div>
+
+                <div role="presentation" class="row">
+                    <!--<div class="col-md-8">-->
+                    <div role="main" class="col-md-10">
+                        
+
+    <h1><strong>Location &amp; Wait Times</strong></h1>
+
+<div><strong>As a convenience for motorists, Air Care Colorado maintains real-time estimates of the expected wait at each inspection facility. The current wait times are listed on the maps page&nbsp;on this website.<br />
+<br />
+<span style="font-size:28px;"><u>NO</u> DIESEL TESTING.</span></strong></div>
+
+<p><strong>LOW PROFILE RIMS &amp; OVERSIZED TIRES -&nbsp;</strong>Please note that front-wheel and all-wheel drive vehicles with low-profile rim sizes 17-inches-or-larger in diameter or vehicles with wheel sizes larger than 34 inches must be tested on special dynamometers&nbsp;capable of testing vehicles with these unusual features. Please take your vehicle to&nbsp;the&nbsp;<em><strong>Sheridan, Boulder, Ken Caryl or Fort Collins</strong></em>&nbsp;stations for inspection. These are the only&nbsp;stations in the program area equipped with specialized dynamometers that can test these vehicles.</p>
+
+<p><strong>Avoid waiting.</strong><em>&nbsp;Mondays all day and early mornings are the busiest times. Mid to late afternoons are the least busy times.</em>&nbsp;High volume times to always avoid are Mondays,&nbsp;the first business day after ANY holiday, and the last few days of the month.</p>
+
+
+
+    <p><span class="alert alert-warning"><strong>Wait Time Note:&nbsp;</strong>Please keep in mind that the wait times are estimations based on recent station activity. The wait times are updated approximately every&nbsp;15 minutes.</span></p>
+
+
+
+    
+
+    
+<div class="msv-location-map" id="msv-location-map-4c8ea11bee4473ad6e">
+
+    
+    
+
+    <div class="msv-location-map-map" id="map_4c8ea11bee4473ad6e"></div>
+
+    <div class="msv-location-map-info">
+
+                    <p class="findclosest"><a href="#">Find closest location</a></p>
+        
+                    <p class="showall"><a href="#" data-map-item="-1">Show all</a></p>
+        
+        <section class="msv-location-map-list">
+                        <li class="location-list-item" data-locationid="38"
+                            data-original="0">
+                            <a href="#"
+                               data-map-item="0"><strong>Arvada: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    5185 Marshall St., Arvada, CO 80002<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="49"
+                            data-original="1">
+                            <a href="#"
+                               data-map-item="1"><strong>Aurora: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    12042 E. 30th Ave., Aurora, CO 80010<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="46"
+                            data-original="2">
+                            <a href="#"
+                               data-map-item="2"><strong>Boulder: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    5655 Airport Blvd., Boulder, CO 80301<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="42"
+                            data-original="3">
+                            <a href="#"
+                               data-map-item="3"><strong>Broomfield: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    11609 Teller St., Broomfield, CO 80020<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="41"
+                            data-original="4">
+                            <a href="#"
+                               data-map-item="4"><strong>Castle Rock: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    541 Topeka Way, Castle Rock, CO 80104<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="45"
+                            data-original="5">
+                            <a href="#"
+                               data-map-item="5"><strong>County Line: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    8494 S. Colorado Blvd., Littleton, CO 80126<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="54"
+                            data-original="6">
+                            <a href="#"
+                               data-map-item="6"><strong>Dacono: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    5222 Silver Peak Ave., Dacono, CO 80514<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="48"
+                            data-original="7">
+                            <a href="#"
+                               data-map-item="7"><strong>Denver (Lipan): Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    2300 S. Lipan St., Denver, CO 80223<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="47"
+                            data-original="8">
+                            <a href="#"
+                               data-map-item="8"><strong>Denver SE (Warren): Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    10190 E. Warren Ave., Denver, CO 80231<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="51"
+                            data-original="9">
+                            <a href="#"
+                               data-map-item="9"><strong>Fort Collins: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    835 S.E. Frontage Rd., Fort Collins, CO 80524<br>
+                                
+                                
+                                T: <a href="tel:970-247-8378">970-247-8378</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="40"
+                            data-original="10">
+                            <a href="#"
+                               data-map-item="10"><strong>Golden: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    15335 W. 44th Ave., Golden, CO 80401<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="52"
+                            data-original="11">
+                            <a href="#"
+                               data-map-item="11"><strong>Greeley: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    2844 W. 30th St., Greeley, CO 80631<br>
+                                
+                                
+                                T: <a href="tel:970-247-8378">970-247-8378</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="44"
+                            data-original="12">
+                            <a href="#"
+                               data-map-item="12"><strong>Ken Caryl: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    10727 Centennial Rd., Littleton, CO 80127<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="43"
+                            data-original="13">
+                            <a href="#"
+                               data-map-item="13"><strong>Longmont: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    4040 Rogers Rd., Longmont, CO 80503<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="53"
+                            data-original="14">
+                            <a href="#"
+                               data-map-item="14"><strong>Loveland: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    7001 N. Franklin Ave., Loveland, CO 80538<br>
+                                
+                                
+                                T: <a href="tel:970-247-8378">970-247-8378</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="37"
+                            data-original="15">
+                            <a href="#"
+                               data-map-item="15"><strong>Northglenn: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    1950 E. 112th Ave., Northglenn, CO 80233<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="50"
+                            data-original="16">
+                            <a href="#"
+                               data-map-item="16"><strong>Parker: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    10199 Park Glenn Way, Parker, CO 80134<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        
+                        <li class="location-list-item" data-locationid="39"
+                            data-original="17">
+                            <a href="#"
+                               data-map-item="17"><strong>Sheridan: Station Closed</strong><span
+                                        class="distance-display"></span></a>
+                                                            <br/>
+                                                                    2802 W. Mansfield Ave., Sheridan, CO 80110<br>
+                                
+                                
+                                T: <a href="tel:303-456-7090">303-456-7090</a>                        </li>
+
+                        </ul>
+            </div>
+
+
+    <script>
+        if (typeof initGMFunctions === 'undefined') {
+            var initGMFunctions = [];
+        }
+
+        var initMap4c8ea11bee4473ad6e = function () {
+            var locationMapInit = function () {
+
+                const map = new google.maps.Map(document.getElementById('map_4c8ea11bee4473ad6e'), {
+                    zoomControl: 1,
+                    gestureHandling: "auto",
+                    mapTypeControl: 1,
+                    scaleControl: 1,
+                    streetViewControl: 1,
+                    rotateControl: 1,
+                    mapTypeId: google.maps.MapTypeId.SATELLITE,
+                                    });
+
+                var latlngs = [{"name":"Arvada: Station Closed","title":"Arvada: Station Closed","locationID":38,"lat":"39.7899748","lng":"-105.0698573","infoWindow":"<h3>Arvada: Station Closed<\/h3><p>5185 Marshall St.<br \/>Arvada, CO 80002<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>7 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/5185 Marshall St., Arvada, CO 80002\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Aurora: Station Closed","title":"Aurora: Station Closed","locationID":49,"lat":"39.7586182","lng":"-104.8483314","infoWindow":"<h3>Aurora: Station Closed<\/h3><p>12042 E. 30th Ave.<br \/>Aurora, CO 80010<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>6 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/12042 E. 30th Ave., Aurora, CO 80010\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Boulder: Station Closed","title":"Boulder: Station Closed","locationID":46,"lat":"40.0377353","lng":"-105.2233758","infoWindow":"<h3>Boulder: Station Closed<\/h3><p>5655 Airport Blvd.<br \/>Boulder, CO 80301<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>5 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/5655 Airport Blvd., Boulder, CO 80301\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Broomfield: Station Closed","title":"Broomfield: Station Closed","locationID":42,"lat":"39.9083993","lng":"-105.0776977","infoWindow":"<h3>Broomfield: Station Closed<\/h3><p>11609 Teller St.<br \/>Broomfield, CO 80020<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>4 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/11609 Teller St., Broomfield, CO 80020\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Castle Rock: Station Closed","title":"Castle Rock: Station Closed","locationID":41,"lat":"39.3764147","lng":"-104.8697492","infoWindow":"<h3>Castle Rock: Station Closed<\/h3><p>541 Topeka Way<br \/>Castle Rock, CO 80104<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>2 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/541 Topeka Way, Castle Rock, CO 80104\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"County Line: Station Closed","title":"County Line: Station Closed","locationID":45,"lat":"39.5622974","lng":"-104.9411212","infoWindow":"<h3>County Line: Station Closed<\/h3><p>8494 S. Colorado Blvd.<br \/>Littleton, CO 80126<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>5 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/8494 S. Colorado Blvd., Littleton, CO 80126\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Dacono: Station Closed","title":"Dacono: Station Closed","locationID":54,"lat":"40.0764052","lng":"-104.9769456","infoWindow":"<h3>Dacono: Station Closed<\/h3><p>5222 Silver Peak Ave.<br \/>Dacono, CO 80514<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>2 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/5222 Silver Peak Ave., Dacono, CO 80514\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Denver (Lipan): Station Closed","title":"Denver (Lipan): Station Closed","locationID":48,"lat":"39.6744566","lng":"-105.0014247","infoWindow":"<h3>Denver (Lipan): Station Closed<\/h3><p>2300 S. Lipan St.<br \/>Denver, CO 80223<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>7 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/2300 S. Lipan St., Denver, CO 80223\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Denver SE (Warren): Station Closed","title":"Denver SE (Warren): Station Closed","locationID":47,"lat":"39.6763152","lng":"-104.8692687","infoWindow":"<h3>Denver SE (Warren): Station Closed<\/h3><p>10190 E. Warren Ave.<br \/>Denver, CO 80231<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>7 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/10190 E. Warren Ave., Denver, CO 80231\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Fort Collins: Station Closed","title":"Fort Collins: Station Closed","locationID":51,"lat":"40.5791272","lng":"-104.9995034","infoWindow":"<h3>Fort Collins: Station Closed<\/h3><p>835 S.E. Frontage Rd.<br \/>Fort Collins, CO 80524<\/p><p>Phone: <a href=\"tel:970-247-8378\">970-247-8378<\/a><\/p><p><br><strong>Lanes: <\/strong>6 <strong><br \/> Phone: <\/strong>970-247-8378<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/835 S.E. Frontage Rd., Fort Collins, CO 80524\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Golden: Station Closed","title":"Golden: Station Closed","locationID":40,"lat":"39.7765908","lng":"-105.1729234","infoWindow":"<h3>Golden: Station Closed<\/h3><p>15335 W. 44th Ave.<br \/>Golden, CO 80401<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>4 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/15335 W. 44th Ave., Golden, CO 80401\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Greeley: Station Closed","title":"Greeley: Station Closed","locationID":52,"lat":"40.3873791","lng":"-104.7274433","infoWindow":"<h3>Greeley: Station Closed<\/h3><p>2844 W. 30th St.<br \/>Greeley, CO 80631<\/p><p>Phone: <a href=\"tel:970-247-8378\">970-247-8378<\/a><\/p><p><br><strong>Lanes: <\/strong>5 <strong><br \/> Phone: <\/strong>970-247-8378<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/2844 W. 30th St., Greeley, CO 80631\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Ken Caryl: Station Closed","title":"Ken Caryl: Station Closed","locationID":44,"lat":"39.567583","lng":"-105.1192925","infoWindow":"<h3>Ken Caryl: Station Closed<\/h3><p>10727 Centennial Rd.<br \/>Littleton, CO 80127<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>5 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/10727 Centennial Rd., Littleton, CO 80127\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Longmont: Station Closed","title":"Longmont: Station Closed","locationID":43,"lat":"40.1583663","lng":"-105.1551809","infoWindow":"<h3>Longmont: Station Closed<\/h3><p>4040 Rogers Rd.<br \/>Longmont, CO 80503<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>3 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/4040 Rogers Rd., Longmont, CO 80503\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Loveland: Station Closed","title":"Loveland: Station Closed","locationID":53,"lat":"40.4638362","lng":"-105.0859745","infoWindow":"<h3>Loveland: Station Closed<\/h3><p>7001 N. Franklin Ave.<br \/>Loveland, CO 80538<\/p><p>Phone: <a href=\"tel:970-247-8378\">970-247-8378<\/a><\/p><p><br><strong>Lanes: <\/strong>4 <strong><br \/> Phone: <\/strong>970-247-8378<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/7001 N. Franklin Ave., Loveland, CO 80538\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Northglenn: Station Closed","title":"Northglenn: Station Closed","locationID":37,"lat":"39.8991113","lng":"-104.9640068","infoWindow":"<h3>Northglenn: Station Closed<\/h3><p>1950 E. 112th Ave.<br \/>Northglenn, CO 80233<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>7 <strong><br \/>Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/1950 E. 112th Ave., Northglenn, CO 80233\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Parker: Station Closed","title":"Parker: Station Closed","locationID":50,"lat":"39.5326337","lng":"-104.7659041","infoWindow":"<h3>Parker: Station Closed<\/h3><p>10199 Park Glenn Way<br \/>Parker, CO 80134<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>2 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/10199 Park Glenn Way, Parker, CO 80134\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"},{"name":"Sheridan: Station Closed","title":"Sheridan: Station Closed","locationID":39,"lat":"39.645118","lng":"-105.0238446","infoWindow":"<h3>Sheridan: Station Closed<\/h3><p>2802 W. Mansfield Ave.<br \/>Sheridan, CO 80110<\/p><p>Phone: <a href=\"tel:303-456-7090\">303-456-7090<\/a><\/p><p><br><strong>Lanes: <\/strong>7 <strong><br \/> Phone: <\/strong>303-456-7090<br\/><b>Hours of Operation<\/b>: 8am to 5:30pm (M-F),<br>8am to 1pm (Sat), closed Sunday and state holidays<br \/><br \/><b>Last updated<\/b>:  11\/02\/2026 06:01 PM<\/p><\/p><p><a href=\"https:\/\/www.google.com\/maps\/dir\/Current+Location\/2802 W. Mansfield Ave., Sheridan, CO 80110\" title=\"Get Directions\" target=\"_blank\">Get Directions<\/a><\/p>","icon":"icon5"}];
+
+                var bounds = new google.maps.LatLngBounds();
+                var markers = [];
+
+                var icons = [];
+                var infoWindows = [];
+
+                var icon = false;
+
+
+                
+                
+                
+                icon = {
+                    url: 'https://aircarecolorado.com/application/files/1415/0620/2453/MotorVehicle_s.gif',
+                                        size: new google.maps.Size(60, 40),
+                    scaledSize: new google.maps.Size(60, 40),
+                                        origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(30, 40)
+                };
+                
+                if (icon) {
+                    icons['icon'] = icon;
+                }
+                
+
+                
+                var icon5 = false;
+
+                
+                
+                icon5 = {
+                    url: 'https://aircarecolorado.com/application/files/1415/0620/2453/MotorVehicle_s.gif',
+                                        size: new google.maps.Size(60, 40),
+                    scaledSize: new google.maps.Size(60, 40),
+                                        origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(30, 40)
+                };
+                
+                if (icon5) {
+                    icons['icon5'] = icon5;
+                }
+
+                
+                function createMarker(map, position, icons) {
+                    try {
+                        var latlng = new google.maps.LatLng(parseFloat(position.lat), parseFloat(position.lng));
+
+                        var marker = new google.maps.Marker({
+                            map,
+                            id: position.locationID,
+                            position: latlng,
+                            title: position.title,
+                            icon: icons[position.icon]
+                        });
+
+                        bounds.extend(latlng);
+
+                        var infoWindow = new google.maps.InfoWindow(
+                            {
+                                content: position.infoWindow,
+                                ariaLabel: position.name
+                            }
+                        );
+
+                        infoWindows.push(infoWindow);
+
+                        marker.addListener('click', function () {
+                            for (var w in infoWindows) {
+                                infoWindows[w].close();
+                            }
+                            infoWindow.open(marker.map, marker);
+                        });
+
+
+                        markers.push(marker);
+                    } catch (e) {
+
+                    }
+                }
+
+                for (var i in latlngs) {
+                    createMarker(map, latlngs[i], icons);
+                }
+
+                if ('' == 'location') {
+                    var latlng = new google.maps.LatLng(0, 0);
+                    map.setCenter(latlng);
+                    map.setZoom(14);
+                } else {
+                    if (latlngs.length == 1) {
+                        var latlng = new google.maps.LatLng(latlngs[0].lat, latlngs[0].lng);
+                        map.setCenter(latlng);
+                        map.setZoom(14);
+                    } else {
+                        map.fitBounds(bounds);
+                    }
+                }
+
+                map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+
+                google.maps.event.addListenerOnce(map, 'bounds_changed', function (event) {
+                    if (this.getZoom() > 14) {
+                        this.setZoom(14);
+                    }
+                });
+
+                
+                
+                if (navigator.geolocation) {
+                    document.querySelectorAll('#msv-location-map-4c8ea11bee4473ad6e .findclosest').forEach(function (el) {
+                        el.style.display = 'block';
+                    });
+
+                    document.querySelectorAll('#msv-location-map-4c8ea11bee4473ad6e .findclosest a').forEach(function (el) {
+                        el.addEventListener('click', function (e) {
+                            e.preventDefault();
+
+                            if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(function (position) {
+                                    var closest;
+                                    var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+                                    Object.keys(markers).forEach(function (key) {
+                                        var marker = markers[key];
+                                        var distance = google.maps.geometry.spherical.computeDistanceBetween(marker.position, latlng);
+                                        if (!closest || closest.distance > distance) {
+                                            closest = {
+                                                marker: marker,
+                                                distance: distance
+                                            };
+                                        }
+                                    });
+
+                                    if (closest) {
+                                        google.maps.event.trigger(closest.marker, 'click');
+
+                                        var locbounds = new google.maps.LatLngBounds();
+                                        locbounds.extend(latlng);
+                                        locbounds.extend(new google.maps.LatLng(closest.marker.position.lat(), closest.marker.position.lng()));
+
+                                        map.fitBounds(locbounds);
+                                    }
+                                });
+                            }
+
+                            // Smooth scroll to the map
+                            var scrollTarget = document.querySelector("#msv-location-map-4c8ea11bee4473ad6e").offsetTop - 20;
+                            window.scrollTo({
+                                top: scrollTarget,
+                                behavior: 'smooth'
+                            });
+                        });
+                    });
+                }
+
+
+                document.querySelectorAll('#msv-location-map-4c8ea11bee4473ad6e .msv-location-map-list a').forEach(function (el) {
+                    el.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        var markeritem = this.getAttribute('data-map-item');
+                        var marker = markers[markeritem];
+
+                        google.maps.event.trigger(marker, 'click');
+                        map.setCenter(marker.position);
+                        map.setZoom(14);
+
+                        // Scroll the page to the map
+                        var scrollTarget = document.querySelector("#msv-location-map-4c8ea11bee4473ad6e").offsetTop - 20;
+                        window.scrollTo({
+                            top: scrollTarget,
+                            behavior: 'smooth'
+                        });
+                    });
+                });
+
+                document.querySelectorAll('#msv-location-map-4c8ea11bee4473ad6e .showall a').forEach(function (el) {
+                    el.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        for (var m in markers) {
+                            markers[m].setVisible(true);
+                        }
+
+                        for (var w in infoWindows) {
+                            infoWindows[w].close();
+                        }
+
+                        map.fitBounds(bounds);
+                        e.preventDefault();
+
+                        document.querySelectorAll('#msv-location-map-4c8ea11bee4473ad6e .location-list-item').forEach(function (el) {
+                            el.style.display = 'block';
+                            el.querySelector('.distance-display').innerHTML = '';
+                        });
+
+                        document.getElementById('resetsearch-4c8ea11bee4473ad6e').style.display = 'none';
+                        document.getElementById("pac-input-4c8ea11bee4473ad6e").value = '';
+
+                                                Array.from(document.querySelectorAll(".location-list-item"))
+                            .sort(({dataset: {original: a}}, {dataset: {original: b}}) => a.localeCompare(b, undefined, {numeric: true}))
+                            .forEach((item) => item.parentNode.appendChild(item));
+                                            });
+                })
+            };
+
+            var t;
+            var elem;
+            var startWhenVisible = function () {
+                elem = document.getElementById('msv-location-map-4c8ea11bee4473ad6e');
+
+               let isVisible = elem.checkVisibility({
+                   checkOpacity: true,
+                   checkVisibilityCSS: true
+               });
+
+               if (isVisible) {
+                    window.clearInterval(t);
+                    locationMapInit();
+                    return true;
+                }
+                return false;
+            };
+
+            t = window.setInterval(function () {
+                startWhenVisible();
+            }, 100);
+
+        }
+
+        initGMFunctions.push(initMap4c8ea11bee4473ad6e);
+
+        function initialiseGM() {
+            for (i = 0; i < initGMFunctions.length; i++) {
+                initGMFunctions[i]();
+            }
+        }
+
+    </script>
+
+    <style>
+        #map_4c8ea11bee4473ad6e {
+            display: block;
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+            background: #FFF;
+        }
+    </style>
+</div>
+
+
+
+
+    <div class="ccm-layout-column-wrapper" id="ccm-layout-column-wrapper-79"><div class="ccm-layout-column" id="ccm-layout-column-171"><div class="ccm-layout-column-inner"></div></div><div class="ccm-layout-column" id="ccm-layout-column-172"><div class="ccm-layout-column-inner"></div></div></div>
+                    </div>
+                    <!--<div class="col-md-4">-->
+                    <div class="col-md-2">
+                    
+                        
+
+            <div class="hutman-ads hutman-ads-6ae94db29df29 sidebar-ads">
+                                <div class="hutman-ad sidebar-ad" data-adid="1">
+                    <input type="hidden" id="ccm_token_1" name="ccm_token_1" value="1793674674:5eb823f953f4cf342f23714d22e32262" />                                            <a href="https://simplestepsbetterair.org/" target="_blank">
+                            <img src="https://aircarecolorado.com/application/files/7815/1632/4162/RAQC_Concept-3_160x600_1.gif" alt="Summer Ozone" />
+                        </a>
+                                        </div>
+                            </div>
+        <script type="text/javascript">
+            function adCountClick(adID) {
+                var token = $('#ccm_token_'+adID).val();
+                $.ajax({
+                    dataType:'json',
+                    async: false,
+                    type:'post',
+                    url: 'https://aircarecolorado.com/hutman-ads/ad-count',
+                    data: {adID: adID, ccm_token: token}
+                });
+            }
+            jQuery(document).ready(function($) {
+                $('.hutman-ads-6ae94db29df29').on('click', '.hutman-ad', function() {
+                    adCountClick($(this).attr("data-adID"));
+                });
+            });
+        </script>
+    
+                    </div>
+                </div>
+                <div role="presentation" class="row">
+                    <div class="col-md-7">
+                                            </div>
+                    <div class="col-md-5">
+                                            </div>
+                </div>
+                <div role="presentation" class="row">
+                    <div class="col-md-12">
+                                            </div>
+                </div>
+            </div>
+        </div>
+
+    <div role="contentinfo" id="footer">
+        <div class="container">
+            
+            <div class="row">
+                    <div class="col-sm-12">
+                         
+                    </div>
+                </div>
+            <div class="row">
+                <div class="col-md-4">
+                                    </div>
+                <div class="col-md-4">
+                                    </div>
+                <div class="col-md-4">
+                                    </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                                    </div>
+                <div class="col-md-3">
+                                    </div>
+                <div class="col-md-3">
+                                    </div>
+                <div class="col-md-3">
+                                    </div>
+            </div>
+           
+        </div>
+    </div>
+    <div role="navigation" id="footmenu">
+        <div class="container">
+            <div class="row">
+                    <div class="col-sm-12">
+                         
+                    </div>
+                </div>
+            <div class="row">
+                <div class="col-md-3">
+                    
+
+        <div class="ccm-custom-style-container ccm-custom-style-footerlvl2col2-2029"
+            >
+    
+<div id="ccm-block-social-links2029" class="ccm-block-social-links">
+    <ul class="list-inline">
+                <li class="list-inline-item">
+                <a target="_blank" rel="noopener noreferrer" href="https://twitter.com/AirCareCO/"
+                    aria-label="X"><svg width="16" height="16" viewBox="0 0 300 300" version="1.1" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M178.57 127.15 290.27 0h-26.46l-97.03 110.38L89.34 0H0l117.13 166.93L0 300.25h26.46l102.4-116.59 81.8 116.59h89.34M36.01 19.54H76.66l187.13 262.13h-40.66"/></svg></a>
+            </li>
+                    <li class="list-inline-item">
+                <a target="_blank" rel="noopener noreferrer" href="https://www.youtube.com/user/AirCareCO"
+                    aria-label="Youtube"><i class="fab fa-youtube" aria-hidden="true" title="Youtube"></i></a>
+            </li>
+            </ul>
+</div>
+
+    </div>
+
+
+    <p><span>&copy;</span><span id="year">2025</span> Envirotest</p>
+<script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+                </div>
+                <div class="col-md-9">
+                    
+
+    <p style="text-align: right;"><span style="font-size: small; font-family: arial, helvetica, sans-serif;"><strong>Air Care Colorado Hotline: <a href="tel:3034567090">303-456-7090</a></strong></span></p>
+
+
+
+        <div class="ccm-custom-style-container ccm-custom-style-footerlvl2col3-188 ccm-block-custom-template-c5box-footright"
+            >
+    <ul class="nav force-right"><li class=""><a href="https://aircarecolorado.com/need-know" target="_self" class="">Need to Know</a></li><li class="nav-path-selected"><a href="https://aircarecolorado.com/locations" target="_self" class="nav-path-selected">Where to Go</a></li><li class=""><a href="https://aircarecolorado.com/how-it-works" target="_self" class="">How it Works</a></li><li class=""><a href="https://aircarecolorado.com/about" target="_self" class="">About</a></li><li class=""><a href="https://aircarecolorado.com/search-results" target="_self" class="">Search</a></li></ul>
+    </div>
+
+
+    <p style="text-align: right;"><a href="https://aircarecolorado.com/about/ACR" target="_blank" text-decoration:underline="">Accessibility statement and support page</a></p>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-9">
+                                    </div>
+                <div class="col-md-3">
+                    
+
+    <p style="text-align: right;"><a href="https://aircarecolorado.com/need-know-2">Site Map</a></p>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                                    </div>
+                <div class="col-md-6">
+                                    </div>
+            </div>
+
+            
+        </div>
+    </div>
+    </div>
+    </div>
+</div>
+
+    <!-- BOOTSTRAP -->
+    <script src="/packages/c5box_responsive/themes/responsive/js/bootstrap.min.js"></script>
+    <script src="/packages/c5box_responsive/themes/responsive/js/parallax.min.js"></script>
+    <script src="/packages/c5box_responsive/themes/responsive/js/scrollMonitor.js"></script>
+    <script src="/packages/c5box_responsive/themes/responsive/js/sticky.js"></script>
+    <script src="/packages/c5box_responsive/themes/responsive/js/script.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?loading=async&callback=initialiseGM&libraries=places,geometry&key=AIzaSyAvw-13VFBxpk5Ob1ZqNqljMWNbwD4UTEk"></script>
+<script type="text/javascript" src="/concrete/js/features/imagery/frontend.js?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10"></script>
+<script type="text/javascript" src="/packages/barrier_package/blocks/barrier_block/js/dvaccess.min.js?ccm_nocache=2a37029d3b209a09446b919c7f279d240921175b"></script>
+<script type="text/javascript" src="/packages/barrier_package/js/init.js?ccm_nocache=2a37029d3b209a09446b919c7f279d240921175b"></script>
+<script type="text/javascript" src="/packages/barrier_package/blocks/barrier_block/js/dvaccess.min.js?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10"></script>
+<script type="text/javascript" src="/concrete/js/features/navigation/frontend.js?ccm_nocache=4748178b174ebd78ed168fb71c50eaea32c2da10"></script>
+
+</body>
+
+</html>       
+    

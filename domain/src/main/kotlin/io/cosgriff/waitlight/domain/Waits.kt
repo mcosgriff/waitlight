@@ -27,6 +27,7 @@ object WaitText {
     private val minutes = Regex("""\bwait is (\d+) min""", RegexOption.IGNORE_CASE)
     private val moreThan = Regex("""\bmore than (\d+) min""", RegexOption.IGNORE_CASE)
     private val open = Regex("""\bstation open\b""", RegexOption.IGNORE_CASE)
+    private val closed = Regex("""\bstation closed\b""", RegexOption.IGNORE_CASE)
 
     /** The reading in [text] (with or without the station's name in front), or null when the wording is new. */
     fun parse(text: String): WaitReading? {
@@ -35,6 +36,9 @@ object WaitText {
         if (open.containsMatchIn(text)) return WaitReading.NoEstimate
         return null
     }
+
+    /** Whether [text] says the station is closed ("Station Closed", all stations after hours): no reading. */
+    fun saysClosed(text: String): Boolean = closed.containsMatchIn(text)
 }
 
 /** Reads the "Last updated" time on each station, which is Denver's local time. */

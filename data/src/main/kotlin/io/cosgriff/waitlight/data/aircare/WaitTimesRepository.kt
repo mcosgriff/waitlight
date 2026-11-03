@@ -2,10 +2,10 @@ package io.cosgriff.waitlight.data.aircare
 
 import android.util.Log
 import io.cosgriff.waitlight.data.di.ApplicationScope
-import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.FetchOutcome
+import io.cosgriff.waitlight.domain.FetchReason
 import io.cosgriff.waitlight.domain.WaitReading
-import io.cosgriff.waitlight.domain.shouldFetch
+import io.cosgriff.waitlight.domain.worthFetching
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -37,7 +37,7 @@ data class WaitTimes(
 }
 
 /**
- * Fetches and reads AirCare's page, only during opening hours, and keeps the latest [WaitTimes], on disk too
+ * Fetches and reads AirCare's page when [worthFetching] says so, and keeps the latest [WaitTimes], on disk too
  * ([WaitTimesStore]), so they survive a restart. The stored waits load in [scope] as soon as the repository
  * starts; until then [waitTimes] is empty, and a [refresh] waits for them.
  */
@@ -64,22 +64,20 @@ class WaitTimesRepository @Inject constructor(
     }
 
     /**
-     * Fetches the page if it's worth it: while open and the data is due ([shouldFetch]), or, for a tap on the
-     * refresh button ([manual]), any time the stations are open. Never outside opening hours. Returns whether it
-     * fetched. Calls made while a fetch is running wait for it, then find the data fresh.
+     * Fetches the page if it's worth it for [reason] ([worthFetching]): when AirCare's next update is due, any
+     * time the stations are open for a tap on refresh, and always at launch. Returns whether it fetched. Calls
+     * made while a fetch is running wait for it, then find the data fresh.
      */
-    suspend fun refresh(manual: Boolean = false): Boolean = fetching.withLock {
+    suspend fun refresh(reason: FetchReason = FetchReason.DUE): Boolean = fetching.withLock {
         loaded.await()
         val before = state.value
-        val fetched = fetch(manual)
+        val fetched = fetch(reason)
         if (state.value != before) store.save(state.value)
         fetched
     }
 
-    private suspend fun fetch(manual: Boolean): Boolean {
-        val now = clock.instant()
-        val worthIt = if (manual) AirCareHours.isOpen(now) else shouldFetch(now, state.value.newestUpdate)
-        if (!worthIt) return false
+    private suspend fun fetch(reason: FetchReason): Boolean {
+        if (!worthFetching(reason, clock.instant(), state.value.newestUpdate)) return false
 
         val html = try {
             client.page()
@@ -96,7 +94,9 @@ class WaitTimesRepository @Inject constructor(
         state.value = when (val read = AirCarePage.read(html)) {
             is PageRead.Read -> {
                 if (!read.hoursAsStated) Log.w(TAG, "AirCare's stated hours changed; check AirCareHours")
-                WaitTimes(read.waits, FetchOutcome.OK)
+                Log.i(TAG, "Fetched waits for ${read.waits.size} stations ($reason)")
+                // A station that says it's closed has no reading; it keeps its last good one.
+                WaitTimes(state.value.waits + read.waits, FetchOutcome.OK)
             }
             is PageRead.Unreadable -> {
                 Log.w(TAG, "AirCare's page couldn't be read: ${read.why}")
