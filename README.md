@@ -51,9 +51,16 @@ Android 14 or later.
 
 ## Verify your download
 
-Every release APK is signed with the same key. Its SHA-256 certificate fingerprint will be published here
-with the first release. Check an APK with `apksigner verify --print-certs waitlight-vX.Y.Z.apk`, or the
-installed app with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
+Every release APK is signed with the same key. Its SHA-256 certificate fingerprint is:
+
+```
+55:5B:A8:3A:E6:05:84:45:53:D0:5C:65:B8:99:E5:C8:8C:F4:21:A0:DC:68:25:83:2B:21:3D:A6:AD:89:91:C7
+```
+
+Check an APK before installing it with `apksigner verify --print-certs waitlight-vX.Y.Z.apk` (the
+"SHA-256 digest" line, without colons), or the installed app with
+[AppVerifier](https://github.com/soupslurpr/AppVerifier). Android also refuses an update signed with a
+different key.
 
 To check that an APK was built by this repo's release workflow from its tag:
 `gh attestation verify waitlight-vX.Y.Z.apk --repo mcosgriff/waitlight`. Each release also carries the signed
