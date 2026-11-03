@@ -1,10 +1,12 @@
 package io.cosgriff.waitlight.ui.list
 
 import android.app.Application
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import io.cosgriff.waitlight.data.aircare.AirCareClient
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.cosgriff.waitlight.data.location.LocationSource
+import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.ui.denver
 import io.ktor.client.HttpClient
@@ -13,6 +15,8 @@ import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -55,8 +59,12 @@ class StationListViewModelTest {
     private val clock = SetClock(denver("2026-11-02T14:20"))
     private var fetches = 0
 
-    // Each test starts with no stored waits.
+    // Each test starts with no stored waits and no saved settings.
     private val dir: File = Files.createTempDirectory("list").toFile()
+    private val settingsScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val settings = SettingsStore(
+        PreferenceDataStoreFactory.create(scope = settingsScope) { File(dir, "settings.preferences_pb") },
+    )
 
     private val repository = WaitTimesRepository(
         AirCareClient(
@@ -77,11 +85,15 @@ class StationListViewModelTest {
 
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
 
-    @After fun tearDown() = Dispatchers.resetMain()
+    @After fun tearDown() {
+        Dispatchers.resetMain()
+        settingsScope.cancel()
+        dir.deleteRecursively()
+    }
 
     /** Shows the list (something collects its state) for the length of [block], then lets the ticks stop. */
     private fun TestScope.showing(block: TestScope.(StationListViewModel) -> Unit) {
-        val viewModel = StationListViewModel(repository, LocationSource(RuntimeEnvironment.getApplication()), clock)
+        val viewModel = StationListViewModel(repository, LocationSource(RuntimeEnvironment.getApplication()), settings, clock)
         val screen = launch { viewModel.ui.collect {} }
         runCurrent()
         block(viewModel)

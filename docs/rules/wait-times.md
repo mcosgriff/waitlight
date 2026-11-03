@@ -97,6 +97,9 @@ test there.
   stations without an estimate after the rest, by distance; ties go to the nearer. While closed, nearest.
 - No location: alphabetical, whatever the chip.
 - Low-profile rims chip: a filter, on top of either order.
+- Both chips are remembered across launches.
+- The location prompt shows on launch only until it's answered, either way, or location is allowed. Location
+  revoked later in system settings: the list, alphabetical, with "Location off", which opens the prompt.
 - Hero ("Fastest overall right now"): least drive + wait among the shown stations with a fresh estimate. Hidden
   while closed, stale, offline or broken, without a location, or when no station has an estimate.
 

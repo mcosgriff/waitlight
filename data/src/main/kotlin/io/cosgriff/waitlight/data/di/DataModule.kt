@@ -1,12 +1,15 @@
 package io.cosgriff.waitlight.data.di
 
 import android.content.Context
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
+import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
@@ -33,6 +36,11 @@ object DataModule {
         install(HttpTimeout) { requestTimeoutMillis = 15_000 }
     }
 
+    /** The one settings file: a DataStore must be the only one open on its file. */
+    @Provides
+    @Singleton
+    fun settings(@ApplicationContext context: Context): SettingsStore =
+        SettingsStore(PreferenceDataStoreFactory.create { context.preferencesDataStoreFile("settings") })
     @Provides
     @Singleton
     @ApplicationScope

@@ -1,10 +1,11 @@
 package io.cosgriff.waitlight.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -13,13 +14,20 @@ import io.cosgriff.waitlight.ui.detail.StationDetailScreen
 import io.cosgriff.waitlight.ui.list.StationListScreen
 import io.cosgriff.waitlight.ui.location.LocationPromptScreen
 
-/** The app's screens. The list is the start, after the location prompt while location isn't allowed. */
+/**
+ * The app's screens. The list is the start once location is allowed or the prompt was answered, before that the
+ * location prompt. Nothing is drawn for the moment it takes to read the settings, so the wrong screen never flashes.
+ */
 @Composable
 fun WaitlightNavHost() {
-    val context = LocalContext.current
-    val located = listOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-        .any { context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
-    val backStack = rememberNavBackStack(if (located) StationList else LocationPrompt)
+    val startViewModel: StartViewModel = hiltViewModel()
+    val start by startViewModel.start.collectAsStateWithLifecycle()
+    start?.let { WaitlightNavDisplay(it, onLocationPromptAnswered = startViewModel::locationPromptAnswered) }
+}
+
+@Composable
+private fun WaitlightNavDisplay(start: NavKey, onLocationPromptAnswered: () -> Unit) {
+    val backStack = rememberNavBackStack(start)
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
@@ -38,6 +46,7 @@ fun WaitlightNavHost() {
             entry<LocationPrompt> {
                 LocationPromptScreen(
                     onDone = {
+                        onLocationPromptAnswered()
                         if (StationList !in backStack) backStack.add(0, StationList)
                         backStack.remove(LocationPrompt)
                     },
