@@ -1,5 +1,178 @@
 <resources>
     <string name="app_name">Waitlight</string>
+
+    <!-- Wait badge (list, hero, detail) -->
+    <string name="badge_min">min</string>
+    <string name="badge_minutes">%d</string>
+    <string name="badge_over">%d+</string>
+    <string name="badge_open">Open</string>
+    <string name="badge_no_estimate">no est.</string>
+    <string name="badge_closed">Closed</string>
+    <string name="badge_no_reading">—</string>
+    <plurals name="badge_desc_short_exact">
+        <item quantity="one">Short wait, %d minute</item>
+        <item quantity="other">Short wait, %d minutes</item>
+    </plurals>
+    <plurals name="badge_desc_short_over">
+        <item quantity="one">Short wait, over %d minute</item>
+        <item quantity="other">Short wait, over %d minutes</item>
+    </plurals>
+    <plurals name="badge_desc_moderate_exact">
+        <item quantity="one">Moderate wait, %d minute</item>
+        <item quantity="other">Moderate wait, %d minutes</item>
+    </plurals>
+    <plurals name="badge_desc_moderate_over">
+        <item quantity="one">Moderate wait, over %d minute</item>
+        <item quantity="other">Moderate wait, over %d minutes</item>
+    </plurals>
+    <plurals name="badge_desc_long_exact">
+        <item quantity="one">Long wait, %d minute</item>
+        <item quantity="other">Long wait, %d minutes</item>
+    </plurals>
+    <plurals name="badge_desc_long_over">
+        <item quantity="one">Long wait, over %d minute</item>
+        <item quantity="other">Long wait, over %d minutes</item>
+    </plurals>
+    <string name="badge_desc_open">Open, no wait estimate</string>
+    <string name="badge_desc_closed">Closed</string>
+    <string name="badge_desc_no_reading">No wait time yet</string>
+    <plurals name="badge_desc_stale_short_exact">
+        <item quantity="one">Last known short wait, %1$d minute as of %2$s, may be out of date</item>
+        <item quantity="other">Last known short wait, %1$d minutes as of %2$s, may be out of date</item>
+    </plurals>
+    <plurals name="badge_desc_stale_short_over">
+        <item quantity="one">Last known short wait, over %1$d minute as of %2$s, may be out of date</item>
+        <item quantity="other">Last known short wait, over %1$d minutes as of %2$s, may be out of date</item>
+    </plurals>
+    <plurals name="badge_desc_stale_moderate_exact">
+        <item quantity="one">Last known moderate wait, %1$d minute as of %2$s, may be out of date</item>
+        <item quantity="other">Last known moderate wait, %1$d minutes as of %2$s, may be out of date</item>
+    </plurals>
+    <plurals name="badge_desc_stale_moderate_over">
+        <item quantity="one">Last known moderate wait, over %1$d minute as of %2$s, may be out of date</item>
+        <item quantity="other">Last known moderate wait, over %1$d minutes as of %2$s, may be out of date</item>
+    </plurals>
+    <plurals name="badge_desc_stale_long_exact">
+        <item quantity="one">Last known long wait, %1$d minute as of %2$s, may be out of date</item>
+        <item quantity="other">Last known long wait, %1$d minutes as of %2$s, may be out of date</item>
+    </plurals>
+    <plurals name="badge_desc_stale_long_over">
+        <item quantity="one">Last known long wait, over %1$d minute as of %2$s, may be out of date</item>
+        <item quantity="other">Last known long wait, over %1$d minutes as of %2$s, may be out of date</item>
+    </plurals>
+    <string name="badge_desc_stale_open">Last known open with no wait estimate, as of %1$s, may be out of date</string>
+
     <!-- Station list -->
     <string name="list_title">Wait times</string>
+    <string name="list_refresh">Refresh wait times</string>
+    <string name="list_refresh_current">Refresh unavailable, data is current</string>
+    <string name="list_refresh_closed">Refresh unavailable, stations are closed</string>
+    <string name="list_near_you">Near you</string>
+    <string name="list_finding_location">Finding your location…</string>
+    <string name="list_location_off">Location off</string>
+    <string name="list_location_turn_on">Use my location</string>
+    <string name="list_updated_just_now">Updated just now</string>
+    <plurals name="list_updated_minutes">
+        <item quantity="one">Updated %d min ago</item>
+        <item quantity="other">Updated %d min ago</item>
+    </plurals>
+    <plurals name="list_next_update">
+        <item quantity="one">Next update in ~%d min</item>
+        <item quantity="other">Next update in ~%d min</item>
+    </plurals>
+    <string name="list_new_data">New data is ready — tap refresh</string>
+    <string name="list_getting_waits">Getting wait times…</string>
+    <string name="list_no_waits_yet">No wait times yet</string>
+    <string name="list_closed_since">Closed since %1$s</string>
+    <string name="list_waits_return">Waits return when stations open</string>
+    <string name="list_last_updated">Last updated %1$s</string>
+    <plurals name="list_age_minutes">
+        <item quantity="one">%d min old</item>
+        <item quantity="other">%d min old</item>
+    </plurals>
+    <plurals name="list_age_hours">
+        <item quantity="one">%d hour old</item>
+        <item quantity="other">%d hours old</item>
+    </plurals>
+    <plurals name="list_age_days">
+        <item quantity="one">%d day old</item>
+        <item quantity="other">%d days old</item>
+    </plurals>
+    <string name="list_waits_unavailable">Waits unavailable</string>
+
+    <string name="list_hero_label">Fastest overall right now</string>
+    <string name="list_hero_detail">≈ %1$d min drive + %2$d min wait</string>
+    <string name="list_hero_detail_over">≈ %1$d min drive + %2$d+ min wait</string>
+    <plurals name="list_hero_desc">
+        <item quantity="one">About %d minute in all</item>
+        <item quantity="other">About %d minutes in all</item>
+    </plurals>
+    <string name="list_hero_open">Open %1$s</string>
+
+    <string name="list_closed_title">All stations are closed</string>
+    <string name="list_closed_today">All stations open at %1$s. Mid-to-late afternoon is usually quietest.</string>
+    <string name="list_closed_tomorrow">All stations open at %1$s tomorrow. Mid-to-late afternoon is usually quietest.</string>
+    <string name="list_closed_later">All stations open %1$s at %2$s. Mid-to-late afternoon is usually quietest.</string>
+
+    <string name="list_stale_title">Couldn’t refresh</string>
+    <string name="list_stale_body">AirCare’s site didn’t respond. Waits below are from %1$s and may be off.</string>
+    <string name="list_stale_body_no_data">AirCare’s site didn’t respond. Try again in a minute.</string>
+    <string name="list_offline_title">You’re offline</string>
+    <string name="list_offline_body">Showing waits from %1$s. They’ll refresh when you’re back online.</string>
+    <string name="list_offline_body_no_data">Wait times will load when you’re back online.</string>
+    <string name="list_broken_title">Wait times unavailable</string>
+    <string name="list_broken_body">AirCare changed their website and the app can’t read it yet. Showing the last good data from %1$s. Check for an app update.</string>
+    <string name="list_broken_body_no_data">AirCare changed their website and the app can’t read it yet. Check for an app update.</string>
+    <string name="list_try_again">Try again</string>
+
+    <string name="list_sort_nearest">Nearest</string>
+    <string name="list_sort_fastest">Fastest overall</string>
+    <string name="list_filter_rims">Low-profile rims</string>
+    <string name="list_legend_short">Under %1$d min</string>
+    <string name="list_legend_moderate">%1$d–%2$d min</string>
+    <string name="list_legend_long">Over %1$d min</string>
+
+    <string name="list_row_address">%1$s, %2$s</string>
+    <string name="list_row_rims">Low-profile rims OK</string>
+    <string name="list_row_miles">%1$.1f mi</string>
+    <string name="list_row_drive">≈ %1$d min drive</string>
+    <string name="list_row_opens">Opens %1$s</string>
+    <string name="list_row_opens_day">Opens %1$s %2$s</string>
+    <string name="list_footer">Estimates from AirCare Colorado, refreshed about every 15 min. No diesel testing at any station.</string>
+
+    <!-- Station detail -->
+    <string name="detail_back">Back to list</string>
+    <string name="detail_total">≈ %1$d min total · %2$d min drive (%3$.1f mi)</string>
+    <string name="detail_drive">≈ %1$d min drive (%2$.1f mi)</string>
+    <string name="detail_updated">AirCare updated %1$s</string>
+    <string name="detail_status_short">Short wait</string>
+    <string name="detail_status_moderate">Moderate wait</string>
+    <string name="detail_status_long">Long wait</string>
+    <string name="detail_status_open">Open, no estimate</string>
+    <string name="detail_status_closed">Closed</string>
+    <string name="detail_status_stale">May be out of date</string>
+    <string name="detail_status_no_reading">No wait time yet</string>
+    <string name="detail_directions">Directions</string>
+    <string name="detail_call">Call</string>
+    <string name="detail_address_label">Address</string>
+    <string name="detail_address">%1$s\n%2$s, CO %3$s</string>
+    <string name="detail_hours_label">Hours</string>
+    <string name="detail_hours">Mon–Fri 8 AM–5:30 PM\nSat 8 AM–1 PM\nClosed Sun &amp; state holidays</string>
+    <string name="detail_lanes_label">Lanes</string>
+    <string name="detail_rims_label">Low-profile rims (17″+)</string>
+    <string name="detail_rims_yes">Equipped</string>
+    <string name="detail_rims_no">Not equipped</string>
+    <string name="detail_tip_title">Beat the line</string>
+    <string name="detail_tip">Mid-to-late afternoons are quietest. Avoid Mondays, the day after a holiday and the last few days of the month.</string>
+    <string name="detail_footer">Wait is an estimate from AirCare Colorado and doesn’t include time in line outside the ticket gate. No diesel testing.</string>
+
+    <!-- Location prompt -->
+    <string name="location_title">Find the closest station</string>
+    <string name="location_body">Share your approximate location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</string>
+    <string name="location_use">Use my location</string>
+    <string name="location_skip">Continue without location</string>
+    <plurals name="location_skip_note">
+        <item quantity="one">You can still browse the %d station without location.</item>
+        <item quantity="other">You can still browse all %d stations alphabetically without location.</item>
+    </plurals>
 </resources>

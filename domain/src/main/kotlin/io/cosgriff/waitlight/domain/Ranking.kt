@@ -2,12 +2,15 @@ package io.cosgriff.waitlight.domain
 
 import java.time.Instant
 
-/** One station on the list: its fixed facts, its last reading, and how far it is from the user. */
+/**
+ * One station on the list: its fixed facts, its last reading, and how far it is from the user. [reading] and
+ * [updatedAt] are null until the app has read a wait for it.
+ */
 data class StationRow(
     val station: Station,
-    val reading: WaitReading,
+    val reading: WaitReading?,
     /** AirCare's "Last updated" for this station. */
-    val updatedAt: Instant,
+    val updatedAt: Instant?,
     /** Straight-line miles from the user, or null when the app has no location. */
     val distanceMiles: Double?,
 ) {
@@ -22,10 +25,17 @@ data class StationRow(
                 is WaitReading.Minutes -> reading.minutes.coerceAtMost(WAIT_CAP_MINUTES)
                 // "More than 60" has no top; it counts as the cap.
                 is WaitReading.MoreThan -> WAIT_CAP_MINUTES
-                WaitReading.NoEstimate -> return null
+                WaitReading.NoEstimate, null -> return null
             }
             return drive + wait
         }
+
+    /** The badge at [now]; see [badgeFor]. Closed outside hours, [Badge.NoReading] before the first reading. */
+    fun badge(now: Instant, thresholds: WaitThresholds, dataUsable: Boolean = true): Badge {
+        if (!AirCareHours.isOpen(now)) return Badge.Closed
+        if (reading == null || updatedAt == null) return Badge.NoReading
+        return badgeFor(reading, updatedAt, now, thresholds, dataUsable)
+    }
 
     companion object {
         const val WAIT_CAP_MINUTES = 90
@@ -35,13 +45,16 @@ data class StationRow(
 /** The order the user picked with the chips. */
 enum class SortOrder { NEAREST, FASTEST_OVERALL }
 
-/** Straight-line distances from [from] to every station. Null [from] (no location) gives no distances. */
+/**
+ * A row for every station, with its reading if there is one, and the straight-line distance from [from]. Null
+ * [from] (no location) gives no distances.
+ */
 fun rowsFor(
     readings: Map<Int, Pair<WaitReading, Instant>>,
     from: GeoPoint?,
-): List<StationRow> = Stations.all.mapNotNull { station ->
-    val (reading, updatedAt) = readings[station.id] ?: return@mapNotNull null
-    StationRow(station, reading, updatedAt, from?.let { station.location.milesTo(it) })
+): List<StationRow> = Stations.all.map { station ->
+    val latest = readings[station.id]
+    StationRow(station, latest?.first, latest?.second, from?.let { station.location.milesTo(it) })
 }
 
 /**
@@ -73,9 +86,9 @@ fun arrange(
 fun fastestOverall(rows: List<StationRow>, state: ListState, now: Instant): StationRow? {
     if (state != ListState.LIVE && state != ListState.DUE) return null
     return rows
-        .filter { it.totalMinutes != null && Freshness.isFresh(it.updatedAt, now) }
+        .filter { row -> row.totalMinutes != null && row.updatedAt?.let { Freshness.isFresh(it, now) } == true }
         .minWithOrNull(compareBy<StationRow> { it.totalMinutes }.thenBy { it.distanceMiles })
 }
 
 /** The newest "Last updated" among [rows]: how fresh the data as a whole is. */
-fun newestUpdate(rows: Collection<StationRow>): Instant? = rows.maxOfOrNull { it.updatedAt }
+fun newestUpdate(rows: Collection<StationRow>): Instant? = rows.mapNotNull { it.updatedAt }.maxOrNull()

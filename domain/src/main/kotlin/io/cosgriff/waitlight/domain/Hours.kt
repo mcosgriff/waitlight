@@ -114,6 +114,20 @@ object AirCareHours {
         error("No opening within $MAX_DAYS_CLOSED days of $local")
     }
 
+    /** When the stations last closed before [before], for "Closed since 5:30 PM". */
+    fun lastClosing(before: Instant): ZonedDateTime {
+        var date = before.atZone(zone).toLocalDate()
+        repeat(MAX_DAYS_CLOSED) {
+            val hours = hoursOn(date)
+            if (hours != null) {
+                val closing = date.atTime(hours.endInclusive).atZone(zone)
+                if (closing.toInstant() <= before) return closing
+            }
+            date = date.minusDays(1)
+        }
+        error("No closing within $MAX_DAYS_CLOSED days before ${before.atZone(zone)}")
+    }
+
     /** When the stations close today, if they are open at [at]. */
     fun closingTime(at: Instant): ZonedDateTime? {
         if (!isOpen(at)) return null
