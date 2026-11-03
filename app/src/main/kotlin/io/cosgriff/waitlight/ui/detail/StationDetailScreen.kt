@@ -14,12 +14,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -39,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -98,7 +98,15 @@ fun StationDetailContent(row: StationRow, badge: Badge, onBack: () -> Unit, onDi
             .verticalScroll(rememberScrollState())
             .navigationBarsPadding(),
     ) {
-        Box(Modifier.fillMaxWidth().height(MAP_HEIGHT)) {
+        // Laid out SHEET_OVERLAP shorter than the map, which draws on below it under the sheet: the overlap is in
+        // the layout, so the scrolling column has no blank strip at its end (an offset sheet would leave one).
+        Box(
+            Modifier.fillMaxWidth().layout { measurable, constraints ->
+                val full = MAP_HEIGHT.roundToPx()
+                val placeable = measurable.measure(constraints.copy(minHeight = full, maxHeight = full))
+                layout(placeable.width, full - SHEET_OVERLAP.roundToPx()) { placeable.place(0, 0) }
+            },
+        ) {
             StationMap(station, badge, bottomInset = SHEET_OVERLAP, modifier = Modifier.matchParentSize())
             FilledIconButton(
                 onClick = onBack,
@@ -113,9 +121,9 @@ fun StationDetailContent(row: StationRow, badge: Badge, onBack: () -> Unit, onDi
         }
         Column(
             Modifier
-                .offset(y = -SHEET_OVERLAP)
                 .fillMaxWidth()
-                .background(background, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                // Material's sheet corners: the theme's extraLarge, on top only.
+                .background(background, MaterialTheme.shapes.extraLarge.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)))
                 .padding(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {

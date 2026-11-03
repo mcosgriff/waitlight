@@ -48,7 +48,8 @@ USER_AGENT = "Waitlight station map generator (+https://github.com/mcosgriff/wai
 
 # The image, in dp: wider than any phone (the app crops the sides), as tall as the design's map (230dp).
 WIDTH_DP, HEIGHT_DP = 480, 230
-DENSITY = 3  # one image per theme, drawn at xxhdpi and scaled by Android for other densities
+DENSITY = 3  # pixels per dp: one image per theme in drawable-nodpi, which Android never scales; the app fits
+             # it to the map's 230dp height and crops the sides (ContentScale.Crop), so the scale stays 2.6 m/dp
 SUPERSAMPLE = 2  # drawn at twice the size and scaled down, for smooth edges
 METRES_PER_DP = 2.6  # about a kilometre across a 390dp-wide phone
 
@@ -112,9 +113,10 @@ def fetch(station_id, lat, lon, refetch):
 out geom;
 """
     print(f"fetching OSM data for station {station_id}", file=sys.stderr)
-    for attempt in range(4):  # Overpass answers 429 or 504 when busy; wait and ask again, a few times at most
+    attempts = 4  # Overpass answers 429 or 504 when busy; wait and ask again, a few times at most
+    for attempt in range(attempts):
         response = requests.post(OVERPASS, data={"data": query}, headers={"User-Agent": USER_AGENT}, timeout=120)
-        if response.status_code not in (429, 502, 503, 504):
+        if response.status_code not in (429, 502, 503, 504) or attempt == attempts - 1:
             break
         time.sleep(30 * (attempt + 1))
     response.raise_for_status()
@@ -125,17 +127,17 @@ out geom;
     return data
 
 
-def rings(element):
-    """An area's outer rings: a closed way, or a multipolygon's outer members joined end to end."""
-    if element["type"] == "way":
-        geometry = element.get("geometry", [])
-        return [geometry] if len(geometry) > 2 and geometry[0] == geometry[-1] else []
-    if element["type"] != "relation":
-        return []
-    pieces = [m["geometry"] for m in element.get("members", []) if m.get("role") == "outer" and m.get("geometry")]
+def closed(ring):
+    return len(ring) > 3 and ring[0] == ring[-1]
+
+
+def join(pieces):
+    """Ways joined end to end into rings. Only closed rings are kept: filling an open one would close it with a
+    straight chord across whatever is missing from the data, a wrong wedge of colour."""
+    pieces = [list(p) for p in pieces]
     joined = []
     while pieces:
-        ring = list(pieces.pop())
+        ring = pieces.pop()
         changed = True
         while ring[0] != ring[-1] and changed:
             changed = False
@@ -149,20 +151,36 @@ def rings(element):
                 pieces.pop(i)
                 changed = True
                 break
-        if len(ring) > 2:
+        if closed(ring):
             joined.append(ring)
     return joined
 
 
+def rings(element):
+    """An area's (outer, inner) rings: a closed way, or a multipolygon's members joined end to end. Inner rings
+    are its holes (an island in a lake, a courtyard), left unfilled."""
+    if element["type"] == "way":
+        geometry = element.get("geometry", [])
+        return ([geometry], []) if closed(geometry) else ([], [])
+    if element["type"] != "relation":
+        return [], []
+
+    def members(role):
+        return [m["geometry"] for m in element.get("members", []) if m.get("role") == role and m.get("geometry")]
+
+    return join(members("outer")), join(members("inner"))
+
+
 def kind(tags):
+    # Buildings first: a recreation centre is building=yes with leisure=sports_centre, and is still a building.
+    if "building" in tags:
+        return "building"
     if tags.get("natural") == "water" or tags.get("waterway") == "riverbank":
         return "water"
     if "waterway" in tags:
         return "waterline"
     if "leisure" in tags or "landuse" in tags:
         return "green"
-    if "building" in tags:
-        return "building"
     if tags.get("railway") == "rail":
         return "rail"
     if tags.get("highway") in ROADS:
@@ -199,8 +217,19 @@ def render(data, lat, lon, style):
 
     for area in ("green", "water", "building"):
         for element in by_kind.get(area, []):
-            for ring in rings(element):
-                draw.polygon([xy(p) for p in ring], fill=style[area])
+            outer, inner = rings(element)
+            if not inner:
+                for ring in outer:
+                    draw.polygon([xy(p) for p in ring], fill=style[area])
+                continue
+            # With holes: fill through a mask, the outer rings on and the inner rings off again.
+            mask = Image.new("L", image.size, 0)
+            shape = ImageDraw.Draw(mask)
+            for ring in outer:
+                shape.polygon([xy(p) for p in ring], fill=255)
+            for ring in inner:
+                shape.polygon([xy(p) for p in ring], fill=0)
+            image.paste(style[area], mask=mask)
     for element in by_kind.get("waterline", []):
         if element.get("geometry"):
             line([xy(p) for p in element["geometry"]], 3, style["water"])
