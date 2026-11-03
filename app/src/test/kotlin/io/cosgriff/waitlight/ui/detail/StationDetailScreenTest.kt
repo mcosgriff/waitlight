@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.GeoPoint
+import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.WaitThresholds
 import io.cosgriff.waitlight.domain.rowsFor
@@ -106,6 +107,18 @@ class StationDetailScreenTest {
         compose.onNode(hasDescription(text(R.string.badge_desc_no_reading))).assertExists()
         shown(text(R.string.detail_status_no_reading))
         compose.onNode(hasTextSpaced("≈ 5 min drive (0.0 mi)")).assertDoesNotExist()
+    }
+
+    @Test
+    fun `the station's map, described, with the OpenStreetMap credit`() {
+        show(ARVADA, now = denver("2026-11-02T14:20"))
+        compose.onNode(hasDescription(text(R.string.detail_map, "Arvada"))).assertExists()
+        shown(text(R.string.detail_map_credit))
+    }
+
+    @Test
+    fun `every station has its map`() {
+        assertEquals(emptyList<String>(), Stations.all.filter { stationMap(it.id) == null }.map { it.name })
     }
 
     @Test

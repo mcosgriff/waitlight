@@ -142,6 +142,8 @@
 
     <!-- Station detail -->
     <string name="detail_back">Back to list</string>
+    <string name="detail_map">Map of the streets around the %1$s station</string>
+    <string name="detail_map_credit">© OpenStreetMap contributors</string>
     <string name="detail_total">≈ %1$d min total · %2$d min drive (%3$.1f mi)</string>
     <string name="detail_drive">≈ %1$d min drive (%2$.1f mi)</string>
     <string name="detail_updated">AirCare updated %1$s</string>

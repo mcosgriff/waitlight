@@ -1,0 +1,16 @@
+Map data © OpenStreetMap contributors
+https://www.openstreetmap.org/copyright
+
+The station maps on the station detail screen (res/drawable-nodpi/map_station_*.webp and
+res/drawable-night-nodpi/map_station_*.webp) are images produced from OpenStreetMap data, which is
+made available under the Open Data Commons Open Database License (ODbL) 1.0:
+https://opendatacommons.org/licenses/odbl/1-0/
+
+The OpenStreetMap Foundation's attribution guidelines:
+https://osmfoundation.org/wiki/Licence/Attribution_Guidelines
+
+The images were drawn by Waitlight's own generator (scripts/station_maps.py) from data fetched
+through the Overpass API. No OpenStreetMap map tiles or third-party map styles were used; the
+colours and line widths are Waitlight's own. The data in the images dates from when they were
+last generated and may be out of date; corrections belong in OpenStreetMap itself:
+https://www.openstreetmap.org/fixthemap
