@@ -3,6 +3,7 @@ package io.cosgriff.waitlight.ui.list
 import android.app.Application
 import io.cosgriff.waitlight.data.aircare.AirCareClient
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
+import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.cosgriff.waitlight.data.location.LocationSource
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.ui.denver
@@ -10,6 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -28,6 +30,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import java.io.File
+import java.nio.file.Files
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -51,6 +55,9 @@ class StationListViewModelTest {
     private val clock = SetClock(denver("2026-11-02T14:20"))
     private var fetches = 0
 
+    // Each test starts with no stored waits.
+    private val dir: File = Files.createTempDirectory("list").toFile()
+
     private val repository = WaitTimesRepository(
         AirCareClient(
             HttpClient(
@@ -64,6 +71,8 @@ class StationListViewModelTest {
             ) { expectSuccess = true },
         ),
         clock,
+        WaitTimesStore({ File(dir, WaitTimesStore.FILE_NAME) }, Dispatchers.Unconfined),
+        CoroutineScope(Dispatchers.Unconfined),
     )
 
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
