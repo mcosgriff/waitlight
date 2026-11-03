@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.cosgriff.waitlight.domain.SortOrder
+import io.cosgriff.waitlight.domain.ZipTable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -22,6 +23,8 @@ data class Settings(
     val order: SortOrder = SortOrder.NEAREST,
     /** The list's low-profile rims filter. */
     val rimsOnly: Boolean = false,
+    /** A ZIP code typed on the location prompt, used for "here" while there's no location fix. */
+    val zip: String? = null,
 )
 
 /** [Settings], kept on the phone in a Preferences [DataStore]. An unreadable file reads as the defaults. */
@@ -37,6 +40,7 @@ class SettingsStore(private val store: DataStore<Preferences>) {
                 locationPromptAnswered = prefs[PROMPT_ANSWERED] ?: false,
                 order = prefs[ORDER]?.let { name -> SortOrder.entries.firstOrNull { it.name == name } } ?: SortOrder.NEAREST,
                 rimsOnly = prefs[RIMS_ONLY] ?: false,
+                zip = prefs[ZIP]?.takeIf(ZipTable::isFiveDigits),
             )
         }
         .distinctUntilChanged()
@@ -53,6 +57,16 @@ class SettingsStore(private val store: DataStore<Preferences>) {
         store.edit { it[RIMS_ONLY] = on }
     }
 
+    /** Keeps [zip] (five digits, checked against the table by the caller). */
+    suspend fun setZip(zip: String) {
+        require(ZipTable.isFiveDigits(zip)) { "Not a ZIP code: $zip" }
+        store.edit { it[ZIP] = zip }
+    }
+
+    suspend fun clearZip() {
+        store.edit { it.remove(ZIP) }
+    }
+
     private companion object {
         const val TAG = "Waitlight"
         val PROMPT_ANSWERED = booleanPreferencesKey("location_prompt_answered")
@@ -60,5 +74,6 @@ class SettingsStore(private val store: DataStore<Preferences>) {
         // By name, so reordering SortOrder doesn't change what was saved.
         val ORDER = stringPreferencesKey("sort_order")
         val RIMS_ONLY = booleanPreferencesKey("low_profile_rims_only")
+        val ZIP = stringPreferencesKey("zip")
     }
 }

@@ -2,6 +2,7 @@ package io.cosgriff.waitlight.ui.list
 
 import android.app.Application
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasScrollToNodeAction
@@ -13,15 +14,17 @@ import androidx.compose.ui.test.performScrollToNode
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.data.aircare.WaitTimes
 import io.cosgriff.waitlight.domain.FetchOutcome
-import io.cosgriff.waitlight.domain.GeoPoint
+import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.ui.ARVADA
 import io.cosgriff.waitlight.ui.AT_ARVADA
 import io.cosgriff.waitlight.ui.AURORA
+import io.cosgriff.waitlight.ui.ZIP_80003
 import io.cosgriff.waitlight.ui.TALL_PHONE
 import io.cosgriff.waitlight.ui.denver
+import io.cosgriff.waitlight.ui.hasClickLabel
 import io.cosgriff.waitlight.ui.hasDescription
 import io.cosgriff.waitlight.ui.hasTextSpaced
 import io.cosgriff.waitlight.ui.text
@@ -54,7 +57,7 @@ class StationListScreenTest {
         now: Instant,
         waits: Map<Int, Pair<WaitReading, Instant>> = threeWaits(updated),
         outcome: FetchOutcome = FetchOutcome.OK,
-        here: GeoPoint? = AT_ARVADA,
+        here: Here? = Here.Device(AT_ARVADA, null),
         locationAllowed: Boolean = here != null,
     ): StationListUi {
         val ui = stationListUi(now, WaitTimes(waits, outcome), here, SortOrder.NEAREST, false, locationAllowed, false)
@@ -66,7 +69,7 @@ class StationListScreenTest {
                     onSort = {},
                     onToggleRims = {},
                     onOpenStation = { opened = it },
-                    onTurnOnLocation = { turnOnLocation++ },
+                    onChangeLocation = { turnOnLocation++ },
                 )
             }
         }
@@ -227,6 +230,42 @@ class StationListScreenTest {
 
         compose.onNodeWithText(text(R.string.list_location_off)).performClick()
         assertEquals(1, turnOnLocation)
+    }
+
+    @Test
+    fun `a fix names the nearest ZIP's place, and isn't a link`() {
+        show(now = denver("2026-11-02T14:20"), here = Here.Device(AT_ARVADA, ZIP_80003))
+        shown(text(R.string.list_place, "Arvada", "80003"))
+        assertEquals("Arvada, CO 80003", text(R.string.list_place, "Arvada", "80003"))
+        notShown(text(R.string.list_near_you))
+        compose.onNodeWithText(text(R.string.list_place, "Arvada", "80003")).assertHasNoClickAction()
+    }
+
+    @Test
+    fun `a fix near no Colorado ZIP is near you`() {
+        show(now = denver("2026-11-02T14:20"), here = Here.Device(AT_ARVADA, null))
+        shown(text(R.string.list_near_you))
+    }
+
+    @Test
+    fun `a typed ZIP - its place, nearest first, and a tap opens the prompt to change it`() {
+        val ui = show(now = denver("2026-11-02T14:20"), here = Here.Zip(ZIP_80003), locationAllowed = false)
+        assertEquals("Arvada", ui.rows.first().station.name)
+        assertEquals(ARVADA, ui.hero?.station?.id)
+        shown(text(R.string.list_sort_nearest))
+        notShown(text(R.string.list_location_off))
+
+        val place = text(R.string.list_place, "Arvada", "80003")
+        compose.onNodeWithText(place, useUnmergedTree = true).assertExists()
+        compose.onNode(hasClickLabel(text(R.string.list_change_zip))).performClick()
+        assertEquals(1, turnOnLocation)
+    }
+
+    @Test
+    fun `location allowed but not found yet, with a ZIP - the ZIP stands in`() {
+        show(now = denver("2026-11-02T14:20"), here = Here.Zip(ZIP_80003), locationAllowed = true)
+        shown(text(R.string.list_place, "Arvada", "80003"))
+        notShown(text(R.string.list_finding_location))
     }
 
     @Test
