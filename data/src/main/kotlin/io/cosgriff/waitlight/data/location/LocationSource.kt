@@ -24,7 +24,10 @@ import kotlin.coroutines.resume
  * enough to sort stations by miles, so that is all the app asks for. The location stays on the phone.
  */
 @Singleton
-class LocationSource @Inject constructor(@param:ApplicationContext private val context: Context) {
+class LocationSource @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    private val lastLocation: LastLocationStore,
+) {
     private val manager: LocationManager = context.getSystemService(LocationManager::class.java)
     private val state = MutableStateFlow<GeoPoint?>(null)
 
@@ -33,13 +36,31 @@ class LocationSource @Inject constructor(@param:ApplicationContext private val c
 
     fun permitted(): Boolean = PERMISSIONS.any { context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
 
-    /** Looks for the phone's location and keeps it in [here]. Keeps the old one if none is found. */
+    /**
+     * Looks for the phone's location and keeps it in [here], and on disk for the widget ([lastKnown]). Keeps the
+     * old one if none is found. Without permission, forgets both.
+     */
     suspend fun update() {
         if (!permitted()) {
             state.value = null
+            lastLocation.clear()
             return
         }
-        find()?.let { state.value = GeoPoint(it.latitude, it.longitude) }
+        find()?.let { found ->
+            val point = GeoPoint(found.latitude, found.longitude)
+            state.value = point
+            lastLocation.save(point)
+        }
+    }
+
+    /**
+     * Where the phone was last found, for the home-screen widget: [here], or the last location saved by an
+     * earlier run of the app, since a widget drawn in the background gets no location of its own. Null without
+     * permission.
+     */
+    suspend fun lastKnown(): GeoPoint? {
+        if (!permitted()) return null
+        return here.value ?: lastLocation.load()
     }
 
     // permitted() is checked first; a permission revoked in between throws, which is caught.

@@ -4,10 +4,13 @@
 -->
 <data-extraction-rules>
     <!-- The last waits (WaitTimesStore.FILE_NAME): minutes old at best, so not worth restoring. -->
+    <!-- The last location found (LastLocationStore.FILE_NAME), for the widget: it stays on this phone. -->
     <cloud-backup>
         <exclude domain="file" path="waits.json" />
+        <exclude domain="file" path="location.txt" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="file" path="waits.json" />
+        <exclude domain="file" path="location.txt" />
     </device-transfer>
 </data-extraction-rules>

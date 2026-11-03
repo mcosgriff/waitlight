@@ -11,6 +11,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -63,6 +64,21 @@ class WaitTimesRepositoryTest {
         val restarted = newRepository()
         assertEquals(repository.waitTimes.value, restarted.waitTimes.value)
         assertEquals(18, restarted.waitTimes.value.waits.size)
+    }
+
+    @Test
+    fun `current waits for the stored ones, for a widget drawn just after a restart`() = runTest {
+        repository.refresh()
+        val restarted = WaitTimesRepository(
+            AirCareClient(HttpClient(MockEngine { respond(savedPage()) }) { expectSuccess = true }),
+            clock,
+            WaitTimesStore({ file }, StandardTestDispatcher(testScheduler)),
+            CoroutineScope(StandardTestDispatcher(testScheduler)),
+        )
+        // Not loaded yet...
+        assertEquals(0, restarted.waitTimes.value.waits.size)
+        // ...but current() waits for the load.
+        assertEquals(18, restarted.current().waits.size)
     }
 
     @Test
