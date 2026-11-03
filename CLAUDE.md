@@ -17,10 +17,11 @@ in its code and tests.
 
 Modules, theme, the business rules (`:domain`, tested), fetching and reading AirCare's page (`:data`,
 `aircare/`, tested against a saved copy), location (`:data`, `location/`) and the list, detail and location
-prompt screens are in. The list fetches while it's on screen, and the last waits are kept across restarts
-(`WaitTimesStore`, a JSON file in `filesDir`). Settings (`:data`, `settings/`, DataStore, tested) remember the
-location prompt's answer and the list's sort and rims chips. Not built yet: ZIP entry and the detail map (both
-open questions in `docs/rules/wait-times.md`), the widget, background refresh. `./gradlew build` is green
+prompt screens are in. The list fetches while it's on screen, WorkManager refreshes in the background during
+opening hours (`background/`, `backgroundPlan`), and the last waits are kept across restarts (`WaitTimesStore`,
+a JSON file in `filesDir`). Settings (`:data`, `settings/`, DataStore, tested) remember the location prompt's
+answer and the list's sort and rims chips. Not built yet: ZIP entry and the detail map (both open questions in
+`docs/rules/wait-times.md`), the widget. `./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
 with a comment saying why.
@@ -39,11 +40,13 @@ with a comment saying why.
 - `:domain` — pure Kotlin, **no Android imports**. All business rules live here and get unit tests: the station
   list (`Stations`), opening hours and holidays (`AirCareHours`, `Holiday`), AirCare's wording
   (`WaitText`, `AirCareTimestamp`), badges (`badgeFor`), freshness and the list's states (`listState`,
-  `refreshButton`, `shouldFetch`), sorting and the hero (`arrange`, `fastestOverall`).
+  `refreshButton`, `shouldFetch`), when the background refresh runs (`backgroundPlan`), sorting and the hero
+  (`arrange`, `fastestOverall`).
 - `:data` — fetching and reading AirCare's page (`AirCareClient`, `AirCarePage`, `WaitTimesRepository`, on Ktor
   with OkHttp), location (`LocationSource`, approximate only), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
   `./gradlew :data:testDebugUnitTest` runs its tests.
-- `:app` — Compose UI, navigation (Navigation 3), ViewModels, theme, and later the Glance widget and WorkManager.
+- `:app` — Compose UI, navigation (Navigation 3), ViewModels, theme, the background refresh (WorkManager, `background/`), and
+  later the Glance widget.
 
 ## Decisions — don't change without asking
 
