@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/mcosgriff/waitlight/compare/v0.3.0...v0.4.0) (2026-11-03)
+
+
+### Features
+
+* name the ZIP a location is in, from Census outlines ([#34](https://github.com/mcosgriff/waitlight/issues/34)) ([7e0205f](https://github.com/mcosgriff/waitlight/commit/7e0205f44e80b60d4d44bd06a80aee28fbd0429b))
+
 ## [0.3.0](https://github.com/mcosgriff/waitlight/compare/v0.2.0...v0.3.0) (2026-11-03)
 
 
