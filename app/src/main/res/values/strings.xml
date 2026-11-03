@@ -186,7 +186,7 @@
 
     <!-- Location prompt -->
     <string name="location_title">Find the closest station</string>
-    <string name="location_body">Share your approximate location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</string>
+    <string name="location_body">Share your location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</string>
     <string name="location_use">Use my location</string>
     <string name="location_or">or</string>
     <string name="location_zip_label">ZIP code</string>

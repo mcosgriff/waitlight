@@ -53,15 +53,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.Stations
 
-/** Asks for approximate location or a ZIP code; either answer, or skipping, goes on to the list. */
+/** Asks for precise location (approximate is Android's option to give instead) or a ZIP code; either answer, or skipping, goes on to the list. */
 @Composable
 fun LocationPromptScreen(onDone: () -> Unit) {
     val viewModel: LocationPromptViewModel = hiltViewModel()
     val zip by viewModel.ui.collectAsStateWithLifecycle()
-    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onDone() }
+    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { onDone() }
     LocationPromptContent(
         zip = zip,
-        onUseLocation = { request.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
+        // Both together: Android then offers precise or approximate, and either one works.
+        onUseLocation = {
+            request.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        },
         onZipChange = viewModel::onZipChange,
         onGo = { viewModel.go(onSaved = onDone) },
         onClearZip = viewModel::clearZip,

@@ -4,7 +4,9 @@
 
     <!-- For AirCare's wait-times page only (ADR-0001). -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Approximate is enough to sort stations by miles; it stays on the phone. Android's own LocationManager (ADR-0002). -->
+    <!-- Precise, so miles and drive estimates are right; Android's dialog lets the user give approximate instead.
+         It stays on the phone. Android's own LocationManager (ADR-0002). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application

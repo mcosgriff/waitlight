@@ -115,6 +115,9 @@ test there.
 
 ## Where "here" is
 
+- "Use my location" asks for precise location, with approximate in the same request, so Android's dialog offers
+  both. Either is allowed location; approximate is off by a mile or two, which shows in the miles and drive
+  estimates. Someone who gave approximate switches in system settings; the app doesn't ask again.
 - **Location permission wins:** with location allowed and a fix found, distances are from the fix. Otherwise
   from the saved ZIP code's centroid, if there is one. Otherwise there's no "here" and the list is
   alphabetical (`here`). A ZIP saved before location was allowed stays saved, unused, until location goes.
