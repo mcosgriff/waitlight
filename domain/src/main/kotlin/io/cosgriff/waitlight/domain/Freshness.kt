@@ -83,8 +83,9 @@ fun refreshButton(state: ListState, now: Instant, newestUpdate: Instant?): Refre
     ListState.DUE -> RefreshButton(enabled = true, emphasized = true, nextUpdateInMinutes = null)
     ListState.LIVE -> {
         val due = newestUpdate!!.plus(Freshness.REFRESH_INTERVAL)
-        // Rounded up, and never "0 min" while the button is still disabled.
-        val seconds = Duration.between(now, due).seconds.coerceAtLeast(1)
+        // Rounded up, and never "0 min" while the button is still disabled. Never more than the interval either:
+        // a phone clock behind AirCare's puts the newest update in the future.
+        val seconds = Duration.between(now, due).seconds.coerceIn(1, Freshness.REFRESH_INTERVAL.seconds)
         RefreshButton(enabled = false, emphasized = false, nextUpdateInMinutes = ((seconds + 59) / 60).toInt())
     }
     // Retry.

@@ -17,10 +17,10 @@ in its code and tests.
 
 Modules, theme, the business rules (`:domain`, tested), fetching and reading AirCare's page (`:data`,
 `aircare/`, tested against a saved copy), location (`:data`, `location/`) and the list, detail and location
-prompt screens are in. The list fetches while it's on screen. Settings (`:data`, `settings/`, DataStore,
-tested) remember the location prompt's answer and the list's sort and rims chips. Not built yet: keeping the
-waits across restarts, ZIP entry and the detail map (both open questions in `docs/rules/wait-times.md`), the
-widget, background refresh. `./gradlew build` is green
+prompt screens are in. The list fetches while it's on screen, and the last waits are kept across restarts
+(`WaitTimesStore`, a JSON file in `filesDir`). Settings (`:data`, `settings/`, DataStore, tested) remember the
+location prompt's answer and the list's sort and rims chips. Not built yet: ZIP entry and the detail map (both
+open questions in `docs/rules/wait-times.md`), the widget, background refresh. `./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
 with a comment saying why.

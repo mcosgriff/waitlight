@@ -116,30 +116,43 @@ class StationListViewModel @Inject constructor(
         }
     }
 
-    private fun build(now: Instant, times: WaitTimes, here: GeoPoint?, choices: Choices): StationListUi {
-        val newest = times.newestUpdate
-        val state = listState(now, newest, times.lastOutcome)
-        val rows = arrange(rowsFor(times.waits, here), choices.order, choices.rimsOnly, state)
-        return StationListUi(
-            now = now,
-            state = state,
-            rows = rows,
-            hero = fastestOverall(rows, state, now),
-            refresh = refreshButton(state, now, newest),
-            newestUpdate = newest,
-            dataUsable = times.dataUsable,
-            order = choices.order,
-            rimsOnly = choices.rimsOnly,
-            hasLocation = here != null,
-            locationAllowed = location.permitted(),
-            refreshing = choices.refreshing,
-            thresholds = THRESHOLDS,
-        )
-    }
+    private fun build(now: Instant, times: WaitTimes, here: GeoPoint?, choices: Choices): StationListUi =
+        stationListUi(now, times, here, choices.order, choices.rimsOnly, location.permitted(), choices.refreshing)
 
     private companion object {
         const val TICK_MILLIS = 30_000L
         const val STOP_AFTER_MILLIS = 5_000L
-        val THRESHOLDS = WaitThresholds()
     }
 }
+
+/** The list at [now] from the waits the app knows, where the phone is ([here]) and the user's choices. */
+internal fun stationListUi(
+    now: Instant,
+    times: WaitTimes,
+    here: GeoPoint?,
+    order: SortOrder,
+    rimsOnly: Boolean,
+    locationAllowed: Boolean,
+    refreshing: Boolean,
+): StationListUi {
+    val newest = times.newestUpdate
+    val state = listState(now, newest, times.lastOutcome)
+    val rows = arrange(rowsFor(times.waits, here), order, rimsOnly, state)
+    return StationListUi(
+        now = now,
+        state = state,
+        rows = rows,
+        hero = fastestOverall(rows, state, now),
+        refresh = refreshButton(state, now, newest),
+        newestUpdate = newest,
+        dataUsable = times.dataUsable,
+        order = order,
+        rimsOnly = rimsOnly,
+        hasLocation = here != null,
+        locationAllowed = locationAllowed,
+        refreshing = refreshing,
+        thresholds = THRESHOLDS,
+    )
+}
+
+private val THRESHOLDS = WaitThresholds()

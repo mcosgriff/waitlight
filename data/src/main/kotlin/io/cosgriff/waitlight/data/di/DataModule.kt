@@ -8,10 +8,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import java.io.File
 import java.time.Clock
 import javax.inject.Singleton
 
@@ -36,4 +41,14 @@ object DataModule {
     @Singleton
     fun settings(@ApplicationContext context: Context): SettingsStore =
         SettingsStore(PreferenceDataStoreFactory.create { context.preferencesDataStoreFile("settings") })
+    @Provides
+    @Singleton
+    @ApplicationScope
+    fun applicationScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** The last waits, in the app's own files and left out of backups (`backup_rules.xml`). */
+    @Provides
+    @Singleton
+    fun waitTimesStore(@ApplicationContext context: Context): WaitTimesStore =
+        WaitTimesStore({ File(context.filesDir, WaitTimesStore.FILE_NAME) })
 }

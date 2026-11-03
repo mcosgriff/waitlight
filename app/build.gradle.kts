@@ -64,6 +64,9 @@ android {
         compose = true
     }
 
+    // The screen tests (app/src/test) draw the screens under Robolectric, which needs the app's resources and fonts.
+    testOptions.unitTests.isIncludeAndroidResources = true
+
     lint {
         abortOnError = true
         // No warnings are kept: a new one fails the build, as an error does.
@@ -103,4 +106,13 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
+    // To give the list's ViewModel a real settings store on a temp file.
+    testImplementation(libs.androidx.datastore.preferences)
+    testImplementation(libs.robolectric)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    // The empty activity the Compose test rule draws into; only in the debug manifest, never the release.
+    debugImplementation(libs.compose.ui.test.manifest)
 }
