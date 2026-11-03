@@ -1,33 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Waitlight's icon: a traffic light with the green light lit and checked (the emissions test passed), and exhaust puffs. Kept inside the adaptive icon's 66dp safe circle. -->
+<!-- Waitlight's icon: a traffic light with the green light lit and checked (the emissions test passed). Kept inside the adaptive icon's 66dp safe circle. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:pathData="M34.5,75 a4.5,4.5 0 1,0 9.0,0 a4.5,4.5 0 1,0 -9.0,0 z"
-        android:fillColor="#A9D6E2" />
-    <path
-        android:pathData="M28.9,67.5 a3.6,3.6 0 1,0 7.2,0 a3.6,3.6 0 1,0 -7.2,0 z"
-        android:fillColor="#A9D6E2" />
-    <path
-        android:pathData="M26.3,58.5 a2.7,2.7 0 1,0 5.4,0 a2.7,2.7 0 1,0 -5.4,0 z"
-        android:fillColor="#A9D6E2" />
-    <path
-        android:pathData="M54,26 h8 a9,9 0 0 1 9,9 v38 a9,9 0 0 1 -9,9 h-8 a9,9 0 0 1 -9,-9 v-38 a9,9 0 0 1 9,-9 z"
+        android:pathData="M50,26 h8 a9,9 0 0 1 9,9 v38 a9,9 0 0 1 -9,9 h-8 a9,9 0 0 1 -9,-9 v-38 a9,9 0 0 1 9,-9 z"
         android:fillColor="#F6F7F4" />
     <path
-        android:pathData="M50.5,38 a7.5,7.5 0 1,0 15.0,0 a7.5,7.5 0 1,0 -15.0,0 z"
+        android:pathData="M46.5,38 a7.5,7.5 0 1,0 15.0,0 a7.5,7.5 0 1,0 -15.0,0 z"
         android:fillColor="#F2C7C3" />
     <path
-        android:pathData="M50.5,54 a7.5,7.5 0 1,0 15.0,0 a7.5,7.5 0 1,0 -15.0,0 z"
+        android:pathData="M46.5,54 a7.5,7.5 0 1,0 15.0,0 a7.5,7.5 0 1,0 -15.0,0 z"
         android:fillColor="#F5E2A0" />
     <path
-        android:pathData="M50.5,70 a7.5,7.5 0 1,0 15.0,0 a7.5,7.5 0 1,0 -15.0,0 z"
+        android:pathData="M46.5,70 a7.5,7.5 0 1,0 15.0,0 a7.5,7.5 0 1,0 -15.0,0 z"
         android:fillColor="#1B7F3B" />
     <path
-        android:pathData="M54.4,70.3 l2.5,2.5 l5,-5.2"
+        android:pathData="M50.4,70.3 l2.5,2.5 l5,-5.2"
         android:strokeColor="#FFFFFF"
         android:strokeWidth="2.4"
         android:strokeLineCap="round"

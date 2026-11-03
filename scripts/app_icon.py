@@ -12,11 +12,10 @@ def rrect(x, y, w, h, r):
             f"h{-(w - 2 * r)} a{r},{r} 0 0 1 {-r},{-r} v{-(h - 2 * r)} a{r},{r} 0 0 1 {r},{-r} z")
 
 # 108dp canvas; launchers may mask to a 66dp circle at the centre (radius 33), so everything stays inside it.
-HOUSING = rrect(45, 26, 26, 56, 9)
-CX, R = 58, 7.5
+HOUSING = rrect(41, 26, 26, 56, 9)
+CX, R = 54, 7.5
 LIGHTS = {"red": (38, "#F2C7C3"), "amber": (54, "#F5E2A0"), "green": (70, "#1B7F3B")}
 CHECK = f"M{CX - 3.6},{70.3} l2.5,2.5 l5,-5.2"
-PUFFS = [circle(39, 75, 4.5), circle(32.5, 67.5, 3.6), circle(29, 58.5, 2.7)]
 
 def path(d, fill=None, stroke=None, width=None, extra=""):
     attrs = [f'android:pathData="{d}"']
@@ -34,22 +33,20 @@ def vector(body, comment):
             '    android:width="108dp"\n    android:height="108dp"\n'
             '    android:viewportWidth="108"\n    android:viewportHeight="108">\n' + body + "</vector>\n")
 
-fg = "".join(path(p, "#A9D6E2") for p in PUFFS)
-fg += path(HOUSING, "#F6F7F4")
+fg = path(HOUSING, "#F6F7F4")
 for cy, colour in LIGHTS.values():
     fg += path(circle(CX, cy, R), colour)
 fg += path(CHECK, stroke="#FFFFFF", width=2.4)
 (res / "drawable/ic_launcher_foreground.xml").write_text(vector(fg,
-    "Waitlight's icon: a traffic light with the green light lit and checked (the emissions test passed), and "
-    "exhaust puffs. Kept inside the adaptive icon's 66dp safe circle."))
+    "Waitlight's icon: a traffic light with the green light lit and checked (the emissions test passed). "
+    "Kept inside the adaptive icon's 66dp safe circle."))
 
 bg = path("M0,0h108v108h-108z", "#1F4E5F")
 (res / "drawable/ic_launcher_background.xml").write_text(vector(bg, "The theme's primary, #1F4E5F."))
 
-# Themed icons tint every opaque pixel one colour: the housing with its lights cut out, the check, the puffs.
+# Themed icons tint every opaque pixel one colour: the housing with its lights cut out, and the check.
 holes = " ".join(circle(CX, cy, R) for cy, _ in LIGHTS.values())
-mono = "".join(path(p, "#FFFFFF") for p in PUFFS)
-mono += path(f"{HOUSING} {holes}", "#FFFFFF", extra='android:fillType="evenOdd"')
+mono = path(f"{HOUSING} {holes}", "#FFFFFF", extra='android:fillType="evenOdd"')
 mono += path(CHECK, stroke="#FFFFFF", width=2.4)
 (res / "drawable/ic_launcher_monochrome.xml").write_text(vector(mono,
-    "The icon in one colour, for themed icons: the housing with the lights cut out, the check, the puffs."))
+    "The icon in one colour, for themed icons: the housing with the lights cut out, and the check."))
