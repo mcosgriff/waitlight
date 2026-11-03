@@ -9,11 +9,16 @@ import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
+import java.nio.file.Files
 import java.net.UnknownHostException
 import java.time.Clock
 import java.time.Instant
@@ -32,12 +37,69 @@ class WaitTimesRepositoryTest {
     // Six minutes after the saved page's newest time, Monday 2026-11-02: open, and the data is fresh.
     private val clock = SetClock(denver("2026-11-02T17:20"))
 
-    private val repository = WaitTimesRepository(
+    private val dir: File = Files.createTempDirectory("waits").toFile()
+    private val file = File(dir, WaitTimesStore.FILE_NAME)
+
+    // Unconfined throughout: the stored waits have loaded by the time the constructor returns.
+    private fun newRepository() = WaitTimesRepository(
         AirCareClient(
             HttpClient(MockEngine { request -> requests += request; answer() }) { expectSuccess = true },
         ),
         clock,
+        WaitTimesStore({ file }, Dispatchers.Unconfined),
+        CoroutineScope(Dispatchers.Unconfined),
     )
+
+    private val repository = newRepository()
+
+    @After
+    fun deleteFiles() {
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun `the waits survive a restart`() = runTest {
+        repository.refresh()
+        val restarted = newRepository()
+        assertEquals(repository.waitTimes.value, restarted.waitTimes.value)
+        assertEquals(18, restarted.waitTimes.value.waits.size)
+    }
+
+    @Test
+    fun `stored waits are there outside opening hours`() = runTest {
+        repository.refresh()
+        clock.now = denver("2026-11-08T10:00") // a Sunday
+        val restarted = newRepository()
+        assertFalse(restarted.refresh())
+        assertEquals(18, restarted.waitTimes.value.waits.size)
+        assertEquals(denver("2026-11-02T17:16"), restarted.waitTimes.value.newestUpdate)
+    }
+
+    @Test
+    fun `a failed fetch is stored too`() = runTest {
+        repository.refresh()
+        answer = { respond("", HttpStatusCode.ServiceUnavailable) }
+        repository.refresh(manual = true)
+        val restarted = newRepository()
+        assertEquals(FetchOutcome.FAILED, restarted.waitTimes.value.lastOutcome)
+        assertEquals(18, restarted.waitTimes.value.waits.size)
+    }
+
+    @Test
+    fun `stored waits that are fresh aren't fetched again`() = runTest {
+        repository.refresh()
+        assertFalse(newRepository().refresh())
+        assertEquals(1, requests.size)
+    }
+
+    @Test
+    fun `a corrupt file starts empty and is replaced by the next good read`() = runTest {
+        file.writeText("{not json")
+        val restarted = newRepository()
+        assertTrue(restarted.waitTimes.value.waits.isEmpty())
+        assertTrue(restarted.refresh())
+        assertEquals(18, newRepository().waitTimes.value.waits.size)
+    }
 
     @Test
     fun `fetches and reads the page`() = runTest {

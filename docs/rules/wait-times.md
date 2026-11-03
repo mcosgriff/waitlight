@@ -40,6 +40,12 @@ test there.
   unreadable as a whole. A station whose `locationID` isn't in `Stations` is left out.
 - A failed fetch or an unreadable page keeps each station's last good reading; an unreadable one marks it
   unusable, so every badge shows it as stale. No network is told from a failed fetch by a failed DNS lookup.
+- **The waits survive a restart.** Each change (the waits with each station's "Last updated", and the last
+  fetch's outcome) is saved to `waits.json` in the app's files, left out of backups and device transfers
+  (`backup_rules.xml`, `data_extraction_rules.xml`), and loaded off the main thread when the repository
+  starts; a fetch waits for the load. Loaded waits age by AirCare's own times like any others, so yesterday's
+  show as stale or closed with no special case. A stored reading for a station no longer in `Stations`, or one
+  that can't be a wait, is dropped; a file that can't be read is logged and the app starts empty, never crashes.
 - Stated hours that differ from `AirCareHours.STATED_HOURS` are logged, and the waits still read.
 - A tap on refresh fetches whenever the stations are open; otherwise only when `shouldFetch` says so.
 - Wait wording seen: `Wait is 13 mins` (also `0 mins`, `1 min`), `Station Open` (no estimate),
