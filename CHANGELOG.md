@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/mcosgriff/waitlight/compare/v0.1.0...v0.2.0) (2026-11-03)
+
+
+### Features
+
+* refresh on every launch, and fix the release-build crash ([#30](https://github.com/mcosgriff/waitlight/issues/30)) ([9aadb98](https://github.com/mcosgriff/waitlight/commit/9aadb98112c912a2909cec1e72fc895be42d5f6b))
+
 ## 0.1.0 (2026-11-03)
 
 
