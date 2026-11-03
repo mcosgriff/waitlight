@@ -19,6 +19,12 @@ hilt-androidx = "1.4.0"
 work = "2.12.0"
 
 junit = "4.13.2"
+# Robolectric (test only) and the Android framework jar it runs the screen tests on (`@Config(sdk = [35])`).
+# Robolectric would fetch that jar itself at test time; Gradle resolves and caches it instead (root
+# build.gradle.kts). Each Robolectric release names its own builds of it, so these move together: on a Robolectric
+# upgrade, take the version from its `AndroidSdk` list.
+robolectric = "4.17"
+robolectric-androidAll-sdk35 = "15-robolectric-13954326-i7"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -54,6 +60,11 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 junit = { module = "junit:junit", version.ref = "junit" }
+# Test only: the screens drawn on the JVM (app/src/test), through Robolectric.
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+robolectric-androidAll-sdk35 = { module = "org.robolectric:android-all-instrumented", version.ref = "robolectric-androidAll-sdk35" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

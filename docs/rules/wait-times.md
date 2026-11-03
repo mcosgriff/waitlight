@@ -72,7 +72,8 @@ test there.
 - States, in order of precedence: **closed** (outside hours) → **broken** (page unreadable) → **stale** /
   **offline** (fetch failed or no network, and the newest data is over 30 minutes old) → **due** (newest data 15
   minutes old or more) → **live**. A failed fetch while the data is still fresh changes nothing on screen.
-- Refresh button: disabled while live, with "Next update in ~N min" rounded up and never 0; enabled and filled
+- Refresh button: disabled while live, with "Next update in ~N min" rounded up, never 0 and never over 15 (a
+  phone clock behind AirCare's puts the newest update in the future; that reads as live); enabled and filled
   when due; enabled as a retry when stale, offline or broken; disabled while closed.
 - Fetch only while open, and only when the newest data is at least 15 minutes old (`shouldFetch`).
 
