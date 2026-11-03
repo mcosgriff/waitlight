@@ -22,7 +22,7 @@ import io.cosgriff.waitlight.R
 
 // Tokens from the design handoff (design/README.md, "Theme tokens"). Dynamic (wallpaper) colour is off.
 
-/** Light colours; also read by the home-screen widget, which has no MaterialTheme. */
+/** Light colours. The home-screen widget, which has no MaterialTheme, takes its own from [waitColors]. */
 internal val LightScheme = lightColorScheme(
     primary = Color(0xFF1F4E5F),
     onPrimary = Color(0xFFFFFFFF),
@@ -90,7 +90,11 @@ data class BadgeColors(val container: Color, val content: Color, val icon: Color
 @Immutable
 data class BannerColors(val container: Color, val content: Color)
 
-/** The colours Material's scheme doesn't name: wait badges, the hero card, banners. */
+/** The home-screen widget's card, title, muted text (age, miles) and status word, from `design/source/Widget*.dc.html`. */
+@Immutable
+data class WidgetColors(val background: Color, val title: Color, val muted: Color, val status: Color)
+
+/** The colours Material's scheme doesn't name: wait badges, the hero card, banners, the widget. */
 @Immutable
 data class WaitColors(
     val short: BadgeColors,
@@ -107,6 +111,7 @@ data class WaitColors(
     val warning: BannerColors,
     val info: BannerColors,
     val error: BannerColors,
+    val widget: WidgetColors,
 )
 
 private val LightWaitColors = WaitColors(
@@ -122,6 +127,7 @@ private val LightWaitColors = WaitColors(
     warning = BannerColors(Color(0xFFFFF1C7), Color(0xFF4A3A00)),
     info = BannerColors(Color(0xFFE3E6E1), Color(0xFF17201B)),
     error = BannerColors(Color(0xFFFBE3E1), Color(0xFF7A1A14)),
+    widget = WidgetColors(Color(0xFFF6F7F4), Color(0xFF17201B), Color(0xFF56615B), Color(0xFF4A554F)),
 )
 
 private val DarkWaitColors = WaitColors(
@@ -137,6 +143,7 @@ private val DarkWaitColors = WaitColors(
     warning = BannerColors(Color(0xFF2A2410), Color(0xFFF2E3AE)),
     info = BannerColors(Color(0xFF222D29), Color(0xFFE4EBE7)),
     error = BannerColors(Color(0xFF3A1714), Color(0xFFFFC9C3)),
+    widget = WidgetColors(Color(0xFF1A2320), Color(0xFFE4EBE7), Color(0xFFA6B2AC), Color(0xFFC4CEC9)),
 )
 
 /** The same, outside composition: the home-screen widget picks by the phone's own light or dark. */

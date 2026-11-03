@@ -87,7 +87,7 @@ test there.
   which starts them again; it fetches nothing itself. Evenings, Sundays and holidays cost one wake, at opening.
 - The plan is set again at every app start and after every check, so it survives reboots, updates and a
   cancelled job. Android may run a check late (Doze, battery saver); the waits then just age as usual.
-- A background fetch is saved like any other (`waits.json`). It will update the widget once there is one.
+- A background fetch is saved like any other (`waits.json`). Every check redraws the widget, fetched or not.
 
 ## Sorting and the hero
 
@@ -117,6 +117,26 @@ test there.
   the nearest ZIP centroid, or "Near you" when none is within 25 miles. Allowed but no fix and no ZIP: "Finding
   your location…". Neither: "Location off". A ZIP and "Location off" are links to the prompt.
 - Drive times from a ZIP are estimates like any others ("≈").
+
+## The widget
+
+- The three nearest stations (`widgetContent`, `WIDGET_STATIONS`), nearest first by straight-line distance, each
+  with its badge, name, miles and a status word. Same badges and rules as the list (`StationRow.badge`):
+  closed outside hours, stale on each station's own timestamp, all stale when the page can't be read, "no
+  reading" before the first fetch. Every badge has its icon and the list's content description.
+- **Without a location it shows a line asking to open the app and allow location, not the first three
+  alphabetically**, which would read as the nearest three.
+- The location is the last one the app found, kept on disk (`LastLocationStore`, `location.txt`, out of
+  backups): Android gives an app without background location access no location while the widget is drawn in
+  the background. It is forgotten, and the widget asks again, once location is no longer allowed.
+- The header shows "Updated" and the newest AirCare time of all stations (weekday in front when not today),
+  not "N min ago" as the design draws it: the widget is only redrawn now and then, and a minute count would go
+  wrong between redraws. A clock time stays right.
+- Redrawn after every background check, at the stations' opening (`OpeningWorker`), whenever the app's waits
+  or location change, and on its own (`widgetRedrawAt`, no network needed) at the moment its first fresh badge
+  goes stale or at closing, whichever is first. No redraws while closed beyond the opening one.
+- Colours from `waitColors(dark)`, following the phone's light or dark; the system font; 28dp corners.
+- A tap on a station opens its detail over the list; anywhere else opens the list.
 
 ## Open questions
 

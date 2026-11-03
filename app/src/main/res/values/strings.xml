@@ -168,6 +168,20 @@
     <string name="detail_tip">Mid-to-late afternoons are quietest. Avoid Mondays, the day after a holiday and the last few days of the month.</string>
     <string name="detail_footer">Wait is an estimate from AirCare Colorado and doesn’t include time in line outside the ticket gate. No diesel testing.</string>
 
+    <!-- Home-screen widget -->
+    <string name="widget_title">Emissions waits</string>
+    <string name="widget_description">Wait times at the three AirCare stations nearest you</string>
+    <string name="widget_updated">Updated %1$s</string>
+    <string name="widget_needs_location">Open Waitlight and allow location to see the stations nearest you.</string>
+    <string name="widget_miles">%1$.1f mi</string>
+    <string name="widget_status_short">Short</string>
+    <string name="widget_status_moderate">Moderate</string>
+    <string name="widget_status_long">Long</string>
+    <string name="widget_status_open">Open</string>
+    <string name="widget_status_closed">Closed</string>
+    <string name="widget_status_stale">Out of date</string>
+    <string name="widget_status_no_reading">No wait yet</string>
+
     <!-- Location prompt -->
     <string name="location_title">Find the closest station</string>
     <string name="location_body">Share your approximate location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</string>

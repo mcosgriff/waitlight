@@ -1,5 +1,6 @@
 package io.cosgriff.waitlight.ui.components
 
+import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,8 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -74,8 +74,8 @@ fun WaitBadge(badge: Badge, size: BadgeSize, ringColor: Color, modifier: Modifie
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            val (big, small) = badge.figure()
-            val isNumber = badge.wait() != null
+            val (big, small) = badge.figure(LocalResources.current)
+            val isNumber = badge.shownWait() != null
             Text(
                 big,
                 color = colors.content,
@@ -102,22 +102,21 @@ fun WaitBadge(badge: Badge, size: BadgeSize, ringColor: Color, modifier: Modifie
 }
 
 /** The wait a badge shows, if it shows one. */
-private fun Badge.wait(): ShownWait? = when (this) {
+fun Badge.shownWait(): ShownWait? = when (this) {
     is Badge.Live -> wait
     is Badge.Stale -> wait
     else -> null
 }
 
-/** The big figure and the small word under it. */
-@Composable
-private fun Badge.figure(): Pair<String, String?> = when (val wait = wait()) {
-    is ShownWait.Exact -> stringResource(R.string.badge_minutes, wait.minutes) to stringResource(R.string.badge_min)
-    is ShownWait.Over -> stringResource(R.string.badge_over, wait.minutes) to stringResource(R.string.badge_min)
+/** The big figure and the small word under it. Outside composition too, for the widget. */
+fun Badge.figure(resources: Resources): Pair<String, String?> = when (val wait = shownWait()) {
+    is ShownWait.Exact -> resources.getString(R.string.badge_minutes, wait.minutes) to resources.getString(R.string.badge_min)
+    is ShownWait.Over -> resources.getString(R.string.badge_over, wait.minutes) to resources.getString(R.string.badge_min)
     null -> when (this) {
-        Badge.Closed -> stringResource(R.string.badge_closed) to null
-        Badge.NoReading -> stringResource(R.string.badge_no_reading) to null
+        Badge.Closed -> resources.getString(R.string.badge_closed) to null
+        Badge.NoReading -> resources.getString(R.string.badge_no_reading) to null
         // Open, or the last reading was "Station Open".
-        else -> stringResource(R.string.badge_open) to stringResource(R.string.badge_no_estimate)
+        else -> resources.getString(R.string.badge_open) to resources.getString(R.string.badge_no_estimate)
     }
 }
 
@@ -148,23 +147,26 @@ fun Badge.icon(): ImageVector = when (this) {
 
 /** What a screen reader says for a badge: "Short wait, 13 minutes". */
 @Composable
-fun badgeDescription(badge: Badge): String = when (badge) {
+fun badgeDescription(badge: Badge): String = badgeDescription(badge, LocalResources.current)
+
+/** The same, outside composition, for the widget. */
+fun badgeDescription(badge: Badge, resources: Resources): String = when (badge) {
     is Badge.Live -> {
         val (id, minutes) = liveDescription(badge.band, badge.wait)
-        pluralStringResource(id, minutes, minutes)
+        resources.getQuantityString(id, minutes, minutes)
     }
-    Badge.Open -> stringResource(R.string.badge_desc_open)
-    Badge.Closed -> stringResource(R.string.badge_desc_closed)
-    Badge.NoReading -> stringResource(R.string.badge_desc_no_reading)
+    Badge.Open -> resources.getString(R.string.badge_desc_open)
+    Badge.Closed -> resources.getString(R.string.badge_desc_closed)
+    Badge.NoReading -> resources.getString(R.string.badge_desc_no_reading)
     is Badge.Stale -> {
         val asOf = TimeText.time(badge.asOf)
         val band = badge.band
         val wait = badge.wait
         if (band == null || wait == null) {
-            stringResource(R.string.badge_desc_stale_open, asOf)
+            resources.getString(R.string.badge_desc_stale_open, asOf)
         } else {
             val (id, minutes) = staleDescription(band, wait)
-            pluralStringResource(id, minutes, minutes, asOf)
+            resources.getQuantityString(id, minutes, minutes, asOf)
         }
     }
 }

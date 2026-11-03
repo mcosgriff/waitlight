@@ -9,6 +9,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
+import io.cosgriff.waitlight.data.location.LastLocationStore
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.ktor.client.HttpClient
@@ -59,4 +60,10 @@ object DataModule {
     @Singleton
     fun waitTimesStore(@ApplicationContext context: Context): WaitTimesStore =
         WaitTimesStore({ File(context.filesDir, WaitTimesStore.FILE_NAME) })
+
+    /** The last location found, for the widget; in the app's own files and left out of backups. */
+    @Provides
+    @Singleton
+    fun lastLocationStore(@ApplicationContext context: Context): LastLocationStore =
+        LastLocationStore({ File(context.filesDir, LastLocationStore.FILE_NAME) })
 }

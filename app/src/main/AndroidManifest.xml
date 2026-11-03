@@ -28,6 +28,19 @@
             </intent-filter>
         </activity>
 
+        <!-- The home-screen widget (Glance). -->
+        <receiver
+            android:name=".widget.WaitsWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/waits_widget_info" />
+        </receiver>
+
         <!-- WorkManager starts from WaitlightApp's Configuration.Provider, so its workers get Hilt's factory. -->
         <provider
             android:name="androidx.startup.InitializationProvider"
