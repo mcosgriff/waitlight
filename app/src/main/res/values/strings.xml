@@ -172,7 +172,7 @@
     <string name="widget_title">Emissions waits</string>
     <string name="widget_description">Wait times at the three AirCare stations nearest you</string>
     <string name="widget_updated">Updated %1$s</string>
-    <string name="widget_needs_location">Open Waitlight and allow location to see the stations nearest you.</string>
+    <string name="widget_needs_location">Open Waitlight and allow location or enter a ZIP code to see the stations nearest you.</string>
     <string name="widget_miles">%1$.1f mi</string>
     <string name="widget_status_short">Short</string>
     <string name="widget_status_moderate">Moderate</string>

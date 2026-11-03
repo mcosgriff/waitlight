@@ -124,11 +124,12 @@ test there.
   with its badge, name, miles and a status word. Same badges and rules as the list (`StationRow.badge`):
   closed outside hours, stale on each station's own timestamp, all stale when the page can't be read, "no
   reading" before the first fetch. Every badge has its icon and the list's content description.
-- **Without a location it shows a line asking to open the app and allow location, not the first three
-  alphabetically**, which would read as the nearest three.
-- The location is the last one the app found, kept on disk (`LastLocationStore`, `location.txt`, out of
-  backups): Android gives an app without background location access no location while the widget is drawn in
-  the background. It is forgotten, and the widget asks again, once location is no longer allowed.
+- "Here" is the list's ("Where "here" is"; `HereSource.current`): the fix, else the saved ZIP code.
+- **Without either it shows a line asking to open the app and allow location or enter a ZIP code, not the first
+  three alphabetically**, which would read as the nearest three.
+- The fix is the last one the app found, kept on disk (`LastLocationStore`, `location.txt`, out of backups):
+  Android gives an app without background location access no location while the widget is drawn in the
+  background. It is forgotten once location is no longer allowed; the widget then uses the ZIP, or asks.
 - The header shows "Updated" and the newest AirCare time of all stations (weekday in front when not today),
   not "N min ago" as the design draws it: the widget is only redrawn now and then, and a minute count would go
   wrong between redraws. A clock time stays right.
