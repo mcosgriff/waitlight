@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -36,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -80,8 +83,8 @@ private fun Context.open(intent: Intent) {
 }
 
 /**
- * One station, as drawn in `design/png/Detail.png`, without the map: the Maps SDK is ruled out (ADR-0002) and
- * the alternative is still an open question (`docs/rules/wait-times.md`).
+ * One station, as drawn in `design/png/Detail.png`: the station's map across the top (ADR-0006), and the rest on
+ * a sheet over the map's bottom edge.
  */
 @Composable
 fun StationDetailContent(row: StationRow, badge: Badge, onBack: () -> Unit, onDirections: () -> Unit, onCall: () -> Unit) {
@@ -93,89 +96,105 @@ fun StationDetailContent(row: StationRow, badge: Badge, onBack: () -> Unit, onDi
             .fillMaxSize()
             .background(background)
             .verticalScroll(rememberScrollState())
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+            .navigationBarsPadding(),
     ) {
-        FilledIconButton(
-            onClick = onBack,
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            ),
-            modifier = Modifier.size(48.dp),
+        // Laid out SHEET_OVERLAP shorter than the map, which draws on below it under the sheet: the overlap is in
+        // the layout, so the scrolling column has no blank strip at its end (an offset sheet would leave one).
+        Box(
+            Modifier.fillMaxWidth().layout { measurable, constraints ->
+                val full = MAP_HEIGHT.roundToPx()
+                val placeable = measurable.measure(constraints.copy(minHeight = full, maxHeight = full))
+                layout(placeable.width, full - SHEET_OVERLAP.roundToPx()) { placeable.place(0, 0) }
+            },
         ) {
-            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.detail_back))
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            WaitBadge(badge, BadgeSize.Detail, ringColor = background)
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(
-                    station.name,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
-                    modifier = Modifier.semantics { heading() },
-                )
-                val (status, statusColor) = status(badge)
-                Text(status, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold), color = statusColor)
-                val drive = row.driveMinutes
-                val miles = row.distanceMiles
-                val total = row.totalMinutes
-                val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
-                if (drive != null && miles != null) {
-                    // A total only while the wait it adds is current.
-                    val text = if (total != null && badge is Badge.Live) stringResource(R.string.detail_total, total, drive, miles)
-                    else stringResource(R.string.detail_drive, drive, miles)
-                    Text(text, style = small, color = muted)
-                }
-                row.updatedAt?.let { Text(stringResource(R.string.detail_updated, TimeText.time(it)), style = small, color = muted) }
-            }
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(onClick = onDirections, modifier = Modifier.weight(1f).height(52.dp)) {
-                Icon(Icons.Outlined.Navigation, contentDescription = null, modifier = Modifier.size(20.dp))
-                Text(stringResource(R.string.detail_directions), modifier = Modifier.padding(start = 8.dp), fontSize = 15.sp)
-            }
-            OutlinedButton(
-                onClick = onCall,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                modifier = Modifier.weight(1f).height(52.dp),
+            StationMap(station, badge, bottomInset = SHEET_OVERLAP, modifier = Modifier.matchParentSize())
+            FilledIconButton(
+                onClick = onBack,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
+                modifier = Modifier.statusBarsPadding().padding(start = 12.dp, top = 14.dp).size(48.dp),
             ) {
-                Icon(Icons.Outlined.Call, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurface)
-                Text(stringResource(R.string.detail_call), modifier = Modifier.padding(start = 8.dp), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.detail_back))
             }
         }
-
-        Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                InfoLine(stringResource(R.string.detail_address_label), stringResource(R.string.detail_address, station.street, station.city, station.zip))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                InfoLine(stringResource(R.string.detail_hours_label), stringResource(R.string.detail_hours))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                InfoLine(stringResource(R.string.detail_lanes_label), station.lanes.toString())
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                InfoLine(
-                    stringResource(R.string.detail_rims_label),
-                    stringResource(if (station.lowProfileRims) R.string.detail_rims_yes else R.string.detail_rims_no),
-                )
+        Column(
+            Modifier
+                .fillMaxWidth()
+                // Material's sheet corners: the theme's extraLarge, on top only.
+                .background(background, MaterialTheme.shapes.extraLarge.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0)))
+                .padding(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                WaitBadge(badge, BadgeSize.Detail, ringColor = background)
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Text(
+                        station.name,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontSize = 26.sp),
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    val (status, statusColor) = status(badge)
+                    Text(status, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold), color = statusColor)
+                    val drive = row.driveMinutes
+                    val miles = row.distanceMiles
+                    val total = row.totalMinutes
+                    val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
+                    if (drive != null && miles != null) {
+                        // A total only while the wait it adds is current.
+                        val text = if (total != null && badge is Badge.Live) stringResource(R.string.detail_total, total, drive, miles)
+                        else stringResource(R.string.detail_drive, drive, miles)
+                        Text(text, style = small, color = muted)
+                    }
+                    row.updatedAt?.let { Text(stringResource(R.string.detail_updated, TimeText.time(it)), style = small, color = muted) }
+                }
             }
-        }
 
-        val tip = MaterialTheme.waitColors.warning
-        Surface(shape = MaterialTheme.shapes.medium, color = tip.container, contentColor = tip.content, modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(stringResource(R.string.detail_tip_title), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
-                Text(stringResource(R.string.detail_tip), style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = onDirections, modifier = Modifier.weight(1f).height(52.dp)) {
+                    Icon(Icons.Outlined.Navigation, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Text(stringResource(R.string.detail_directions), modifier = Modifier.padding(start = 8.dp), fontSize = 15.sp)
+                }
+                OutlinedButton(
+                    onClick = onCall,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    modifier = Modifier.weight(1f).height(52.dp),
+                ) {
+                    Icon(Icons.Outlined.Call, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.detail_call), modifier = Modifier.padding(start = 8.dp), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                }
             }
-        }
 
-        Text(
-            stringResource(R.string.detail_footer),
-            style = MaterialTheme.typography.bodySmall.copy(lineHeight = 17.sp),
-            color = muted,
-        )
+            Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    InfoLine(stringResource(R.string.detail_address_label), stringResource(R.string.detail_address, station.street, station.city, station.zip))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    InfoLine(stringResource(R.string.detail_hours_label), stringResource(R.string.detail_hours))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    InfoLine(stringResource(R.string.detail_lanes_label), station.lanes.toString())
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    InfoLine(
+                        stringResource(R.string.detail_rims_label),
+                        stringResource(if (station.lowProfileRims) R.string.detail_rims_yes else R.string.detail_rims_no),
+                    )
+                }
+            }
+
+            val tip = MaterialTheme.waitColors.warning
+            Surface(shape = MaterialTheme.shapes.medium, color = tip.container, contentColor = tip.content, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(stringResource(R.string.detail_tip_title), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
+                    Text(stringResource(R.string.detail_tip), style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp))
+                }
+            }
+
+            Text(
+                stringResource(R.string.detail_footer),
+                style = MaterialTheme.typography.bodySmall.copy(lineHeight = 17.sp),
+                color = muted,
+            )
+        }
     }
 }
 

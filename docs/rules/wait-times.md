@@ -13,6 +13,12 @@ test there.
 - Low-profile rims (17″+) and wheels over 34″: only Sheridan, Boulder, Ken Caryl and Fort Collins. No diesel
   testing anywhere.
 - Directions: `https://www.google.com/maps/dir/Current+Location/<url-encoded address>`.
+- **The detail's map is a bundled image** per station, light and dark, drawn from OpenStreetMap data by
+  `scripts/station_maps.py` and centred on the station's coordinates (ADR-0006). No map network calls. The app
+  draws the pin at the centre in the badge's colour; the map's content description names the station, and the
+  wait is in the text below, so colour is not the only signal. "© OpenStreetMap contributors" shows on the map,
+  linked to openstreetmap.org/copyright (ODbL; `assets/licences/`). A station added or moved in `Stations` needs
+  the script run again; a test fails while any station has no map.
 
 ## Hours and holidays
 
@@ -138,8 +144,3 @@ test there.
   goes stale or at closing, whichever is first. No redraws while closed beyond the opening one.
 - Colours from `waitColors(dark)`, following the phone's light or dark; the system font; 28dp corners.
 - A tap on a station opens its detail over the list; anywhere else opens the list.
-
-## Open questions
-
-- **Detail's map** can't use the Maps SDK (ADR-0002). Options: no map, a bundled static image per station, or
-  map tiles from another host (which would be a second network host and needs its own decision).

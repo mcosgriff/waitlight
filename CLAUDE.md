@@ -23,8 +23,9 @@ a JSON file in `filesDir`). Settings (`:data`, `settings/`, DataStore, tested) r
 answer, the list's sort and rims chips and a typed ZIP code. ZIP entry uses a bundled Census table of Colorado ZIP
 centroids and place names (ADR-0005; `scripts/colorado_zips.py` makes it, `ZipTable` reads it), and `HereSource`
 picks "here" for the list and detail: the fix, else the ZIP. The Glance home-screen widget (`widget/`,
-`widgetContent`) shows the three nearest stations and redraws after each background check. Not built yet: the
-detail map (an open question in `docs/rules/wait-times.md`). `./gradlew build` is green
+`widgetContent`) shows the three nearest stations and redraws after each background check. The detail's map is
+a bundled image per station drawn from OpenStreetMap data (ADR-0006; `scripts/station_maps.py` makes them).
+`./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
 with a comment saying why.

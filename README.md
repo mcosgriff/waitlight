@@ -123,5 +123,6 @@ If you find something that looks careless, open an issue: it's mine to fix, whoe
 
 ## Licence
 
-GPL-3.0 ([`LICENSE`](LICENSE)). Roboto Flex is under the SIL Open Font License
+GPL-3.0 ([`LICENSE`](LICENSE)). Roboto Flex is under the SIL Open Font License, and the station maps are
+drawn from OpenStreetMap data, © OpenStreetMap contributors, under the ODbL
 (`app/src/main/assets/licences/`).
