@@ -126,8 +126,9 @@ test there.
   Colorado ZIP code". The field takes digits only, at most five, on a number keyboard.
 - **Go** saves the ZIP, answers the prompt and opens the list. The prompt opened again shows the saved ZIP and
   offers to stop using it, which clears it.
-- The header names where "here" is, as "Arvada, CO 80003": for a ZIP, that ZIP's place; for a fix, the place of
-  the nearest ZIP centroid, or "Near you" when none is within 25 miles. Allowed but no fix and no ZIP: "Finding
+- The header names where "here" is, as "Arvada, CO 80003": for a ZIP, that ZIP's place; for a fix, the ZIP whose
+  outline it's in (`ZipTable.placeOf`; of two where simplified borders overlap, the nearer centroid's), else the
+  nearest ZIP centroid, or "Near you" when none is within 25 miles. Allowed but no fix and no ZIP: "Finding
   your location…". Neither: "Location off". A ZIP and "Location off" are links to the prompt.
 - Drive times from a ZIP are estimates like any others ("≈").
 
