@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import io.cosgriff.waitlight.data.aircare.AirCareClient
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
+import io.cosgriff.waitlight.data.location.LastLocationStore
 import io.cosgriff.waitlight.data.location.LocationSource
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.domain.ListState
@@ -93,7 +94,11 @@ class StationListViewModelTest {
 
     /** Shows the list (something collects its state) for the length of [block], then lets the ticks stop. */
     private fun TestScope.showing(block: TestScope.(StationListViewModel) -> Unit) {
-        val viewModel = StationListViewModel(repository, LocationSource(RuntimeEnvironment.getApplication()), settings, clock)
+        val location = LocationSource(
+            RuntimeEnvironment.getApplication(),
+            LastLocationStore({ File(dir, LastLocationStore.FILE_NAME) }, Dispatchers.Unconfined),
+        )
+        val viewModel = StationListViewModel(repository, location, settings, clock)
         val screen = launch { viewModel.ui.collect {} }
         runCurrent()
         block(viewModel)

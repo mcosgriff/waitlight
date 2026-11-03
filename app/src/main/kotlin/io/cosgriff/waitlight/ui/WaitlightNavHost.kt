@@ -17,17 +17,22 @@ import io.cosgriff.waitlight.ui.location.LocationPromptScreen
 /**
  * The app's screens. The list is the start once location is allowed or the prompt was answered, before that the
  * location prompt. Nothing is drawn for the moment it takes to read the settings, so the wrong screen never flashes.
+ * [openStation] (a tap on a station in the widget) opens that station's detail over the list.
  */
 @Composable
-fun WaitlightNavHost() {
+fun WaitlightNavHost(openStation: Int? = null) {
     val startViewModel: StartViewModel = hiltViewModel()
     val start by startViewModel.start.collectAsStateWithLifecycle()
-    start?.let { WaitlightNavDisplay(it, onLocationPromptAnswered = startViewModel::locationPromptAnswered) }
+    start?.let { WaitlightNavDisplay(it, openStation, onLocationPromptAnswered = startViewModel::locationPromptAnswered) }
 }
 
 @Composable
-private fun WaitlightNavDisplay(start: NavKey, onLocationPromptAnswered: () -> Unit) {
-    val backStack = rememberNavBackStack(start)
+private fun WaitlightNavDisplay(start: NavKey, openStation: Int?, onLocationPromptAnswered: () -> Unit) {
+    val backStack = if (start == StationList && openStation != null) {
+        rememberNavBackStack(StationList, StationDetail(openStation))
+    } else {
+        rememberNavBackStack(start)
+    }
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
