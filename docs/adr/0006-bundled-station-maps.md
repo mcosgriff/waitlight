@@ -34,7 +34,7 @@ not yet in its cache (`--refetch` fetches them all, for fresher streets). Commit
 ## Consequences
 
 - No network for the map, so ADR-0001's single host holds and the map works offline.
-- About 15 KB an image (lossy WebP), 36 images: about 0.55 MB of APK.
+- 4–29 KB an image (lossy WebP), 36 images: about 0.48 MB of APK.
 - The data is ODbL: "© OpenStreetMap contributors" shows on the map, linked to
   openstreetmap.org/copyright, and the notice is in `app/src/main/assets/licences/`. No tile style licence
   applies; the colours are ours (light from the design, dark from the dark theme).
