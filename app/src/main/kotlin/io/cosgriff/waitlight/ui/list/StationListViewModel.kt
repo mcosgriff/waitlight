@@ -6,6 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.data.aircare.WaitTimes
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.location.LocationSource
+import io.cosgriff.waitlight.data.settings.Settings
+import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.domain.RefreshButton
@@ -49,7 +51,7 @@ data class StationListUi(
     val thresholds: WaitThresholds,
 )
 
-/** The list's choices. */
+/** The list's choices, kept in [Settings] so the list opens the way it was left. */
 private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refreshing: Boolean)
 
 /**
@@ -60,12 +62,12 @@ private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refr
 class StationListViewModel @Inject constructor(
     private val waitTimes: WaitTimesRepository,
     private val location: LocationSource,
+    private val settings: SettingsStore,
     private val clock: Clock,
 ) : ViewModel() {
-    private val order = MutableStateFlow(SortOrder.NEAREST)
-    private val rimsOnly = MutableStateFlow(false)
+    private val saved = settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
     private val refreshing = MutableStateFlow(false)
-    private val choices = combine(order, rimsOnly, refreshing, ::Choices)
+    private val choices = combine(saved, refreshing) { s, r -> Choices(s.order, s.rimsOnly, r) }
 
     private val ticks = flow {
         while (true) {
@@ -80,15 +82,15 @@ class StationListViewModel @Inject constructor(
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_AFTER_MILLIS),
-            build(clock.instant(), waitTimes.waitTimes.value, location.here.value, Choices(SortOrder.NEAREST, false, false)),
+            build(clock.instant(), waitTimes.waitTimes.value, location.here.value, saved.value.let { Choices(it.order, it.rimsOnly, false) }),
         )
 
     fun sortBy(order: SortOrder) {
-        this.order.value = order
+        viewModelScope.launch { settings.sortBy(order) }
     }
 
     fun toggleRims() {
-        rimsOnly.value = !rimsOnly.value
+        viewModelScope.launch { settings.rimsOnly(!saved.value.rimsOnly) }
     }
 
     /** A tap on refresh or "Try again". */
