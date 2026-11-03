@@ -96,6 +96,9 @@ sealed interface Badge {
     /** Outside opening hours. */
     data object Closed : Badge
 
+    /** Open, but the app has no reading for the station yet. */
+    data object NoReading : Badge
+
     /** The last reading we have, greyed: older than [Freshness.STALE_AFTER]. [band] and [wait] are null if that reading was "Station Open". */
     data class Stale(val band: WaitBand?, val wait: ShownWait?, val asOf: Instant) : Badge
 }

@@ -103,9 +103,16 @@ class RankingTest {
     }
 
     @Test
-    fun `rows only for stations with a reading`() {
+    fun `every station has a row, with or without a reading`() {
         val rows = rowsFor(mapOf(38 to (WaitReading.Minutes(10) to updated)), arvada)
-        assertEquals(listOf("Arvada"), names(rows))
+        assertEquals(18, rows.size)
+        assertEquals(WaitReading.Minutes(10), rows.single { it.station.id == 38 }.reading)
+        val golden = rows.single { it.station.id == 40 }
+        assertNull(golden.reading)
+        assertNull(golden.totalMinutes)
+        assertEquals(Badge.NoReading, golden.badge(now, WaitThresholds()))
+        assertEquals(Badge.Closed, golden.badge(denver("2026-11-02T18:00"), WaitThresholds()))
+        assertEquals(updated, newestUpdate(rows))
     }
 
     @Test

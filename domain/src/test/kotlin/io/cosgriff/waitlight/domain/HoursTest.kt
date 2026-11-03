@@ -88,6 +88,16 @@ class HoursTest {
     }
 
     @Test
+    fun `last closing is today's, yesterday's, or Saturday's over a weekend`() {
+        assertEquals(LocalDateTime.parse("2026-11-02T17:30"), AirCareHours.lastClosing(denver("2026-11-02T18:00")).toLocalDateTime())
+        assertEquals(LocalDateTime.parse("2026-11-02T17:30"), AirCareHours.lastClosing(denver("2026-11-03T06:30")).toLocalDateTime())
+        // Sunday morning: Saturday closed at 1.
+        assertEquals(LocalDateTime.parse("2026-11-07T13:00"), AirCareHours.lastClosing(denver("2026-11-08T09:00")).toLocalDateTime())
+        // Veterans Day, Wednesday 2026-11-11: closed since the Tuesday.
+        assertEquals(LocalDateTime.parse("2026-11-10T17:30"), AirCareHours.lastClosing(denver("2026-11-11T12:00")).toLocalDateTime())
+    }
+
+    @Test
     fun `next opening early in the morning is today`() {
         val now = denver("2026-11-03T06:30")
         val next = AirCareHours.nextOpening(now)

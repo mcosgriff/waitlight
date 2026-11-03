@@ -57,6 +57,8 @@ test there.
 - **Stale goes by each station's own timestamp**: older than 30 minutes, that station's badge is greyed even
   when the rest are fresh (Golden was an hour behind the others on 2026-11-02). Exactly 30 minutes is fresh.
 - When the page can't be read, every badge shows its last good reading as stale.
+- Every station is listed, with or without a reading. One without (before the first fetch) shows "no reading"
+  while open, and closed outside hours like the rest.
 
 ## Freshness, states and refresh
 
