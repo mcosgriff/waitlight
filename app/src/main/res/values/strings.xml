@@ -68,6 +68,8 @@
     <string name="list_refresh_current">Refresh unavailable, data is current</string>
     <string name="list_refresh_closed">Refresh unavailable, stations are closed</string>
     <string name="list_near_you">Near you</string>
+    <string name="list_place">%1$s, CO %2$s</string>
+    <string name="list_change_zip">Change ZIP code</string>
     <string name="list_finding_location">Finding your location…</string>
     <string name="list_location_off">Location off</string>
     <string name="list_location_turn_on">Use my location</string>
@@ -184,6 +186,13 @@
     <string name="location_title">Find the closest station</string>
     <string name="location_body">Share your approximate location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</string>
     <string name="location_use">Use my location</string>
+    <string name="location_or">or</string>
+    <string name="location_zip_label">ZIP code</string>
+    <string name="location_zip_hint">80003</string>
+    <string name="location_zip_go">Go</string>
+    <string name="location_zip_incomplete">Enter a 5-digit ZIP code</string>
+    <string name="location_zip_unknown">%1$s isn’t a Colorado ZIP code</string>
+    <string name="location_zip_clear">Stop using ZIP code %1$s</string>
     <string name="location_skip">Continue without location</string>
     <plurals name="location_skip_note">
         <item quantity="one">You can still browse the %d station without location.</item>

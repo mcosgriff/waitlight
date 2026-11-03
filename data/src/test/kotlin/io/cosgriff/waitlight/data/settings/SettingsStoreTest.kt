@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -64,6 +65,28 @@ class SettingsStoreTest {
             it.locationPromptAnswered()
         }
         assertEquals(Settings(locationPromptAnswered = true, rimsOnly = true), withStore { it.settings.first() })
+    }
+
+    @Test
+    fun `a ZIP code is remembered across launches until cleared`() = runTest {
+        withStore {
+            it.rimsOnly(true)
+            it.setZip("80003")
+        }
+        assertEquals(Settings(rimsOnly = true, zip = "80003"), withStore { it.settings.first() })
+
+        withStore { it.setZip("80202") }
+        assertEquals("80202", withStore { it.settings.first() }.zip)
+
+        withStore { it.clearZip() }
+        assertEquals(Settings(rimsOnly = true), withStore { it.settings.first() })
+    }
+
+    @Test
+    fun `only a five-digit ZIP code is kept`() = runTest {
+        val refused = runCatching { withStore { it.setZip("8000") } }.exceptionOrNull()
+        assertTrue(refused is IllegalArgumentException)
+        assertEquals(null, withStore { it.settings.first() }.zip)
     }
 
     @Test

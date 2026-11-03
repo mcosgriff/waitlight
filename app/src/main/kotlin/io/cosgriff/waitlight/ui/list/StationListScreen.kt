@@ -68,6 +68,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.Badge
+import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.domain.OpeningDay
 import io.cosgriff.waitlight.domain.SortOrder
@@ -86,7 +87,7 @@ import java.time.Duration
 import java.time.Instant
 
 @Composable
-fun StationListScreen(onOpenStation: (Int) -> Unit, onTurnOnLocation: () -> Unit) {
+fun StationListScreen(onOpenStation: (Int) -> Unit, onChangeLocation: () -> Unit) {
     val viewModel: StationListViewModel = hiltViewModel()
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.onShown() }
@@ -96,7 +97,7 @@ fun StationListScreen(onOpenStation: (Int) -> Unit, onTurnOnLocation: () -> Unit
         onSort = viewModel::sortBy,
         onToggleRims = viewModel::toggleRims,
         onOpenStation = onOpenStation,
-        onTurnOnLocation = onTurnOnLocation,
+        onChangeLocation = onChangeLocation,
     )
 }
 
@@ -108,7 +109,7 @@ fun StationListContent(
     onSort: (SortOrder) -> Unit,
     onToggleRims: () -> Unit,
     onOpenStation: (Int) -> Unit,
-    onTurnOnLocation: () -> Unit,
+    onChangeLocation: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
@@ -116,7 +117,7 @@ fun StationListContent(
             contentPadding = PaddingValues(bottom = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item(key = "header") { Header(ui, onRefresh, onTurnOnLocation) }
+            item(key = "header") { Header(ui, onRefresh, onChangeLocation) }
             when {
                 ui.state == ListState.CLOSED -> item(key = "closed") { ClosedCard(ui.now) }
                 ui.hero != null -> item(key = "hero") { HeroCard(ui.hero, ui.thresholds, onOpenStation) }
@@ -142,7 +143,7 @@ fun StationListContent(
 }
 
 @Composable
-private fun Header(ui: StationListUi, onRefresh: () -> Unit, onTurnOnLocation: () -> Unit) {
+private fun Header(ui: StationListUi, onRefresh: () -> Unit, onChangeLocation: () -> Unit) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     Column(Modifier.statusBarsPadding().padding(start = 20.dp, end = 16.dp, top = 20.dp, bottom = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -158,21 +159,7 @@ private fun Header(ui: StationListUi, onRefresh: () -> Unit, onTurnOnLocation: (
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.padding(top = 2.dp),
         ) {
-            if (ui.locationAllowed) {
-                Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = muted, modifier = Modifier.size(16.dp))
-                val place = if (ui.hasLocation) R.string.list_near_you else R.string.list_finding_location
-                Text(stringResource(place), style = MaterialTheme.typography.bodyMedium, color = muted)
-            } else {
-                val turnOn = stringResource(R.string.list_location_turn_on)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.heightIn(min = 48.dp).clickable(onClickLabel = turnOn, onClick = onTurnOnLocation),
-                ) {
-                    Icon(Icons.Outlined.LocationOff, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    Text(stringResource(R.string.list_location_off), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-                }
-            }
+            PlaceLine(ui, onChangeLocation)
             // For the eye only.
             Text("·", color = muted, modifier = Modifier.clearAndSetSemantics {})
             Text(updatedText(ui), style = MaterialTheme.typography.bodyMedium, color = muted)
@@ -187,6 +174,51 @@ private fun Header(ui: StationListUi, onRefresh: () -> Unit, onTurnOnLocation: (
             )
         }
         if (ui.refreshing) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp, end = 4.dp))
+    }
+}
+
+/**
+ * Where "here" is: the place for the phone's fix or the typed ZIP code ("Arvada, CO 80003"), "Near you" for a fix
+ * near no Colorado ZIP, "Finding your location…" while waiting for a fix, or "Location off". A ZIP code and
+ * "Location off" open the location prompt, to change or clear the ZIP or turn location on.
+ */
+@Composable
+private fun PlaceLine(ui: StationListUi, onChangeLocation: () -> Unit) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val here = ui.here
+    val placeText = here?.place?.let { stringResource(R.string.list_place, it.place, it.zip) }
+    when {
+        here is Here.Zip ->
+            PromptLink(Icons.Outlined.LocationOn, placeText.orEmpty(), stringResource(R.string.list_change_zip), onChangeLocation)
+        here != null || ui.locationAllowed -> {
+            Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = muted, modifier = Modifier.size(16.dp))
+            val text = when {
+                placeText != null -> placeText
+                here != null -> stringResource(R.string.list_near_you)
+                else -> stringResource(R.string.list_finding_location)
+            }
+            Text(text, style = MaterialTheme.typography.bodyMedium, color = muted)
+        }
+        else ->
+            PromptLink(
+                Icons.Outlined.LocationOff,
+                stringResource(R.string.list_location_off),
+                stringResource(R.string.list_location_turn_on),
+                onChangeLocation,
+            )
+    }
+}
+
+/** A tappable place line, in the primary colour, that opens the location prompt. */
+@Composable
+private fun PromptLink(icon: ImageVector, text: String, clickLabel: String, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.heightIn(min = 48.dp).clickable(onClickLabel = clickLabel, onClick = onClick),
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 

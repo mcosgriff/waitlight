@@ -5,10 +5,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.data.aircare.WaitTimes
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
+import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.data.location.LocationSource
 import io.cosgriff.waitlight.data.settings.Settings
 import io.cosgriff.waitlight.data.settings.SettingsStore
-import io.cosgriff.waitlight.domain.GeoPoint
+import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.domain.RefreshButton
 import io.cosgriff.waitlight.domain.SortOrder
@@ -44,12 +45,15 @@ data class StationListUi(
     val dataUsable: Boolean,
     val order: SortOrder,
     val rimsOnly: Boolean,
-    val hasLocation: Boolean,
+    /** Where distances are measured from: the phone, a typed ZIP code, or nowhere. */
+    val here: Here?,
     /** Location is allowed, though perhaps not found yet. */
     val locationAllowed: Boolean,
     val refreshing: Boolean,
     val thresholds: WaitThresholds,
-)
+) {
+    val hasLocation: Boolean get() = here != null
+}
 
 /** The list's choices, kept in [Settings] so the list opens the way it was left. */
 private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refreshing: Boolean)
@@ -62,6 +66,7 @@ private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refr
 class StationListViewModel @Inject constructor(
     private val waitTimes: WaitTimesRepository,
     private val location: LocationSource,
+    private val hereSource: HereSource,
     private val settings: SettingsStore,
     private val clock: Clock,
 ) : ViewModel() {
@@ -78,11 +83,11 @@ class StationListViewModel @Inject constructor(
         }
     }
 
-    val ui: StateFlow<StationListUi> = combine(ticks, waitTimes.waitTimes, location.here, choices, ::build)
+    val ui: StateFlow<StationListUi> = combine(ticks, waitTimes.waitTimes, hereSource.here, choices, ::build)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_AFTER_MILLIS),
-            build(clock.instant(), waitTimes.waitTimes.value, location.here.value, saved.value.let { Choices(it.order, it.rimsOnly, false) }),
+            build(clock.instant(), waitTimes.waitTimes.value, hereSource.here.value, saved.value.let { Choices(it.order, it.rimsOnly, false) }),
         )
 
     fun sortBy(order: SortOrder) {
@@ -116,7 +121,7 @@ class StationListViewModel @Inject constructor(
         }
     }
 
-    private fun build(now: Instant, times: WaitTimes, here: GeoPoint?, choices: Choices): StationListUi =
+    private fun build(now: Instant, times: WaitTimes, here: Here?, choices: Choices): StationListUi =
         stationListUi(now, times, here, choices.order, choices.rimsOnly, location.permitted(), choices.refreshing)
 
     private companion object {
@@ -125,11 +130,11 @@ class StationListViewModel @Inject constructor(
     }
 }
 
-/** The list at [now] from the waits the app knows, where the phone is ([here]) and the user's choices. */
+/** The list at [now] from the waits the app knows, where "here" is and the user's choices. */
 internal fun stationListUi(
     now: Instant,
     times: WaitTimes,
-    here: GeoPoint?,
+    here: Here?,
     order: SortOrder,
     rimsOnly: Boolean,
     locationAllowed: Boolean,
@@ -137,7 +142,7 @@ internal fun stationListUi(
 ): StationListUi {
     val newest = times.newestUpdate
     val state = listState(now, newest, times.lastOutcome)
-    val rows = arrange(rowsFor(times.waits, here), order, rimsOnly, state)
+    val rows = arrange(rowsFor(times.waits, here?.point), order, rimsOnly, state)
     return StationListUi(
         now = now,
         state = state,
@@ -148,7 +153,7 @@ internal fun stationListUi(
         dataUsable = times.dataUsable,
         order = order,
         rimsOnly = rimsOnly,
-        hasLocation = here != null,
+        here = here,
         locationAllowed = locationAllowed,
         refreshing = refreshing,
         thresholds = THRESHOLDS,

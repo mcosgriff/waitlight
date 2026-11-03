@@ -1,0 +1,13 @@
+Colorado ZIP code table (colorado_zips.txt)
+
+Made by scripts/colorado_zips.py from US Census Bureau files:
+
+- 2026 ZCTA gazetteer:
+  https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2026_Gazetteer/2026_Gaz_zcta_national.zip
+- 2020 ZCTA-to-place relationship file:
+  https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_place20_natl.txt
+- 2020 ZCTA-to-county relationship file:
+  https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt
+
+These are works of the United States government and are in the public domain (17 U.S.C. 105). The Census
+Bureau does not endorse this app. ZCTAs approximate USPS ZIP code areas; they are not the same thing.

@@ -1,5 +1,6 @@
 package io.cosgriff.waitlight.ui
 
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
@@ -8,6 +9,7 @@ import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.domain.WaitReading
+import io.cosgriff.waitlight.domain.ZipPlace
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -22,6 +24,14 @@ fun text(id: Int, vararg args: Any): String = RuntimeEnvironment.getApplication(
 
 /** Standing at the Arvada station: Arvada is nearest, 0 miles and a 5-minute drive. */
 val AT_ARVADA: GeoPoint = Stations.all.first { it.name == "Arvada" }.location
+
+/** Arvada's ZIP code as the bundled table has it. */
+val ZIP_80003 = ZipPlace("80003", GeoPoint(39.8254, -105.0644), "Arvada")
+
+/** A node whose click action is labelled [label] (TalkBack's "double-tap to …"). */
+fun hasClickLabel(label: String) = SemanticsMatcher("click label \"$label\"") { node ->
+    node.config.getOrNull(SemanticsActions.OnClick)?.label == label
+}
 
 const val ARVADA = 38
 const val AURORA = 49
