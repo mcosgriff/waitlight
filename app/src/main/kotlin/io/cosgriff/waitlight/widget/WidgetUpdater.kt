@@ -11,7 +11,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
-import io.cosgriff.waitlight.data.location.LocationSource
+import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.domain.WaitThresholds
 import io.cosgriff.waitlight.domain.WidgetContent
 import io.cosgriff.waitlight.domain.widgetContent
@@ -34,14 +34,14 @@ data class WidgetDrawing(val content: WidgetContent, val now: Instant)
 
 /**
  * Keeps the home-screen widget current: after each background check ([update]), whenever the app's waits or
- * location change ([start]), and once more when the first of its badges goes stale or the stations close
+ * "here" (a new fix or ZIP code, [HereSource]) change ([start]), and once more when the first of its badges goes stale or the stations close
  * ([widgetRedrawAt]), so it greys out on time even with no network. Does nothing while no widget is placed.
  */
 @Singleton
 class WidgetUpdater @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val repository: WaitTimesRepository,
-    private val location: LocationSource,
+    private val here: HereSource,
     private val clock: Clock,
 ) {
     private val state = MutableStateFlow<WidgetDrawing?>(null)
@@ -49,10 +49,10 @@ class WidgetUpdater @Inject constructor(
     /** The latest drawing, which the widget's composition follows. */
     val drawing: StateFlow<WidgetDrawing?> = state.asStateFlow()
 
-    /** Redraws the widget whenever the app's waits or location change, for as long as [scope] lives. */
+    /** Redraws the widget whenever the app's waits or "here" change, for as long as [scope] lives. */
     fun start(scope: CoroutineScope) {
         scope.launch {
-            combine(repository.waitTimes, location.here) { _, _ -> }.collectLatest { update() }
+            combine(repository.waitTimes, here.here) { _, _ -> }.collectLatest { update() }
         }
     }
 
@@ -60,7 +60,7 @@ class WidgetUpdater @Inject constructor(
     suspend fun prepare(): WidgetDrawing {
         val now = clock.instant()
         val times = repository.current()
-        val drawing = WidgetDrawing(widgetContent(times.waits, times.lastOutcome, location.lastKnown(), now, THRESHOLDS), now)
+        val drawing = WidgetDrawing(widgetContent(times.waits, times.lastOutcome, here.current()?.point, now, THRESHOLDS), now)
         state.value = drawing
         scheduleRedraw(widgetRedrawAt(drawing.content, now), now)
         return drawing
