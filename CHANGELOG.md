@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/mcosgriff/waitlight/compare/v0.4.0...v0.5.0) (2026-11-04)
+
+
+### Features
+
+* routed drive times from OpenStreetMap, directions in any map app ([#42](https://github.com/mcosgriff/waitlight/issues/42)) ([e1060f0](https://github.com/mcosgriff/waitlight/commit/e1060f010c190bedc607e2364aad7e08eaf8d327))
+
+
+### Code Refactoring
+
+* a seam in front of the phone's fix, permission observed ([#45](https://github.com/mcosgriff/waitlight/issues/45)) ([6dc9354](https://github.com/mcosgriff/waitlight/commit/6dc93546e140905a3dd3ac93d805f50eba1a32cc)), closes [#37](https://github.com/mcosgriff/waitlight/issues/37)
+* one "station row at now" for list, detail and widget ([#46](https://github.com/mcosgriff/waitlight/issues/46)) ([e3a821f](https://github.com/mcosgriff/waitlight/commit/e3a821f33a63f3386f037fc3f771a826c78660bc)), closes [#38](https://github.com/mcosgriff/waitlight/issues/38)
+* one way to draw the widget ([#47](https://github.com/mcosgriff/waitlight/issues/47)) ([d938d08](https://github.com/mcosgriff/waitlight/commit/d938d08f2eca435371c3f27777084943c5b51647))
+* the repository decides, fetches and says it's fetching ([#44](https://github.com/mcosgriff/waitlight/issues/44)) ([d3e0ba7](https://github.com/mcosgriff/waitlight/commit/d3e0ba7bfa3840e50ca577e37ce6be023537bd4b)), closes [#36](https://github.com/mcosgriff/waitlight/issues/36)
+
 ## [0.4.0](https://github.com/mcosgriff/waitlight/compare/v0.3.0...v0.4.0) (2026-11-03)
 
 
