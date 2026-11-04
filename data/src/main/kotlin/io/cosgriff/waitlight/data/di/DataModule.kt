@@ -10,6 +10,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.cosgriff.waitlight.data.location.LastLocationStore
+import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.ktor.client.HttpClient
@@ -52,6 +53,12 @@ object DataModule {
             read = { context.assets.open(ZipCodes.ASSET).bufferedReader().use { it.readText() } },
             readOutlines = { context.assets.open(ZipCodes.OUTLINES_ASSET).bufferedReader().use { it.readText() } },
         )
+
+    /** The bundled drive-time table (ADR-0007), read as soon as it's first needed. */
+    @Provides
+    @Singleton
+    fun driveTimes(@ApplicationContext context: Context, @ApplicationScope scope: CoroutineScope): DriveTimes =
+        DriveTimes(read = { context.assets.open(DriveTimes.ASSET).use { it.readBytes() } }, scope = scope)
 
     @Provides
     @Singleton

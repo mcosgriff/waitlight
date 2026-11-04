@@ -65,11 +65,16 @@ fun StationDetailScreen(stationId: Int, onBack: () -> Unit) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val row = ui.rows[stationId] ?: return
     val context = LocalContext.current
+    val chooserTitle = stringResource(R.string.detail_directions_chooser)
     StationDetailContent(
         row = row,
         badge = row.badge(ui.now, ui.thresholds, ui.dataUsable),
         onBack = onBack,
-        onDirections = { context.open(Intent(Intent.ACTION_VIEW, row.station.directionsUrl.toUri())) },
+        onDirections = {
+            // The system's own picker every time, so the user chooses the map app (CoMaps, Google Maps, …).
+            val map = Intent(Intent.ACTION_VIEW, row.station.mapUri.toUri())
+            context.open(Intent.createChooser(map, chooserTitle))
+        },
         onCall = { context.open(Intent(Intent.ACTION_DIAL, "tel:${row.station.dialNumber}".toUri())) },
     )
 }
@@ -141,10 +146,13 @@ fun StationDetailContent(row: StationRow, badge: Badge, onBack: () -> Unit, onDi
                     val miles = row.distanceMiles
                     val total = row.totalMinutes
                     val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
-                    if (drive != null && miles != null) {
-                        // A total only while the wait it adds is current.
-                        val text = if (total != null && badge is Badge.Live) stringResource(R.string.detail_total, total, drive, miles)
-                        else stringResource(R.string.detail_drive, drive, miles)
+                    if (miles != null) {
+                        // A total only while the wait it adds is current; no drive time outside the routed area.
+                        val text = when {
+                            drive == null -> stringResource(R.string.detail_miles, miles)
+                            total != null && badge is Badge.Live -> stringResource(R.string.detail_total, total, drive, miles)
+                            else -> stringResource(R.string.detail_drive, drive, miles)
+                        }
                         Text(text, style = small, color = muted)
                     }
                     row.updatedAt?.let { Text(stringResource(R.string.detail_updated, TimeText.time(it)), style = small, color = muted) }

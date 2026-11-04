@@ -38,7 +38,8 @@ fun widgetContent(
     thresholds: WaitThresholds,
 ): WidgetContent {
     if (here == null) return WidgetContent.NeedsLocation
-    val all = rowsFor(readings, here)
+    // The widget shows miles, not drive times.
+    val all = rowsFor(readings, here, DriveTable.EMPTY)
     val newest = newestUpdate(all)
     val dataUsable = lastOutcome != FetchOutcome.UNREADABLE
     val nearest = arrange(all, SortOrder.NEAREST, lowProfileRimsOnly = false, state = listState(now, newest, lastOutcome))

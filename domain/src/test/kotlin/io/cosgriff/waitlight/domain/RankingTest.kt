@@ -6,6 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDateTime
+import kotlin.math.roundToInt
 
 class RankingTest {
     private fun denver(text: String): Instant = LocalDateTime.parse(text).atZone(AirCareHours.zone).toInstant()
@@ -16,8 +17,14 @@ class RankingTest {
     /** Somewhere in Arvada, 80003. */
     private val arvada = GeoPoint(39.8277, -105.0656)
 
-    private fun row(name: String, reading: WaitReading, miles: Double?, at: Instant = updated) =
-        StationRow(Stations.all.single { it.name == name }, reading, at, miles)
+    /** A row whose drive time is [drive], by default 5 minutes plus a minute a mile, so the sums below are easy to check. */
+    private fun row(
+        name: String,
+        reading: WaitReading,
+        miles: Double?,
+        at: Instant = updated,
+        drive: Int? = miles?.let { (5 + it).roundToInt() },
+    ) = StationRow(Stations.all.single { it.name == name }, reading, at, miles, drive)
 
     @Test
     fun `the catalog has the 18 stations with unique ids`() {
@@ -37,24 +44,34 @@ class RankingTest {
     }
 
     @Test
-    fun `directions and phone come from the address and number`() {
+    fun `the map link pins the station's coordinates under its name, and the phone is its digits`() {
         val arvadaStation = Stations[38]!!
-        assertEquals(
-            "https://www.google.com/maps/dir/Current+Location/5185+Marshall+St.%2C+Arvada%2C+CO+80002",
-            arvadaStation.directionsUrl,
-        )
+        assertEquals("geo:39.7899748,-105.0698573?q=39.7899748,-105.0698573(Arvada)", arvadaStation.mapUri)
+        assertEquals("geo:39.6744566,-105.0014247?q=39.6744566,-105.0014247(Denver%20%28Lipan%29)", Stations[48]!!.mapUri)
         assertEquals("3034567090", arvadaStation.dialNumber)
         assertEquals("9702478378", Stations[51]!!.dialNumber)
     }
 
     @Test
     fun `total is drive plus wait, capped at 90, and none without an estimate`() {
-        val drive = DriveEstimate.minutes(10.0)
+        val drive = 15
         assertEquals(drive + 13, row("Arvada", WaitReading.Minutes(13), 10.0).totalMinutes)
         assertEquals(drive + 90, row("Parker", WaitReading.Minutes(120), 10.0).totalMinutes)
         assertEquals(drive + 90, row("Parker", WaitReading.MoreThan(60), 10.0).totalMinutes)
         assertNull(row("Longmont", WaitReading.NoEstimate, 10.0).totalMinutes)
         assertNull(row("Arvada", WaitReading.Minutes(13), null).totalMinutes)
+        assertNull(row("Arvada", WaitReading.Minutes(13), 10.0, drive = null).totalMinutes)
+    }
+
+    @Test
+    fun `a station with no drive time goes after the rest in fastest overall and is never the hero`() {
+        val rows = listOf(
+            row("Arvada", WaitReading.Minutes(30), 3.0), // 38
+            row("Golden", WaitReading.Minutes(0), 2.0, drive = null), // no route
+            row("Broomfield", WaitReading.Minutes(10), 6.0), // 21
+        )
+        assertEquals(listOf("Broomfield", "Arvada", "Golden"), names(arrange(rows, SortOrder.FASTEST_OVERALL, false, ListState.LIVE)))
+        assertEquals("Broomfield", fastestOverall(rows, ListState.LIVE, now)?.station?.name)
     }
 
     @Test
@@ -96,7 +113,7 @@ class RankingTest {
 
     @Test
     fun `low-profile rims keeps only the four stations that test them`() {
-        val rows = rowsFor(Stations.all.associate { it.id to (WaitReading.Minutes(10) as WaitReading to updated) }, arvada)
+        val rows = rowsFor(Stations.all.associate { it.id to (WaitReading.Minutes(10) as WaitReading to updated) }, arvada, DriveTable.EMPTY)
         val shown = arrange(rows, SortOrder.NEAREST, true, ListState.LIVE)
         assertEquals(4, shown.size)
         assertTrue(shown.all { it.station.lowProfileRims })
@@ -104,7 +121,7 @@ class RankingTest {
 
     @Test
     fun `every station has a row, with or without a reading`() {
-        val rows = rowsFor(mapOf(38 to (WaitReading.Minutes(10) to updated)), arvada)
+        val rows = rowsFor(mapOf(38 to (WaitReading.Minutes(10) to updated)), arvada, DriveTable.EMPTY)
         assertEquals(18, rows.size)
         assertEquals(WaitReading.Minutes(10), rows.single { it.station.id == 38 }.reading)
         val golden = rows.single { it.station.id == 40 }
@@ -141,12 +158,6 @@ class RankingTest {
         assertNull(fastestOverall(listOf(row("Longmont", WaitReading.NoEstimate, 3.0)), ListState.LIVE, now))
     }
 
-    @Test
-    fun `drive estimate grows with distance`() {
-        assertEquals(5, DriveEstimate.minutes(0.0))
-        assertEquals(8, DriveEstimate.minutes(3.1))
-        assertEquals(61, DriveEstimate.minutes(56.3))
-    }
 
     private fun names(rows: List<StationRow>) = rows.map { it.station.name }
 }
