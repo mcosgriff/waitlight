@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.withLock
 import java.net.UnknownHostException
 import java.time.Clock
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,9 +38,9 @@ data class WaitTimes(
 }
 
 /**
- * Fetches and reads AirCare's page when [worthFetching] says so, and keeps the latest [WaitTimes], on disk too
- * ([WaitTimesStore]), so they survive a restart. The stored waits load in [scope] as soon as the repository
- * starts; until then [waitTimes] is empty, and a [refresh] waits for them.
+ * Decides whether to fetch AirCare's page ([worthFetching]), fetches and reads it, and keeps the latest
+ * [WaitTimes], on disk too ([WaitTimesStore]), so they survive a restart. The stored waits load in [scope] as soon
+ * as the repository starts; until then [waitTimes] is empty, and a [refresh] waits for them.
  */
 @Singleton
 class WaitTimesRepository @Inject constructor(
@@ -49,9 +50,22 @@ class WaitTimesRepository @Inject constructor(
     @param:ApplicationScope scope: CoroutineScope,
 ) {
     private val state = MutableStateFlow(WaitTimes())
-    private val fetching = Mutex()
+    private val busy = MutableStateFlow(false)
+    private val oneFetchAtATime = Mutex()
+
+    /** Guards [unfinished] and the writes to [busy], so a refresh finishing can't clear one that's starting. */
+    private val count = Any()
+
+    /** Refreshes asked for and not yet finished, queued or running. */
+    private var unfinished = 0
 
     val waitTimes: StateFlow<WaitTimes> = state.asStateFlow()
+
+    /**
+     * True from the moment a [refresh] starts fetching until the last refresh asked for meanwhile has finished,
+     * so overlapping refreshes show as one. A refresh that decides not to fetch never sets it.
+     */
+    val fetching: StateFlow<Boolean> = busy.asStateFlow()
 
     private val loaded = scope.async {
         store.load()?.let { stored -> state.compareAndSet(WaitTimes(), stored) }
@@ -65,20 +79,29 @@ class WaitTimesRepository @Inject constructor(
 
     /**
      * Fetches the page if it's worth it for [reason] ([worthFetching]): when AirCare's next update is due, any
-     * time the stations are open for a tap on refresh, and always at launch. Returns whether it fetched. Calls
-     * made while a fetch is running wait for it, then find the data fresh.
+     * time the stations are open for a tap on refresh, and always at launch. Calls made while a fetch is running
+     * wait for it, then find the data fresh.
      */
-    suspend fun refresh(reason: FetchReason = FetchReason.DUE): Boolean = fetching.withLock {
-        loaded.await()
-        val before = state.value
-        val fetched = fetch(reason)
-        if (state.value != before) store.save(state.value)
-        fetched
+    suspend fun refresh(reason: FetchReason) {
+        synchronized(count) { unfinished++ }
+        try {
+            oneFetchAtATime.withLock {
+                loaded.await()
+                if (!worthFetching(reason, clock.instant(), state.value.newestUpdate)) return
+                synchronized(count) { busy.value = true }
+                val before = state.value
+                fetch(reason)
+                if (state.value != before) store.save(state.value)
+            }
+        } finally {
+            synchronized(count) { if (--unfinished == 0) busy.value = false }
+        }
     }
 
-    private suspend fun fetch(reason: FetchReason): Boolean {
-        if (!worthFetching(reason, clock.instant(), state.value.newestUpdate)) return false
+    /** A new list's fetches: one per list on screen, so each list makes its own launch fetch. */
+    fun forList(): ListFetches = ListFetches(this)
 
+    private suspend fun fetch(reason: FetchReason) {
         val html = try {
             client.page()
         } catch (e: CancellationException) {
@@ -88,7 +111,7 @@ class WaitTimesRepository @Inject constructor(
             val outcome = if (e.causes().any { it is UnknownHostException }) FetchOutcome.OFFLINE else FetchOutcome.FAILED
             Log.i(TAG, "Fetch $outcome", e)
             state.value = state.value.copy(lastOutcome = outcome)
-            return true
+            return
         }
 
         state.value = when (val read = AirCarePage.read(html)) {
@@ -103,7 +126,6 @@ class WaitTimesRepository @Inject constructor(
                 state.value.copy(lastOutcome = FetchOutcome.UNREADABLE)
             }
         }
-        return true
     }
 
     private fun Throwable.causes() = generateSequence(this) { it.cause }
@@ -111,4 +133,14 @@ class WaitTimesRepository @Inject constructor(
     private companion object {
         const val TAG = "Waitlight"
     }
+}
+
+/**
+ * One list's ticks. The first is its launch fetch ([FetchReason.LAUNCH]), whatever the time; the rest, also after
+ * the screen comes back, fetch only when AirCare's next update is due ([FetchReason.DUE]).
+ */
+class ListFetches internal constructor(private val repository: WaitTimesRepository) {
+    private val launched = AtomicBoolean(false)
+
+    suspend fun tick() = repository.refresh(if (launched.getAndSet(true)) FetchReason.DUE else FetchReason.LAUNCH)
 }

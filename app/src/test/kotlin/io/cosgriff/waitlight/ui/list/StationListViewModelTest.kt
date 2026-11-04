@@ -50,8 +50,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 /**
- * The list's tick: the first fetches whatever the time; then, every 30 seconds while the screen is showing, it
- * fetches only when AirCare's next update is due. Robolectric
+ * The list makes its launch fetch, once; when to fetch is [WaitTimesRepository]'s, tested there. Robolectric
  * for [LocationSource]'s Context (no location permission, so the tick never looks for one); AirCare is a [MockEngine].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -133,12 +132,6 @@ class StationListViewModelTest {
         error("The list never got there: ${viewModel.ui.value.here}")
     }
 
-    private fun TestScope.tick(at: String) {
-        clock.now = denver(at)
-        advanceTimeBy(TICK_MILLIS)
-        runCurrent()
-    }
-
     @Test
     fun `opening the list fetches even when the data is fresh`() = runTest(dispatcher) {
         repository.refresh(FetchReason.MANUAL) // "Last updated" 2:14 PM, read at 2:20
@@ -147,32 +140,6 @@ class StationListViewModelTest {
         showing { viewModel ->
             assertEquals(ListState.LIVE, viewModel.ui.value.state)
             assertEquals(2, fetches)
-        }
-    }
-
-    @Test
-    fun `later ticks don't fetch while the data is fresh, and do once AirCare's next update is due`() = runTest(dispatcher) {
-        showing {
-            assertEquals(1, fetches) // the launch fetch; "Last updated" 2:14 PM, read at 2:20
-            tick("2026-11-02T14:21")
-            tick("2026-11-02T14:29:14")
-            assertEquals(1, fetches)
-
-            // Fifteen minutes after AirCare's 2:14:15 PM.
-            tick("2026-11-02T14:29:15")
-            assertEquals(2, fetches)
-        }
-    }
-
-    @Test
-    fun `opening the list fetches while the stations are closed, and later ticks don't`() = runTest(dispatcher) {
-        clock.now = denver("2026-11-08T10:00") // a Sunday
-        showing { viewModel ->
-            assertEquals(ListState.CLOSED, viewModel.ui.value.state)
-            assertEquals(1, fetches)
-            tick("2026-11-08T10:01")
-            tick("2026-11-08T10:30")
-            assertEquals(1, fetches)
         }
     }
 
@@ -196,15 +163,7 @@ class StationListViewModelTest {
         }
     }
 
-    @Test
-    fun `the tick fetches straight away when open with no data yet`() = runTest(dispatcher) {
-        showing {
-            assertEquals(1, fetches)
-        }
-    }
-
     private companion object {
-        const val TICK_MILLIS = 30_000L
         const val STOP_AFTER_MILLIS = 5_001L
 
         /** AirCare's page cut down to one station, Arvada, 13 minutes, as of 2:14 PM on 2026-11-02. */

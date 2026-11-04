@@ -12,7 +12,13 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -26,6 +32,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class WaitTimesRepositoryTest {
     private class SetClock(var now: Instant) : Clock() {
         override fun instant() = now
@@ -61,7 +68,7 @@ class WaitTimesRepositoryTest {
 
     @Test
     fun `the waits survive a restart`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         val restarted = newRepository()
         assertEquals(repository.waitTimes.value, restarted.waitTimes.value)
         assertEquals(18, restarted.waitTimes.value.waits.size)
@@ -69,7 +76,7 @@ class WaitTimesRepositoryTest {
 
     @Test
     fun `current waits for the stored ones, for a widget drawn just after a restart`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         val restarted = WaitTimesRepository(
             AirCareClient(HttpClient(MockEngine { respond(savedPage()) }) { expectSuccess = true }),
             clock,
@@ -84,17 +91,18 @@ class WaitTimesRepositoryTest {
 
     @Test
     fun `stored waits are there outside opening hours`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         clock.now = denver("2026-11-08T10:00") // a Sunday
         val restarted = newRepository()
-        assertFalse(restarted.refresh())
+        restarted.refresh(FetchReason.DUE)
+        assertEquals(1, requests.size)
         assertEquals(18, restarted.waitTimes.value.waits.size)
         assertEquals(denver("2026-11-02T17:16"), restarted.waitTimes.value.newestUpdate)
     }
 
     @Test
     fun `a failed fetch is stored too`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         answer = { respond("", HttpStatusCode.ServiceUnavailable) }
         repository.refresh(FetchReason.MANUAL)
         val restarted = newRepository()
@@ -104,8 +112,8 @@ class WaitTimesRepositoryTest {
 
     @Test
     fun `stored waits that are fresh aren't fetched again`() = runTest {
-        repository.refresh()
-        assertFalse(newRepository().refresh())
+        repository.refresh(FetchReason.DUE)
+        newRepository().refresh(FetchReason.DUE)
         assertEquals(1, requests.size)
     }
 
@@ -114,13 +122,13 @@ class WaitTimesRepositoryTest {
         file.writeText("{not json")
         val restarted = newRepository()
         assertTrue(restarted.waitTimes.value.waits.isEmpty())
-        assertTrue(restarted.refresh())
+        restarted.refresh(FetchReason.DUE)
         assertEquals(18, newRepository().waitTimes.value.waits.size)
     }
 
     @Test
     fun `fetches and reads the page`() = runTest {
-        assertTrue(repository.refresh())
+        repository.refresh(FetchReason.DUE)
         val times = repository.waitTimes.value
         assertEquals(FetchOutcome.OK, times.lastOutcome)
         assertEquals(18, times.waits.size)
@@ -131,37 +139,100 @@ class WaitTimesRepositoryTest {
 
     @Test
     fun `doesn't fetch again while the data is fresh, unless asked`() = runTest {
-        repository.refresh()
-        assertFalse(repository.refresh())
+        repository.refresh(FetchReason.DUE)
+        repository.refresh(FetchReason.DUE)
         assertEquals(1, requests.size)
-        assertTrue(repository.refresh(FetchReason.MANUAL))
+        repository.refresh(FetchReason.MANUAL)
         assertEquals(2, requests.size)
     }
 
     @Test
     fun `outside opening hours, fetches only at launch`() = runTest {
         clock.now = denver("2026-11-08T10:00") // a Sunday
-        assertFalse(repository.refresh())
-        assertFalse(repository.refresh(FetchReason.MANUAL))
+        repository.refresh(FetchReason.DUE)
+        repository.refresh(FetchReason.MANUAL)
         assertTrue(requests.isEmpty())
-        assertTrue(repository.refresh(FetchReason.LAUNCH))
+        repository.refresh(FetchReason.LAUNCH)
         assertEquals(1, requests.size)
     }
 
     @Test
+    fun `the launch fetch happens once per list`() = runTest {
+        clock.now = denver("2026-11-08T10:00") // a Sunday
+        val list = repository.forList()
+        list.tick()
+        list.tick()
+        assertEquals(1, requests.size)
+        // The list opened again, after the app was left.
+        repository.forList().tick()
+        assertEquals(2, requests.size)
+    }
+
+    @Test
+    fun `after its launch fetch, a list's ticks fetch when AirCare's next update is due`() = runTest {
+        val list = repository.forList()
+        list.tick() // "Last updated" 5:16 PM, read at 5:20
+        clock.now = denver("2026-11-02T17:25")
+        list.tick()
+        assertEquals(1, requests.size)
+        clock.now = denver("2026-11-03T09:00") // the next morning
+        list.tick()
+        assertEquals(2, requests.size)
+    }
+
+    @Test
+    fun `a tap while closed never shows fetching`() = runTest {
+        clock.now = denver("2026-11-08T10:00") // a Sunday
+        val seen = watchFetching()
+        repository.refresh(FetchReason.MANUAL)
+        assertEquals(listOf(false), seen)
+    }
+
+    @Test
+    fun `fetching shows while a fetch runs, and not after`() = runTest {
+        val seen = watchFetching()
+        repository.refresh(FetchReason.DUE)
+        assertEquals(listOf(false, true, false), seen)
+    }
+
+    @Test
+    fun `overlapping refreshes keep fetching true until the last one finishes`() = runTest {
+        val release = Channel<Unit>()
+        answer = { release.receive(); respond(savedPage()) }
+        val seen = watchFetching()
+        val tick = launch { repository.refresh(FetchReason.DUE) }
+        val tap = launch { repository.refresh(FetchReason.MANUAL) }
+        runCurrent()
+        release.send(Unit) // the tick's fetch
+        release.send(Unit) // the tap's, which waited for it
+        tick.join()
+        tap.join()
+        assertEquals(2, requests.size)
+        assertEquals(listOf(false, true, false), seen)
+    }
+
+
+    /** Every value [WaitTimesRepository.fetching] takes from now on, the current one first. */
+    private fun TestScope.watchFetching(): List<Boolean> {
+        val seen = mutableListOf<Boolean>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.fetching.collect { seen += it } }
+        return seen
+    }
+
+    @Test
     fun `stations that say they're closed keep their last good waits`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         val open = repository.waitTimes.value.waits
         clock.now = denver("2026-11-02T19:50")
         answer = { respond(closedPage()) }
-        assertTrue(repository.refresh(FetchReason.LAUNCH))
+        repository.refresh(FetchReason.LAUNCH)
         assertEquals(open, repository.waitTimes.value.waits)
         assertEquals(FetchOutcome.OK, repository.waitTimes.value.lastOutcome)
     }
 
     @Test
     fun `an unreadable page keeps the last good waits, marked unusable`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         answer = { respond("<html>Down for maintenance</html>") }
         repository.refresh(FetchReason.MANUAL)
         val times = repository.waitTimes.value
@@ -172,7 +243,7 @@ class WaitTimesRepositoryTest {
 
     @Test
     fun `an error from AirCare is a failed fetch that keeps the waits`() = runTest {
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         answer = { respond("", HttpStatusCode.ServiceUnavailable) }
         repository.refresh(FetchReason.MANUAL)
         assertEquals(FetchOutcome.FAILED, repository.waitTimes.value.lastOutcome)
@@ -183,14 +254,14 @@ class WaitTimesRepositoryTest {
     @Test
     fun `no network is offline`() = runTest {
         answer = { throw UnknownHostException("aircarecolorado.com") }
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         assertEquals(FetchOutcome.OFFLINE, repository.waitTimes.value.lastOutcome)
     }
 
     @Test
     fun `a good page after a bad one clears the outcome`() = runTest {
         answer = { respond("<html></html>") }
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         answer = { respond(savedPage()) }
         repository.refresh(FetchReason.MANUAL)
         assertEquals(FetchOutcome.OK, repository.waitTimes.value.lastOutcome)
