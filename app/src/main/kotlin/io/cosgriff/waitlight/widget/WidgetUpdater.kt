@@ -1,20 +1,14 @@
 package io.cosgriff.waitlight.widget
 
-import android.content.Context
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.updateAll
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.domain.WidgetContent
 import io.cosgriff.waitlight.domain.widgetContent
 import io.cosgriff.waitlight.domain.widgetRedrawAt
+import io.cosgriff.waitlight.domain.widgetStillCurrent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,25 +22,30 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** What the widget draws, worked out at [now]. */
-data class WidgetDrawing(val content: WidgetContent, val now: Instant)
+/** What the widget draws: [content] worked out at [drawnAt], shown at [now] (which the age reads). */
+data class WidgetDrawing(val content: WidgetContent, val drawnAt: Instant, val now: Instant = drawnAt)
 
 /**
  * Keeps the home-screen widget current: after each background check ([update]), whenever the app's waits or
- * "here" (a new fix or ZIP code, [HereSource]) change ([start]), and once more when the first of its badges goes stale or the stations close
- * ([widgetRedrawAt]), so it greys out on time even with no network. Does nothing while no widget is placed.
+ * "here" (a new fix or ZIP code, [HereSource]) change ([start]), and once more when the first of its badges goes
+ * stale or the stations close ([widgetRedrawAt]), so it greys out on time even with no network. Does nothing while
+ * no widget is placed.
+ *
+ * Each redraw works the widget out once, in [update]. Glance then either starts the widget, which takes that
+ * drawing from [current], or, when the widget is already running, only recomposes it, without asking again: so
+ * the running widget follows [drawing].
  */
 @Singleton
 class WidgetUpdater @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    private val host: WidgetHost,
     private val repository: WaitTimesRepository,
     private val here: HereSource,
     private val clock: Clock,
 ) {
-    private val state = MutableStateFlow<WidgetDrawing?>(null)
+    private val latest = MutableStateFlow<WidgetDrawing?>(null)
 
-    /** The latest drawing, which the widget's composition follows. */
-    val drawing: StateFlow<WidgetDrawing?> = state.asStateFlow()
+    /** The latest drawing, which a running widget's composition follows. */
+    val drawing: StateFlow<WidgetDrawing?> = latest.asStateFlow()
 
     /** Redraws the widget whenever the app's waits or "here" change, for as long as [scope] lives. */
     fun start(scope: CoroutineScope) {
@@ -55,45 +54,38 @@ class WidgetUpdater @Inject constructor(
         }
     }
 
-    /** Works out the widget now and sets its next redraw. */
-    suspend fun prepare(): WidgetDrawing {
-        val now = clock.instant()
-        val times = repository.current()
-        val drawing = WidgetDrawing(widgetContent(times, here.current()?.point, now), now)
-        state.value = drawing
-        scheduleRedraw(widgetRedrawAt(drawing.content, now), now)
-        return drawing
-    }
-
-    /** Redraws every placed widget. */
+    /** Works the widget out, sets its next redraw and redraws every placed widget. */
     suspend fun update() {
-        if (GlanceAppWidgetManager(context).getGlanceIds(WaitsWidget::class.java).isEmpty()) {
-            cancelRedraws(context)
+        if (!host.anyPlaced()) {
+            host.cancelRedraws()
             return
         }
         prepare()
-        WaitsWidget().updateAll(context)
+        host.redrawAll()
     }
 
-    private fun scheduleRedraw(at: Instant?, now: Instant) {
-        if (at == null) {
-            cancelRedraws(context)
-            return
-        }
-        // No network needed: this only draws what the app already has.
-        val redraw = OneTimeWorkRequestBuilder<WidgetRedrawWorker>()
-            .setInitialDelay(Duration.between(now, at).coerceAtLeast(Duration.ZERO))
-            .build()
-        WorkManager.getInstance(context).enqueueUniqueWork(REDRAW, ExistingWorkPolicy.REPLACE, redraw)
+    /**
+     * What the widget shows now, as it starts: the latest drawing while it's still current ([widgetStillCurrent]),
+     * with the age read now, or else a new one. A widget Glance starts on its own (placed, resized, after a
+     * restart) may find none, or one gone out of date.
+     */
+    suspend fun current(): WidgetDrawing {
+        val now = clock.instant()
+        val last = latest.value
+        if (last != null && widgetStillCurrent(last.content, last.drawnAt, now)) return last.copy(now = now)
+        return prepare()
     }
 
-    companion object {
-        private const val REDRAW = "widget-redraw"
-
-        /** The last widget was removed: nothing to redraw. */
-        fun cancelRedraws(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(REDRAW)
+    /** Works out the widget now and sets its next redraw. */
+    private suspend fun prepare(): WidgetDrawing {
+        val now = clock.instant()
+        val drawing = WidgetDrawing(widgetContent(repository.current(), here.current()?.point, now), now)
+        latest.value = drawing
+        when (val at = widgetRedrawAt(drawing.content, now)) {
+            null -> host.cancelRedraws()
+            else -> host.redrawAfter(Duration.between(now, at).coerceAtLeast(Duration.ZERO))
         }
+        return drawing
     }
 }
 

@@ -48,3 +48,14 @@ fun widgetRedrawAt(content: WidgetContent, now: Instant): Instant? {
         .filter { it > now }
     return (staleAt + closing).min()
 }
+
+/**
+ * Whether the widget drawn at [drawnAt] still shows at [now] what drawing it again would, with no new data and
+ * the same "here": until its [widgetRedrawAt], or, drawn closed, until the stations next open. Asking for a
+ * location stays current, as only a new location changes it.
+ */
+fun widgetStillCurrent(content: WidgetContent, drawnAt: Instant, now: Instant): Boolean {
+    if (content !is WidgetContent.Nearest) return true
+    val until = widgetRedrawAt(content, drawnAt) ?: AirCareHours.nextOpening(drawnAt).toInstant()
+    return now < until
+}

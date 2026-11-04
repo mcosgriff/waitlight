@@ -64,10 +64,11 @@ import io.cosgriff.waitlight.ui.theme.waitColors
 class WaitsWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val updater = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java).widgetUpdater()
-        val first = updater.prepare()
+        val first = updater.current()
         provideContent {
-            val drawing by updater.drawing.collectAsState()
-            WidgetBody(drawing ?: first)
+            val latest by updater.drawing.collectAsState()
+            // A redraw while the widget runs reaches it here; until then, the drawing it started with.
+            WidgetBody(latest?.takeIf { it.drawnAt > first.drawnAt } ?: first)
         }
     }
 }
@@ -77,7 +78,7 @@ class WaitsWidgetReceiver : GlanceAppWidgetReceiver() {
 
     override fun onDisabled(context: Context) {
         super.onDisabled(context)
-        WidgetUpdater.cancelRedraws(context)
+        GlanceWidgetHost.cancelRedraws(context)
     }
 }
 
