@@ -9,7 +9,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
+import io.cosgriff.waitlight.data.location.AndroidPhoneFix
 import io.cosgriff.waitlight.data.location.LastLocationStore
+import io.cosgriff.waitlight.data.location.PhoneFix
 import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
@@ -70,6 +72,10 @@ object DataModule {
     @Singleton
     fun waitTimesStore(@ApplicationContext context: Context): WaitTimesStore =
         WaitTimesStore({ File(context.filesDir, WaitTimesStore.FILE_NAME) })
+
+    /** The phone's fix, from Android's own LocationManager (ADR-0002). */
+    @Provides
+    fun phoneFix(android: AndroidPhoneFix): PhoneFix = android
 
     /** The last location found, for the widget; in the app's own files and left out of backups. */
     @Provides

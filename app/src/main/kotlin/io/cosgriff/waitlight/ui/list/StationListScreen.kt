@@ -45,7 +45,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,7 +89,6 @@ import java.time.Instant
 fun StationListScreen(onOpenStation: (Int) -> Unit, onChangeLocation: () -> Unit) {
     val viewModel: StationListViewModel = hiltViewModel()
     val ui by viewModel.ui.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.onShown() }
     StationListContent(
         ui = ui,
         onRefresh = viewModel::refresh,

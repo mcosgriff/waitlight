@@ -10,12 +10,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
+import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.ui.WaitlightNavHost
 import io.cosgriff.waitlight.ui.theme.WaitlightTheme
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var here: HereSource
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,6 +33,17 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    // Also after the permission dialog and on coming back from system settings, where location may have changed.
+    override fun onResume() {
+        super.onResume()
+        here.onForeground()
+    }
+
+    override fun onPause() {
+        here.onBackground()
+        super.onPause()
     }
 
     companion object {
