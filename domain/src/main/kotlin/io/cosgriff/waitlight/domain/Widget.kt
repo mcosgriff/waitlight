@@ -13,39 +13,24 @@ sealed interface WidgetContent {
      */
     data object NeedsLocation : WidgetContent
 
-    /** The [WIDGET_STATIONS] nearest stations, nearest first, and the newest AirCare time of all of them. */
-    data class Nearest(val rows: List<WidgetRow>, val newestUpdate: Instant?) : WidgetContent
+    /**
+     * The [WIDGET_STATIONS] nearest stations, nearest first, each with its distance, and the newest AirCare time
+     * of all of them.
+     */
+    data class Nearest(val rows: List<StationRow>, val newestUpdate: Instant?) : WidgetContent
 }
 
-/** One station on the widget, with its badge at the time the widget was drawn. */
-data class WidgetRow(
-    val station: Station,
-    val distanceMiles: Double,
-    val badge: Badge,
-    /** AirCare's "Last updated" for this station, or null before its first reading. */
-    val updatedAt: Instant?,
-)
-
 /**
- * The widget at [now]: the nearest stations to [here] with the same badges as the list ([StationRow.badge]), or
+ * The widget at [now]: the nearest stations to [here], the same rows as the list's ([rowsFor]), or
  * [WidgetContent.NeedsLocation] without a location.
  */
-fun widgetContent(
-    readings: Map<Int, Pair<WaitReading, Instant>>,
-    lastOutcome: FetchOutcome,
-    here: GeoPoint?,
-    now: Instant,
-    thresholds: WaitThresholds,
-): WidgetContent {
+fun widgetContent(times: WaitTimes, here: GeoPoint?, now: Instant): WidgetContent {
     if (here == null) return WidgetContent.NeedsLocation
     // The widget shows miles, not drive times.
-    val all = rowsFor(readings, here, DriveTable.EMPTY)
-    val newest = newestUpdate(all)
-    val dataUsable = lastOutcome != FetchOutcome.UNREADABLE
-    val nearest = arrange(all, SortOrder.NEAREST, lowProfileRimsOnly = false, state = listState(now, newest, lastOutcome))
-        .take(WIDGET_STATIONS)
-        .map { row -> WidgetRow(row.station, row.distanceMiles!!, row.badge(now, thresholds, dataUsable), row.updatedAt) }
-    return WidgetContent.Nearest(nearest, newest)
+    val all = rowsFor(times, here, DriveTable.EMPTY, now)
+    val state = listState(now, times.newestUpdate, times.lastOutcome)
+    val nearest = arrange(all, SortOrder.NEAREST, lowProfileRimsOnly = false, state = state).take(WIDGET_STATIONS)
+    return WidgetContent.Nearest(nearest, times.newestUpdate)
 }
 
 /**

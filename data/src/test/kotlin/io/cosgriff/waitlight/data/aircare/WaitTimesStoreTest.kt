@@ -2,6 +2,7 @@ package io.cosgriff.waitlight.data.aircare
 
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.WaitReading
+import io.cosgriff.waitlight.domain.WaitTimes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.After

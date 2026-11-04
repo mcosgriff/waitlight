@@ -68,7 +68,6 @@ fun StationDetailScreen(stationId: Int, onBack: () -> Unit) {
     val chooserTitle = stringResource(R.string.detail_directions_chooser)
     StationDetailContent(
         row = row,
-        badge = row.badge(ui.now, ui.thresholds, ui.dataUsable),
         onBack = onBack,
         onDirections = {
             // The system's own picker every time, so the user chooses the map app (CoMaps, Google Maps, …).
@@ -92,7 +91,8 @@ private fun Context.open(intent: Intent) {
  * a sheet over the map's bottom edge.
  */
 @Composable
-fun StationDetailContent(row: StationRow, badge: Badge, onBack: () -> Unit, onDirections: () -> Unit, onCall: () -> Unit) {
+fun StationDetailContent(row: StationRow, onBack: () -> Unit, onDirections: () -> Unit, onCall: () -> Unit) {
+    val badge = row.badge
     val station = row.station
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val background = MaterialTheme.colorScheme.background

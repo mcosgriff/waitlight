@@ -46,7 +46,7 @@ import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.Badge
 import io.cosgriff.waitlight.domain.WaitBand
 import io.cosgriff.waitlight.domain.WidgetContent
-import io.cosgriff.waitlight.domain.WidgetRow
+import io.cosgriff.waitlight.domain.StationRow
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.badgeDescription
 import io.cosgriff.waitlight.ui.components.colors
@@ -129,7 +129,7 @@ private fun WidgetBody(drawing: WidgetDrawing) {
                 if (index > 0) Spacer(GlanceModifier.height(10.dp))
                 // An equal share each of a widget made taller than the rows, rather than a gap below them.
                 Box(GlanceModifier.fillMaxWidth().defaultWeight(), contentAlignment = Alignment.CenterStart) {
-                    StationRow(row, resources)
+                    StationRowItem(row, resources)
                 }
             }
         }
@@ -137,7 +137,7 @@ private fun WidgetBody(drawing: WidgetDrawing) {
 }
 
 @Composable
-private fun StationRow(row: WidgetRow, resources: Resources) {
+private fun StationRowItem(row: StationRow, resources: Resources) {
     val context = LocalContext.current
     Row(
         GlanceModifier.fillMaxWidth().clickable(actionStartActivity(MainActivity.stationIntent(context, row.station.id))),

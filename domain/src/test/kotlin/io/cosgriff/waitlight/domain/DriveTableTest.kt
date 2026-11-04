@@ -5,6 +5,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
+import java.time.Instant
 
 class DriveTableTest {
     /**
@@ -100,10 +101,14 @@ class DriveTableTest {
     @Test
     fun `rows take their drive time from the table, and none without a location`() {
         val here = GeoPoint(39.70, -105.10)
-        val rows = rowsFor(emptyMap(), here, sample).associateBy { it.station.id }
+        val rows = rowsFor(WaitTimes(), here, sample, NOW).associateBy { it.station.id }
         assertEquals(10, rows.getValue(38).driveMinutes)
         assertEquals(20, rows.getValue(40).driveMinutes)
         assertNull(rows.getValue(51).driveMinutes)
-        assertNull(rowsFor(emptyMap(), null, sample).first().driveMinutes)
+        assertNull(rowsFor(WaitTimes(), null, sample, NOW).first().driveMinutes)
+    }
+
+    private companion object {
+        val NOW: Instant = Instant.parse("2026-11-02T21:20:00Z")
     }
 }

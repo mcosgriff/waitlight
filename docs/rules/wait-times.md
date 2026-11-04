@@ -141,7 +141,7 @@ test there.
 ## The widget
 
 - The three nearest stations (`widgetContent`, `WIDGET_STATIONS`), nearest first by straight-line distance, each
-  with its badge, name, miles and a status word. Same badges and rules as the list (`StationRow.badge`):
+  with its badge, name, miles and a status word. Same rows, badges and rules as the list (`rowsFor`):
   closed outside hours, stale on each station's own timestamp, all stale when the page can't be read, "no
   reading" before the first fetch. Every badge has its icon and the list's content description.
 - "Here" is the list's ("Where "here" is"; `HereSource.current`): the fix, else the saved ZIP code.

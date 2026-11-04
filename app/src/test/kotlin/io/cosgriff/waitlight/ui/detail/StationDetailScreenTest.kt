@@ -10,10 +10,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.DriveTable
+import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.domain.WaitReading
-import io.cosgriff.waitlight.domain.WaitThresholds
+import io.cosgriff.waitlight.domain.WaitTimes
 import io.cosgriff.waitlight.domain.rowsFor
 import io.cosgriff.waitlight.ui.ARVADA
 import io.cosgriff.waitlight.ui.AT_ARVADA
@@ -47,16 +48,14 @@ class StationDetailScreenTest {
         now: Instant,
         waits: Map<Int, Pair<WaitReading, Instant>> = threeWaits(denver("2026-11-02T14:14")),
         here: GeoPoint? = AT_ARVADA,
-        dataUsable: Boolean = true,
+        outcome: FetchOutcome = FetchOutcome.OK,
         drives: DriveTable = TEST_DRIVES,
     ) {
-        val row = rowsFor(waits, here, drives).first { it.station.id == station }
-        val badge = row.badge(now, WaitThresholds(), dataUsable)
+        val row = rowsFor(WaitTimes(waits, outcome), here, drives, now).first { it.station.id == station }
         compose.setContent {
             WaitlightTheme(dark = false) {
                 StationDetailContent(
                     row = row,
-                    badge = badge,
                     onBack = { tapped += "back" },
                     onDirections = { tapped += "directions" },
                     onCall = { tapped += "call" },
@@ -88,7 +87,7 @@ class StationDetailScreenTest {
 
     @Test
     fun `an unreadable page greys a wait that is still recent`() {
-        show(ARVADA, now = denver("2026-11-02T14:20"), dataUsable = false)
+        show(ARVADA, now = denver("2026-11-02T14:20"), outcome = FetchOutcome.UNREADABLE)
         compose.onNode(hasDescription("Last known short wait, 13 minutes as of 2:14 PM, may be out of date")).assertExists()
         shown(text(R.string.detail_status_stale))
     }

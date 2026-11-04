@@ -14,7 +14,6 @@ class WidgetTest {
     // Monday 2026-11-02.
     private val now = denver("2026-11-02T14:20")
     private val updated = denver("2026-11-02T14:14")
-    private val thresholds = WaitThresholds()
 
     /** Somewhere in Arvada, 80003: Arvada, Broomfield and Golden are the nearest three. */
     private val arvada = GeoPoint(39.8277, -105.0656)
@@ -28,7 +27,7 @@ class WidgetTest {
         waits: Map<Int, Pair<WaitReading, Instant>> = readings,
         here: GeoPoint? = arvada,
         outcome: FetchOutcome = FetchOutcome.OK,
-    ) = widgetContent(waits, outcome, here, at, thresholds)
+    ) = widgetContent(WaitTimes(waits, outcome), here, at)
 
     private fun nearest(content: WidgetContent) = content as WidgetContent.Nearest
 
@@ -36,7 +35,7 @@ class WidgetTest {
     fun `shows the nearest three, nearest first`() {
         val rows = nearest(content()).rows
         assertEquals(listOf("Arvada", "Broomfield", "Golden"), rows.map { it.station.name })
-        assertTrue(rows.zipWithNext().all { (a, b) -> a.distanceMiles <= b.distanceMiles })
+        assertTrue(rows.zipWithNext().all { (a, b) -> a.distanceMiles!! <= b.distanceMiles!! })
         assertEquals(WIDGET_STATIONS, rows.size)
     }
 

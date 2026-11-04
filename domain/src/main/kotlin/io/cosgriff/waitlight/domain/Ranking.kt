@@ -3,8 +3,9 @@ package io.cosgriff.waitlight.domain
 import java.time.Instant
 
 /**
- * One station on the list: its fixed facts, its last reading, and how far it is from the user. [reading] and
- * [updatedAt] are null until the app has read a wait for it.
+ * One station at a moment, as the list, the detail and the widget show it: its fixed facts, its last reading, how
+ * far it is from the user, and its badge then. [reading] and [updatedAt] are null until the app has read a wait for
+ * it. Made by [rowsFor].
  */
 data class StationRow(
     val station: Station,
@@ -18,6 +19,8 @@ data class StationRow(
      * (outside the gas emissions program area).
      */
     val driveMinutes: Int?,
+    /** The badge at the row's moment ([badgeFor]): closed outside hours, [Badge.NoReading] before the first reading. */
+    val badge: Badge,
 ) {
     /**
      * Drive plus wait, with any wait counted as at most [WAIT_CAP_MINUTES]. Null without a wait estimate or a drive
@@ -35,13 +38,6 @@ data class StationRow(
             return drive + wait
         }
 
-    /** The badge at [now]; see [badgeFor]. Closed outside hours, [Badge.NoReading] before the first reading. */
-    fun badge(now: Instant, thresholds: WaitThresholds, dataUsable: Boolean = true): Badge {
-        if (!AirCareHours.isOpen(now)) return Badge.Closed
-        if (reading == null || updatedAt == null) return Badge.NoReading
-        return badgeFor(reading, updatedAt, now, thresholds, dataUsable)
-    }
-
     companion object {
         const val WAIT_CAP_MINUTES = 90
     }
@@ -51,22 +47,27 @@ data class StationRow(
 enum class SortOrder { NEAREST, FASTEST_OVERALL }
 
 /**
- * A row for every station, with its reading if there is one, the straight-line distance from [from] and the
- * drive time from it in [drives]. Null [from] (no location) gives neither.
+ * Every station at [now]: its reading in [times] if there is one, the straight-line distance from [from], the
+ * drive time from it in [drives], and its badge ([WaitThresholds.STANDARD]). Each badge goes stale on its own
+ * station's time; all of them after an unreadable page. Null [from] (no location) gives no distance or drive.
  */
-fun rowsFor(
-    readings: Map<Int, Pair<WaitReading, Instant>>,
-    from: GeoPoint?,
-    drives: DriveTable,
-): List<StationRow> = Stations.all.map { station ->
-    val latest = readings[station.id]
-    StationRow(
-        station,
-        latest?.first,
-        latest?.second,
-        distanceMiles = from?.let { station.location.milesTo(it) },
-        driveMinutes = from?.let { drives.minutes(it, station.id) },
-    )
+fun rowsFor(times: WaitTimes, from: GeoPoint?, drives: DriveTable, now: Instant): List<StationRow> =
+    Stations.all.map { station ->
+        val latest = times.waits[station.id]
+        StationRow(
+            station,
+            latest?.first,
+            latest?.second,
+            distanceMiles = from?.let { station.location.milesTo(it) },
+            driveMinutes = from?.let { drives.minutes(it, station.id) },
+            badge = badgeAt(latest, now, times.dataUsable),
+        )
+    }
+
+private fun badgeAt(latest: Pair<WaitReading, Instant>?, now: Instant, dataUsable: Boolean): Badge = when {
+    !AirCareHours.isOpen(now) -> Badge.Closed
+    latest == null -> Badge.NoReading
+    else -> badgeFor(latest.first, latest.second, now, WaitThresholds.STANDARD, dataUsable)
 }
 
 /**
@@ -93,14 +94,11 @@ fun arrange(
 /**
  * The "Fastest overall right now" card: the station with the least drive plus wait among [rows] (already
  * filtered by the chips). None while closed, while the data is stale, offline or broken, without a location, or
- * when no station has a fresh estimate.
+ * when no station has a fresh estimate, which is a live badge ([Badge.Live]).
  */
-fun fastestOverall(rows: List<StationRow>, state: ListState, now: Instant): StationRow? {
+fun fastestOverall(rows: List<StationRow>, state: ListState): StationRow? {
     if (state != ListState.LIVE && state != ListState.DUE) return null
     return rows
-        .filter { row -> row.totalMinutes != null && row.updatedAt?.let { Freshness.isFresh(it, now) } == true }
+        .filter { row -> row.totalMinutes != null && row.badge is Badge.Live }
         .minWithOrNull(compareBy<StationRow> { it.totalMinutes }.thenBy { it.distanceMiles })
 }
-
-/** The newest "Last updated" among [rows]: how fresh the data as a whole is. */
-fun newestUpdate(rows: Collection<StationRow>): Instant? = rows.mapNotNull { it.updatedAt }.maxOrNull()

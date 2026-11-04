@@ -12,7 +12,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.location.HereSource
-import io.cosgriff.waitlight.domain.WaitThresholds
 import io.cosgriff.waitlight.domain.WidgetContent
 import io.cosgriff.waitlight.domain.widgetContent
 import io.cosgriff.waitlight.domain.widgetRedrawAt
@@ -60,7 +59,7 @@ class WidgetUpdater @Inject constructor(
     suspend fun prepare(): WidgetDrawing {
         val now = clock.instant()
         val times = repository.current()
-        val drawing = WidgetDrawing(widgetContent(times.waits, times.lastOutcome, here.current()?.point, now, THRESHOLDS), now)
+        val drawing = WidgetDrawing(widgetContent(times, here.current()?.point, now), now)
         state.value = drawing
         scheduleRedraw(widgetRedrawAt(drawing.content, now), now)
         return drawing
@@ -90,7 +89,6 @@ class WidgetUpdater @Inject constructor(
 
     companion object {
         private const val REDRAW = "widget-redraw"
-        private val THRESHOLDS = WaitThresholds()
 
         /** The last widget was removed: nothing to redraw. */
         fun cancelRedraws(context: Context) {

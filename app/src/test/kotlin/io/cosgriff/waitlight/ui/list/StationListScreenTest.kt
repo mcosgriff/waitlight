@@ -12,12 +12,12 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import io.cosgriff.waitlight.R
-import io.cosgriff.waitlight.data.aircare.WaitTimes
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.WaitReading
+import io.cosgriff.waitlight.domain.WaitTimes
 import io.cosgriff.waitlight.ui.ARVADA
 import io.cosgriff.waitlight.ui.AT_ARVADA
 import io.cosgriff.waitlight.ui.AURORA
