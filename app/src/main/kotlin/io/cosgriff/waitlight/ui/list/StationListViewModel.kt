@@ -8,7 +8,6 @@ import io.cosgriff.waitlight.data.aircare.WaitTimes
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
-import io.cosgriff.waitlight.data.location.LocationSource
 import io.cosgriff.waitlight.data.settings.Settings
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.domain.DriveTable
@@ -57,8 +56,8 @@ data class StationListUi(
     val hasLocation: Boolean get() = here != null
 }
 
-/** The list's choices, kept in [Settings] so the list opens the way it was left. */
-private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refreshing: Boolean)
+/** The list's choices, kept in [Settings] so the list opens the way it was left, and what it's waiting on. */
+private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refreshing: Boolean, val locationAllowed: Boolean)
 
 /**
  * The station list. While the screen is showing it ticks every [TICK_MILLIS] to re-age the data and give the
@@ -68,7 +67,6 @@ private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refr
 @HiltViewModel
 class StationListViewModel @Inject constructor(
     private val waitTimes: WaitTimesRepository,
-    private val location: LocationSource,
     private val hereSource: HereSource,
     private val driveTimes: DriveTimes,
     private val settings: SettingsStore,
@@ -76,12 +74,13 @@ class StationListViewModel @Inject constructor(
 ) : ViewModel() {
     private val saved = settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
     private val fetches = waitTimes.forList()
-    private val choices = combine(saved, waitTimes.fetching) { s, f -> Choices(s.order, s.rimsOnly, f) }
+    private val choices = combine(saved, waitTimes.fetching, hereSource.locationAllowed) { s, fetching, allowed ->
+        Choices(s.order, s.rimsOnly, fetching, allowed)
+    }
 
     private val ticks = flow {
         while (true) {
             emit(clock.instant())
-            findLocation()
             viewModelScope.launch { fetches.tick() }
             delay(TICK_MILLIS)
         }
@@ -96,7 +95,7 @@ class StationListViewModel @Inject constructor(
                 waitTimes.waitTimes.value,
                 hereSource.here.value,
                 driveTimes.table.value,
-                saved.value.let { Choices(it.order, it.rimsOnly, waitTimes.fetching.value) },
+                saved.value.let { Choices(it.order, it.rimsOnly, waitTimes.fetching.value, hereSource.locationAllowed.value) },
             ),
         )
 
@@ -110,19 +109,12 @@ class StationListViewModel @Inject constructor(
 
     /** A tap on refresh or "Try again": looks for the phone again too. */
     fun refresh() {
-        viewModelScope.launch { location.update() }
+        hereSource.find()
         viewModelScope.launch { waitTimes.refresh(FetchReason.MANUAL) }
     }
 
-    /** The screen came back, perhaps with location newly allowed. */
-    fun onShown() = findLocation()
-
-    private fun findLocation() {
-        if (location.here.value == null && location.permitted()) viewModelScope.launch { location.update() }
-    }
-
     private fun build(now: Instant, times: WaitTimes, here: Here?, drives: DriveTable, choices: Choices): StationListUi =
-        stationListUi(now, times, here, drives, choices.order, choices.rimsOnly, location.permitted(), choices.refreshing)
+        stationListUi(now, times, here, drives, choices.order, choices.rimsOnly, choices.locationAllowed, choices.refreshing)
 
     private companion object {
         const val TICK_MILLIS = 30_000L

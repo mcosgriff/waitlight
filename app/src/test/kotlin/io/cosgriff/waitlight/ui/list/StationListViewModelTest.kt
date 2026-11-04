@@ -8,7 +8,8 @@ import io.cosgriff.waitlight.data.aircare.WaitTimesStore
 import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.data.location.LastLocationStore
-import io.cosgriff.waitlight.data.location.LocationSource
+import io.cosgriff.waitlight.data.location.PhoneFix
+import io.cosgriff.waitlight.data.location.AndroidPhoneFix
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.domain.FetchReason
@@ -26,6 +27,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -51,7 +54,7 @@ import java.time.ZoneOffset
 
 /**
  * The list makes its launch fetch, once; when to fetch is [WaitTimesRepository]'s, tested there. Robolectric
- * for [LocationSource]'s Context (no location permission, so the tick never looks for one); AirCare is a [MockEngine].
+ * for [AndroidPhoneFix]'s Context (no location permission, so nothing looks for one); AirCare is a [MockEngine].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -99,14 +102,24 @@ class StationListViewModelTest {
         dir.deleteRecursively()
     }
 
-    private fun newViewModel(): StationListViewModel {
-        val location = LocationSource(
-            RuntimeEnvironment.getApplication(),
-            LastLocationStore({ File(dir, LastLocationStore.FILE_NAME) }, Dispatchers.Unconfined),
-        )
-        val here = HereSource(location, settings, ZipCodes({ ZIPS }, Dispatchers.Unconfined), settingsScope)
+    /** The phone with location allowed, at [fix]. */
+    private class AllowedPhone(private val fix: GeoPoint) : PhoneFix {
+        override val permitted: StateFlow<Boolean> = MutableStateFlow(true)
+        override fun recheck() = Unit
+        override suspend fun find() = fix
+    }
+
+    private fun hereSource(phone: PhoneFix = AndroidPhoneFix(RuntimeEnvironment.getApplication())) = HereSource(
+        phone,
+        LastLocationStore({ File(dir, LastLocationStore.FILE_NAME) }, Dispatchers.Unconfined),
+        settings,
+        ZipCodes({ ZIPS }, Dispatchers.Unconfined),
+        settingsScope,
+    )
+
+    private fun newViewModel(here: HereSource = hereSource()): StationListViewModel {
         val drives = DriveTimes({ ByteArray(0) }, settingsScope, Dispatchers.Unconfined)
-        return StationListViewModel(repository, location, here, drives, settings, clock)
+        return StationListViewModel(repository, here, drives, settings, clock)
     }
 
     /** Shows the list (something collects its state) for the length of [block], then lets the ticks stop. */
@@ -153,12 +166,24 @@ class StationListViewModelTest {
     }
 
     @Test
+    fun `with location allowed, the phone's fix is here, and the list knows location is on`() = runTest(dispatcher) {
+        val here = hereSource(AllowedPhone(GeoPoint(39.83, -105.06)))
+        showing(newViewModel(here)) { viewModel ->
+            here.onForeground() // the app in front
+            val ui = awaitUi(viewModel) { it.here is Here.Device }
+            assertEquals(Here.Device(GeoPoint(39.83, -105.06), ARVADA), ui.here)
+            assertEquals(true, ui.locationAllowed)
+            assertEquals("Arvada", ui.rows.first().station.name)
+        }
+    }
+
+    @Test
     fun `a saved ZIP is here when location isn't allowed`() = runTest(dispatcher) {
         settings.setZip("80003")
         showing { viewModel ->
             // The settings and the table are read on other threads; wait for them.
             val ui = awaitUi(viewModel) { it.here != null }
-            assertEquals(Here.Zip(ZipPlace("80003", GeoPoint(39.8254, -105.0644), "Arvada")), ui.here)
+            assertEquals(Here.Zip(ARVADA), ui.here)
             assertEquals("Arvada", ui.rows.first().station.name)
         }
     }
@@ -168,6 +193,7 @@ class StationListViewModelTest {
 
         /** AirCare's page cut down to one station, Arvada, 13 minutes, as of 2:14 PM on 2026-11-02. */
         const val ZIPS = "80003|39.8254|-105.0644|Arvada"
+        val ARVADA = ZipPlace("80003", GeoPoint(39.8254, -105.0644), "Arvada")
 
         val PAGE = """
             <html><body><script>

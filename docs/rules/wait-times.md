@@ -124,6 +124,9 @@ test there.
 - **Location permission wins:** with location allowed and a fix found, distances are from the fix. Otherwise
   from the saved ZIP code's centroid, if there is one. Otherwise there's no "here" and the list is
   alphabetical (`here`). A ZIP saved before location was allowed stays saved, unused, until location goes.
+- The fix is looked for when the app comes to the front with none found yet (also after the permission dialog
+  and on coming back from system settings, since Android says nothing when the permission changes), again every
+  30 seconds while it's in front and none is found, and on a tap on refresh. Never from the background. Location no longer allowed forgets the fix (`HereSource`).
 - ZIP codes come from the bundled table (ADR-0005): every Colorado ZIP with a Census area, 800xx–816xx. A typed
   ZIP is five digits and in the table; otherwise it's refused, "Enter a 5-digit ZIP code" or "… isn't a
   Colorado ZIP code". The field takes digits only, at most five, on a number keyboard.
