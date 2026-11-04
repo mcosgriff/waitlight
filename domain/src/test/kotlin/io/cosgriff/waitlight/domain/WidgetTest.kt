@@ -1,6 +1,7 @@
 package io.cosgriff.waitlight.domain
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -120,5 +121,26 @@ class WidgetTest {
     fun `a redraw is never in the past`() {
         val at = widgetRedrawAt(content(), now)!!
         assertTrue(Duration.between(now, at) > Duration.ZERO)
+    }
+
+    @Test
+    fun `a drawing stays current until its first badge goes stale`() {
+        // Every badge was updated at 14:14, so they go stale at 14:44:01.
+        val drawn = content()
+        assertTrue(widgetStillCurrent(drawn, drawnAt = now, now = denver("2026-11-02T14:44")))
+        assertFalse(widgetStillCurrent(drawn, drawnAt = now, now = denver("2026-11-02T14:44:01")))
+    }
+
+    @Test
+    fun `a drawing of the stations closed stays current until they open`() {
+        val evening = denver("2026-11-02T18:00")
+        val drawn = content(at = evening)
+        assertTrue(widgetStillCurrent(drawn, drawnAt = evening, now = denver("2026-11-03T07:59")))
+        assertFalse(widgetStillCurrent(drawn, drawnAt = evening, now = denver("2026-11-03T08:00")))
+    }
+
+    @Test
+    fun `asking for a location stays current, as only a new location changes it`() {
+        assertTrue(widgetStillCurrent(WidgetContent.NeedsLocation, drawnAt = now, now = denver("2026-11-09T12:00")))
     }
 }

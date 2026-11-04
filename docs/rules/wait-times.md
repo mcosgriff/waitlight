@@ -156,5 +156,8 @@ test there.
 - Redrawn after every background check, at the stations' opening (`OpeningWorker`), whenever the app's waits
   or location change, and on its own (`widgetRedrawAt`, no network needed) at the moment its first fresh badge
   goes stale or at closing, whichever is first. No redraws while closed beyond the opening one.
+- Each redraw works the widget out once. A widget Glance starts on its own (placed, resized, after a restart)
+  reuses the last drawing while it is still current (`widgetStillCurrent`): before its `widgetRedrawAt`, or,
+  drawn closed, before the next opening. Otherwise it is worked out again.
 - Colours from `waitColors(dark)`, following the phone's light or dark; the system font; 28dp corners.
 - A tap on a station opens its detail over the list; anywhere else opens the list.
