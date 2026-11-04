@@ -55,8 +55,8 @@ test there.
   that can't be a wait, is dropped; a file that can't be read is logged and the app starts empty, never crashes.
 - Stated hours that differ from `AirCareHours.STATED_HOURS` are logged, and the waits still read.
 - Why a fetch happens decides whether it does (`FetchReason`, `worthFetching`): **opening the list at app start
-  always fetches**, open or closed, fresh or not, once per list (the screen coming back doesn't count); a tap on
-  refresh fetches whenever the stations are open; anything else only when `shouldFetch` says so.
+  always fetches**, open or closed, fresh or not, once per list (`ListFetches`; the screen coming back doesn't
+  count); a tap on refresh fetches whenever the stations are open; anything else only when `shouldFetch` says so.
 - Wait wording seen: `Wait is 13 mins` (also `0 mins`, `1 min`), `Station Open` (no estimate),
   `The wait is more than 60 minutes. …`, and `Station Closed` (every station after hours; a fixture of that
   page is saved too). A closed station has no reading and keeps its last good one; a page with every station

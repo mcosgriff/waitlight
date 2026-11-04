@@ -7,12 +7,12 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
+import io.cosgriff.waitlight.domain.FetchReason
 import io.cosgriff.waitlight.widget.WidgetUpdater
 
 /**
- * One background check, while the stations are open. It fetches only when the data is due
- * ([io.cosgriff.waitlight.domain.FetchReason.DUE]), never as a manual refresh or a launch, so it never fetches more often than AirCare
- * updates. Afterwards it asks [BackgroundRefresh] what comes next, which near closing time means sleeping until
+ * One background check, while the stations are open. It fetches only when the data is due ([FetchReason.DUE]),
+ * never as a manual refresh or a launch, so it never fetches more often than AirCare updates. Afterwards it asks [BackgroundRefresh] what comes next, which near closing time means sleeping until
  * the next opening. It redraws the widget too, fetched or not, so its badges and age follow the clock.
  */
 @HiltWorker
@@ -25,7 +25,7 @@ class RefreshWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         // A failed fetch is kept as the waits' outcome, and the next check tries again; nothing to retry here.
-        repository.refresh()
+        repository.refresh(FetchReason.DUE)
         widget.update()
         backgroundRefresh.schedule()
         return Result.success()
