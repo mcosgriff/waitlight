@@ -22,7 +22,10 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** What the widget draws: [content] worked out at [drawnAt], shown at [now] (which the age reads). */
+/**
+ * What the widget draws: [content] worked out at [drawnAt], shown at [now], which decides whether the update time
+ * needs its weekday.
+ */
 data class WidgetDrawing(val content: WidgetContent, val drawnAt: Instant, val now: Instant = drawnAt)
 
 /**
@@ -60,25 +63,27 @@ class WidgetUpdater @Inject constructor(
             host.cancelRedraws()
             return
         }
-        prepare()
+        prepare(clock.instant())
         host.redrawAll()
     }
 
     /**
-     * What the widget shows now, as it starts: the latest drawing while it's still current ([widgetStillCurrent]),
-     * with the age read now, or else a new one. A widget Glance starts on its own (placed, resized, after a
-     * restart) may find none, or one gone out of date.
+     * What the widget shows now, as it starts, and from then on [drawing]: the latest drawing while it's still
+     * current ([widgetStillCurrent]), shown now, or else a new one. A widget Glance starts on its own (placed,
+     * resized, after a restart) may find none, or one gone out of date.
      */
     suspend fun current(): WidgetDrawing {
         val now = clock.instant()
         val last = latest.value
-        if (last != null && widgetStillCurrent(last.content, last.drawnAt, now)) return last.copy(now = now)
-        return prepare()
+        if (last == null || !widgetStillCurrent(last.content, last.drawnAt, now)) return prepare(now)
+        val shown = last.copy(now = now)
+        // Unless a redraw got there first.
+        latest.compareAndSet(last, shown)
+        return shown
     }
 
-    /** Works out the widget now and sets its next redraw. */
-    private suspend fun prepare(): WidgetDrawing {
-        val now = clock.instant()
+    /** Works out the widget at [now] and sets its next redraw. */
+    private suspend fun prepare(now: Instant): WidgetDrawing {
         val drawing = WidgetDrawing(widgetContent(repository.current(), here.current()?.point, now), now)
         latest.value = drawing
         when (val at = widgetRedrawAt(drawing.content, now)) {

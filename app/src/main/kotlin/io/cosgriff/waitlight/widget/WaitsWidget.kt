@@ -66,9 +66,9 @@ class WaitsWidget : GlanceAppWidget() {
         val updater = EntryPointAccessors.fromApplication(context, WidgetEntryPoint::class.java).widgetUpdater()
         val first = updater.current()
         provideContent {
-            val latest by updater.drawing.collectAsState()
-            // A redraw while the widget runs reaches it here; until then, the drawing it started with.
-            WidgetBody(latest?.takeIf { it.drawnAt > first.drawnAt } ?: first)
+            // A redraw while the widget runs reaches it here.
+            val drawing by updater.drawing.collectAsState()
+            WidgetBody(drawing ?: first)
         }
     }
 }

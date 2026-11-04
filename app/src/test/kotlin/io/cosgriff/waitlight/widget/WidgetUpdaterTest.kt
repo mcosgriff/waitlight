@@ -73,13 +73,14 @@ class WidgetUpdaterTest {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private val updater: WidgetUpdater = runBlocking {
-        WaitTimesStore({ File(dir, WaitTimesStore.FILE_NAME) }, Dispatchers.Unconfined).save(WaitTimes(threeWaits(updated)))
+        val store = WaitTimesStore({ File(dir, WaitTimesStore.FILE_NAME) }, Dispatchers.Unconfined)
+        store.save(WaitTimes(threeWaits(updated)))
         val lastFix = LastLocationStore({ File(dir, LastLocationStore.FILE_NAME) }, Dispatchers.Unconfined)
         lastFix.save(AT_ARVADA)
         val repository = WaitTimesRepository(
             AirCareClient(HttpClient(MockEngine { error("the widget never fetches") })),
             clock,
-            WaitTimesStore({ File(dir, WaitTimesStore.FILE_NAME) }, Dispatchers.Unconfined),
+            store,
             CoroutineScope(Dispatchers.Unconfined),
         )
         val settings = SettingsStore(PreferenceDataStoreFactory.create(scope = scope) { File(dir, "settings.preferences_pb") })
@@ -115,12 +116,14 @@ class WidgetUpdaterTest {
     }
 
     @Test
-    fun `a widget drawn later shows the age at that time, and its badges as they still are`() = runBlocking {
+    fun `a widget drawn later reuses the drawing while its badges still hold, shown at that time`() = runBlocking {
         updater.update()
         clock.now = denver("2026-11-02T14:30")
         val shown = updater.current()
 
         assertEquals(denver("2026-11-02T14:30"), shown.now)
+        // The running widget follows the drawing flow, so it holds what was shown.
+        assertEquals(shown, updater.drawing.value)
         assertEquals(1, host.scheduled.size)
     }
 
