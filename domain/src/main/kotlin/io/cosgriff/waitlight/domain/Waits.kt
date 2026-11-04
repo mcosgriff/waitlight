@@ -58,6 +58,11 @@ data class WaitThresholds(val greenMax: Int = 30, val yellowMax: Int = 60) {
     init {
         require(greenMax in 1..<yellowMax) { "need 0 < greenMax < yellowMax, got $greenMax and $yellowMax" }
     }
+
+    companion object {
+        /** The app's bands: short under 30 minutes, moderate to 60, long over. */
+        val STANDARD = WaitThresholds()
+    }
 }
 
 enum class WaitBand { SHORT, MODERATE, LONG }

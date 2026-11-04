@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.data.aircare.ListFetches
-import io.cosgriff.waitlight.data.aircare.WaitTimes
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
@@ -16,7 +15,7 @@ import io.cosgriff.waitlight.domain.ListState
 import io.cosgriff.waitlight.domain.RefreshButton
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.StationRow
-import io.cosgriff.waitlight.domain.WaitThresholds
+import io.cosgriff.waitlight.domain.WaitTimes
 import io.cosgriff.waitlight.domain.arrange
 import io.cosgriff.waitlight.domain.fastestOverall
 import io.cosgriff.waitlight.domain.listState
@@ -43,7 +42,6 @@ data class StationListUi(
     val refresh: RefreshButton,
     /** The newest AirCare "Last updated", or null before the first reading. */
     val newestUpdate: Instant?,
-    val dataUsable: Boolean,
     val order: SortOrder,
     val rimsOnly: Boolean,
     /** Where distances are measured from: the phone, a typed ZIP code, or nowhere. */
@@ -51,7 +49,6 @@ data class StationListUi(
     /** Location is allowed, though perhaps not found yet. */
     val locationAllowed: Boolean,
     val refreshing: Boolean,
-    val thresholds: WaitThresholds,
 ) {
     val hasLocation: Boolean get() = here != null
 }
@@ -135,22 +132,18 @@ internal fun stationListUi(
 ): StationListUi {
     val newest = times.newestUpdate
     val state = listState(now, newest, times.lastOutcome)
-    val rows = arrange(rowsFor(times.waits, here?.point, drives), order, rimsOnly, state)
+    val rows = arrange(rowsFor(times, here?.point, drives, now), order, rimsOnly, state)
     return StationListUi(
         now = now,
         state = state,
         rows = rows,
-        hero = fastestOverall(rows, state, now),
+        hero = fastestOverall(rows, state),
         refresh = refreshButton(state, now, newest),
         newestUpdate = newest,
-        dataUsable = times.dataUsable,
         order = order,
         rimsOnly = rimsOnly,
         here = here,
         locationAllowed = locationAllowed,
         refreshing = refreshing,
-        thresholds = THRESHOLDS,
     )
 }
-
-private val THRESHOLDS = WaitThresholds()

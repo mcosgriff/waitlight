@@ -24,7 +24,7 @@ class RankingTest {
         miles: Double?,
         at: Instant = updated,
         drive: Int? = miles?.let { (5 + it).roundToInt() },
-    ) = StationRow(Stations.all.single { it.name == name }, reading, at, miles, drive)
+    ) = StationRow(Stations.all.single { it.name == name }, reading, at, miles, drive, badgeFor(reading, at, now, WaitThresholds.STANDARD))
 
     @Test
     fun `the catalog has the 18 stations with unique ids`() {
@@ -71,7 +71,7 @@ class RankingTest {
             row("Broomfield", WaitReading.Minutes(10), 6.0), // 21
         )
         assertEquals(listOf("Broomfield", "Arvada", "Golden"), names(arrange(rows, SortOrder.FASTEST_OVERALL, false, ListState.LIVE)))
-        assertEquals("Broomfield", fastestOverall(rows, ListState.LIVE, now)?.station?.name)
+        assertEquals("Broomfield", fastestOverall(rows, ListState.LIVE)?.station?.name)
     }
 
     @Test
@@ -113,23 +113,54 @@ class RankingTest {
 
     @Test
     fun `low-profile rims keeps only the four stations that test them`() {
-        val rows = rowsFor(Stations.all.associate { it.id to (WaitReading.Minutes(10) as WaitReading to updated) }, arvada, DriveTable.EMPTY)
+        val rows = rowsFor(WaitTimes(Stations.all.associate { it.id to (WaitReading.Minutes(10) as WaitReading to updated) }), arvada, DriveTable.EMPTY, now)
         val shown = arrange(rows, SortOrder.NEAREST, true, ListState.LIVE)
         assertEquals(4, shown.size)
         assertTrue(shown.all { it.station.lowProfileRims })
     }
 
+    private fun id(name: String) = Stations.all.single { it.name == name }.id
+
+    private fun rowsAt(at: Instant, vararg waits: Pair<String, Pair<WaitReading, Instant>>, outcome: FetchOutcome = FetchOutcome.OK) =
+        rowsFor(WaitTimes(waits.associate { (name, wait) -> id(name) to wait }, outcome), arvada, DriveTable.EMPTY, at)
+            .associateBy { it.station.name }
+
+    @Test
+    fun `each row comes with its badge at now`() {
+        val rows = rowsAt(now, "Arvada" to (WaitReading.Minutes(45) to updated), "Golden" to (WaitReading.NoEstimate to updated))
+        assertEquals(Badge.Live(WaitBand.MODERATE, ShownWait.Exact(45)), rows.getValue("Arvada").badge)
+        assertEquals(Badge.Open, rows.getValue("Golden").badge)
+        assertEquals(Badge.NoReading, rows.getValue("Broomfield").badge)
+    }
+
+    @Test
+    fun `a station's badge goes stale on its own time, while the rest stay fresh`() {
+        val golden = denver("2026-11-02T13:40")
+        val rows = rowsAt(now, "Arvada" to (WaitReading.Minutes(13) to updated), "Golden" to (WaitReading.Minutes(8) to golden))
+        assertEquals(Badge.Stale(WaitBand.SHORT, ShownWait.Exact(8), golden), rows.getValue("Golden").badge)
+        assertEquals(Badge.Live(WaitBand.SHORT, ShownWait.Exact(13)), rows.getValue("Arvada").badge)
+    }
+
+    @Test
+    fun `after an unreadable page every badge shows its last reading as stale`() {
+        val rows = rowsAt(now, "Arvada" to (WaitReading.Minutes(13) to updated), outcome = FetchOutcome.UNREADABLE)
+        assertEquals(Badge.Stale(WaitBand.SHORT, ShownWait.Exact(13), updated), rows.getValue("Arvada").badge)
+    }
+
+    @Test
+    fun `outside hours every badge is closed, read or not`() {
+        val rows = rowsAt(denver("2026-11-02T18:00"), "Arvada" to (WaitReading.Minutes(13) to updated))
+        assertTrue(rows.values.all { it.badge == Badge.Closed })
+    }
+
     @Test
     fun `every station has a row, with or without a reading`() {
-        val rows = rowsFor(mapOf(38 to (WaitReading.Minutes(10) to updated)), arvada, DriveTable.EMPTY)
+        val rows = rowsFor(WaitTimes(mapOf(38 to (WaitReading.Minutes(10) to updated))), arvada, DriveTable.EMPTY, now)
         assertEquals(18, rows.size)
         assertEquals(WaitReading.Minutes(10), rows.single { it.station.id == 38 }.reading)
         val golden = rows.single { it.station.id == 40 }
         assertNull(golden.reading)
         assertNull(golden.totalMinutes)
-        assertEquals(Badge.NoReading, golden.badge(now, WaitThresholds()))
-        assertEquals(Badge.Closed, golden.badge(denver("2026-11-02T18:00"), WaitThresholds()))
-        assertEquals(updated, newestUpdate(rows))
     }
 
     @Test
@@ -139,23 +170,23 @@ class RankingTest {
             row("Golden", WaitReading.Minutes(0), 8.2, at = denver("2026-11-02T13:13")), // 13, but an hour old
             row("Broomfield", WaitReading.Minutes(19), 6.4), // 30
         )
-        assertEquals("Arvada", fastestOverall(rows, ListState.LIVE, now)?.station?.name)
+        assertEquals("Arvada", fastestOverall(rows, ListState.LIVE)?.station?.name)
     }
 
     @Test
     fun `a tie goes to the nearer station`() {
         val rows = listOf(row("Golden", WaitReading.Minutes(10), 8.0), row("Arvada", WaitReading.Minutes(15), 3.0))
-        assertEquals("Arvada", fastestOverall(rows, ListState.DUE, now)?.station?.name)
+        assertEquals("Arvada", fastestOverall(rows, ListState.DUE)?.station?.name)
     }
 
     @Test
     fun `no hero while closed, stale, offline or broken, or without a location`() {
         val rows = listOf(row("Arvada", WaitReading.Minutes(13), 3.1))
         for (state in listOf(ListState.CLOSED, ListState.STALE, ListState.OFFLINE, ListState.BROKEN)) {
-            assertNull(fastestOverall(rows, state, now))
+            assertNull(fastestOverall(rows, state))
         }
-        assertNull(fastestOverall(listOf(row("Arvada", WaitReading.Minutes(13), null)), ListState.LIVE, now))
-        assertNull(fastestOverall(listOf(row("Longmont", WaitReading.NoEstimate, 3.0)), ListState.LIVE, now))
+        assertNull(fastestOverall(listOf(row("Arvada", WaitReading.Minutes(13), null)), ListState.LIVE))
+        assertNull(fastestOverall(listOf(row("Longmont", WaitReading.NoEstimate, 3.0)), ListState.LIVE))
     }
 
 

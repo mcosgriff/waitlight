@@ -74,7 +74,6 @@ import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.StationRow
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.WaitThresholds
-import io.cosgriff.waitlight.domain.band
 import io.cosgriff.waitlight.domain.openingDay
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.BadgeSize
@@ -118,7 +117,7 @@ fun StationListContent(
             item(key = "header") { Header(ui, onRefresh, onChangeLocation) }
             when {
                 ui.state == ListState.CLOSED -> item(key = "closed") { ClosedCard(ui.now) }
-                ui.hero != null -> item(key = "hero") { HeroCard(ui.hero, ui.thresholds, onOpenStation) }
+                ui.hero != null -> item(key = "hero") { HeroCard(ui.hero, onOpenStation) }
             }
             banner(ui)?.let { banner ->
                 val asOf = ui.newestUpdate?.let { TimeText.timeSince(it, ui.now) }
@@ -288,12 +287,12 @@ private fun age(age: Duration): String {
 }
 
 @Composable
-private fun HeroCard(hero: StationRow, thresholds: WaitThresholds, onOpenStation: (Int) -> Unit) {
+private fun HeroCard(hero: StationRow, onOpenStation: (Int) -> Unit) {
     val colors = MaterialTheme.waitColors
     val total = hero.totalMinutes ?: return
     val drive = hero.driveMinutes ?: return
     val reading = hero.reading ?: return
-    val band = reading.band(thresholds) ?: return
+    val band = (hero.badge as? Badge.Live)?.band ?: return
     val badgeColors = colors.forBand(band)
     val openLabel = stringResource(R.string.list_hero_open, hero.station.name)
     Surface(
@@ -458,14 +457,14 @@ private fun WaitlightChip(label: String, selected: Boolean, onClick: () -> Unit)
 @Composable
 private fun Legend(ui: StationListUi) {
     val colors = MaterialTheme.waitColors
-    val t = ui.thresholds
+    val thresholds = WaitThresholds.STANDARD
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier.padding(horizontal = 20.dp),
     ) {
-        LegendItem(Icons.Rounded.CheckCircle, colors.short.icon, stringResource(R.string.list_legend_short, t.greenMax))
-        LegendItem(Icons.Rounded.Schedule, colors.moderate.icon, stringResource(R.string.list_legend_moderate, t.greenMax, t.yellowMax))
-        LegendItem(Icons.Rounded.Warning, colors.long.icon, stringResource(R.string.list_legend_long, t.yellowMax))
+        LegendItem(Icons.Rounded.CheckCircle, colors.short.icon, stringResource(R.string.list_legend_short, thresholds.greenMax))
+        LegendItem(Icons.Rounded.Schedule, colors.moderate.icon, stringResource(R.string.list_legend_moderate, thresholds.greenMax, thresholds.yellowMax))
+        LegendItem(Icons.Rounded.Warning, colors.long.icon, stringResource(R.string.list_legend_long, thresholds.yellowMax))
     }
 }
 
@@ -479,7 +478,7 @@ private fun LegendItem(icon: ImageVector, tint: Color, text: String) {
 
 @Composable
 private fun StationRowItem(row: StationRow, ui: StationListUi, onClick: () -> Unit) {
-    val badge: Badge = row.badge(ui.now, ui.thresholds, ui.dataUsable)
+    val badge = row.badge
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     Surface(
         onClick = onClick,

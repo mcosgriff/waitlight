@@ -4,7 +4,7 @@ import android.util.Log
 import io.cosgriff.waitlight.data.di.ApplicationScope
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.FetchReason
-import io.cosgriff.waitlight.domain.WaitReading
+import io.cosgriff.waitlight.domain.WaitTimes
 import io.cosgriff.waitlight.domain.worthFetching
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -16,26 +16,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.net.UnknownHostException
 import java.time.Clock
-import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
-
-/** The waits the app knows and how the last fetch went. */
-data class WaitTimes(
-    /**
-     * Each station's last good reading and AirCare's "Last updated" time for it, by `locationID`. Kept through
-     * failed fetches and unreadable pages, so the badges can show it as stale.
-     */
-    val waits: Map<Int, Pair<WaitReading, Instant>> = emptyMap(),
-    val lastOutcome: FetchOutcome = FetchOutcome.OK,
-) {
-    /** False after an unreadable page: every badge shows its last good reading as stale. */
-    val dataUsable: Boolean get() = lastOutcome != FetchOutcome.UNREADABLE
-
-    /** The data's age goes by this, never the fetch time. */
-    val newestUpdate: Instant? get() = waits.values.maxOfOrNull { it.second }
-}
 
 /**
  * Decides whether to fetch AirCare's page ([worthFetching]), fetches and reads it, and keeps the latest
