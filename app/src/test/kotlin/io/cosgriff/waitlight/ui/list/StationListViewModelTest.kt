@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import io.cosgriff.waitlight.data.aircare.AirCareClient
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
+import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.data.location.LastLocationStore
 import io.cosgriff.waitlight.data.location.LocationSource
@@ -105,7 +106,8 @@ class StationListViewModelTest {
             LastLocationStore({ File(dir, LastLocationStore.FILE_NAME) }, Dispatchers.Unconfined),
         )
         val here = HereSource(location, settings, ZipCodes({ ZIPS }, Dispatchers.Unconfined), settingsScope)
-        return StationListViewModel(repository, location, here, settings, clock)
+        val drives = DriveTimes({ ByteArray(0) }, settingsScope, Dispatchers.Unconfined)
+        return StationListViewModel(repository, location, here, drives, settings, clock)
     }
 
     /** Shows the list (something collects its state) for the length of [block], then lets the ticks stop. */

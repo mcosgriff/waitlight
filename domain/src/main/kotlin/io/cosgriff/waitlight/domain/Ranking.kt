@@ -13,11 +13,16 @@ data class StationRow(
     val updatedAt: Instant?,
     /** Straight-line miles from the user, or null when the app has no location. */
     val distanceMiles: Double?,
+    /**
+     * Routed drive minutes from the user ([DriveTable]), or null without a location or where the table has none
+     * (outside the gas emissions program area).
+     */
+    val driveMinutes: Int?,
 ) {
-    /** Estimated drive minutes ([DriveEstimate]), or null without a location. */
-    val driveMinutes: Int? get() = distanceMiles?.let(DriveEstimate::minutes)
-
-    /** Drive plus wait, with any wait counted as at most [WAIT_CAP_MINUTES]. Null without an estimate or a location. */
+    /**
+     * Drive plus wait, with any wait counted as at most [WAIT_CAP_MINUTES]. Null without a wait estimate or a drive
+     * time.
+     */
     val totalMinutes: Int?
         get() {
             val drive = driveMinutes ?: return null
@@ -46,15 +51,22 @@ data class StationRow(
 enum class SortOrder { NEAREST, FASTEST_OVERALL }
 
 /**
- * A row for every station, with its reading if there is one, and the straight-line distance from [from]. Null
- * [from] (no location) gives no distances.
+ * A row for every station, with its reading if there is one, the straight-line distance from [from] and the
+ * drive time from it in [drives]. Null [from] (no location) gives neither.
  */
 fun rowsFor(
     readings: Map<Int, Pair<WaitReading, Instant>>,
     from: GeoPoint?,
+    drives: DriveTable,
 ): List<StationRow> = Stations.all.map { station ->
     val latest = readings[station.id]
-    StationRow(station, latest?.first, latest?.second, from?.let { station.location.milesTo(it) })
+    StationRow(
+        station,
+        latest?.first,
+        latest?.second,
+        distanceMiles = from?.let { station.location.milesTo(it) },
+        driveMinutes = from?.let { drives.minutes(it, station.id) },
+    )
 }
 
 /**

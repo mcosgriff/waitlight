@@ -12,7 +12,8 @@ test there.
   handoff says 303-456-7090 for all; the page says otherwise, and the page wins.)
 - Low-profile rims (17″+) and wheels over 34″: only Sheridan, Boulder, Ken Caryl and Fort Collins. No diesel
   testing anywhere.
-- Directions: `https://www.google.com/maps/dir/Current+Location/<url-encoded address>`.
+- Directions: the system's app picker (`Intent.createChooser`, every time) on `geo:<lat>,<lon>?q=<lat>,<lon>(<name>)`
+  (`Station.mapUri`), so the user picks the map app (CoMaps, Google Maps, OsmAnd…).
 - **The detail's map is a bundled image** per station, light and dark, drawn from OpenStreetMap data by
   `scripts/station_maps.py` and centred on the station's coordinates (ADR-0006). No map network calls. The app
   draws the pin at the centre in the badge's colour; the map's content description names the station, and the
@@ -101,8 +102,10 @@ test there.
 
 ## Sorting and the hero
 
-- Distance is straight-line, for sorting. Drive minutes are an estimate from it (`DriveEstimate`: 5 minutes plus
-  a minute a mile), always shown as "≈".
+- Distance is straight-line, for sorting by nearest. Drive minutes come from the bundled routed table
+  (`DriveTable`, ADR-0007): no traffic, shown without "≈" ("12 min drive"). Never from straight-line distance.
+- No drive time where the table has none (outside the gas emissions program area, far from a road): miles
+  only.
 - Nearest: by distance. Fastest overall: drive + wait, any wait counted as at most 90 ("60+" counts as 90);
   stations without an estimate after the rest, by distance; ties go to the nearer. While closed, nearest.
 - No location: alphabetical, whatever the chip.
@@ -130,7 +133,7 @@ test there.
   outline it's in (`ZipTable.placeOf`; of two where simplified borders overlap, the nearer centroid's), else the
   nearest ZIP centroid, or "Near you" when none is within 25 miles. Allowed but no fix and no ZIP: "Finding
   your location…". Neither: "Location off". A ZIP and "Location off" are links to the prompt.
-- Drive times from a ZIP are estimates like any others ("≈").
+- Drive times from a ZIP are looked up from its centroid, like a fix.
 
 ## The widget
 

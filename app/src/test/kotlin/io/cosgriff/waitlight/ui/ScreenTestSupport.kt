@@ -6,10 +6,13 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import org.robolectric.RuntimeEnvironment
 import io.cosgriff.waitlight.domain.AirCareHours
+import io.cosgriff.waitlight.domain.DriveTable
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.ZipPlace
+import java.io.ByteArrayOutputStream
+import java.io.DataOutputStream
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -22,8 +25,35 @@ fun denver(text: String): Instant = LocalDateTime.parse(text).atZone(AirCareHour
 /** The app's own wording, as the screens show it. */
 fun text(id: Int, vararg args: Any): String = RuntimeEnvironment.getApplication().getString(id, *args)
 
-/** Standing at the Arvada station: Arvada is nearest, 0 miles and a 5-minute drive. */
+/** Standing at the Arvada station: Arvada is nearest, 0 miles and, in [TEST_DRIVES], a 5-minute drive. */
 val AT_ARVADA: GeoPoint = Stations.all.first { it.name == "Arvada" }.location
+
+/**
+ * A drive-time table of one cell, 10 degrees on a side around [AT_ARVADA], so anywhere in Colorado has every
+ * station [minutes] away. In the layout `scripts/drive_times.py` writes.
+ */
+fun uniformDrives(minutes: Int): DriveTable {
+    val bytes = ByteArrayOutputStream()
+    DataOutputStream(bytes).apply {
+        write("WLDT".toByteArray())
+        writeByte(2)
+        writeInt((AT_ARVADA.latitude * 1e6).toInt())
+        writeInt((AT_ARVADA.longitude * 1e6).toInt())
+        writeInt(10_000_000)
+        writeInt(10_000_000)
+        writeInt(1)
+        writeInt(1)
+        writeInt(Stations.all.size)
+        Stations.all.forEach { writeInt(it.id) }
+        writeInt(0)
+        writeInt(1)
+        repeat(Stations.all.size) { writeByte(minutes) }
+    }
+    return DriveTable.parse(bytes.toByteArray())
+}
+
+/** Every station a 5-minute drive away. */
+val TEST_DRIVES: DriveTable = uniformDrives(5)
 
 /** Arvada's ZIP code as the bundled table has it. */
 val ZIP_80003 = ZipPlace("80003", GeoPoint(39.8254, -105.0644), "Arvada")

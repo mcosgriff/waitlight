@@ -14,8 +14,9 @@ Glovebox.
 
 ## Consequences
 
-- Drive times are estimated from straight-line distance (`DriveEstimate`) and shown as estimates.
-- Directions open Google Maps (or whatever handles the link) with AirCare's own link format; that is the user
-  choosing to leave the app, not the app talking to Google.
+- Drive times come from a table routed on OpenStreetMap's roads at development time and bundled (ADR-0007);
+  until 2026-11-03 they were estimated from straight-line distance.
+- Directions open the system's app picker on a `geo:` link to the station (ADR-0007); that is the user choosing
+  to leave the app, for whichever map app they pick, not the app talking to Google.
 - The detail screen's map is a bundled image per station, drawn from OpenStreetMap data (ADR-0006).
 - Any library's dependency tree is checked for Play services and network code before it is added.

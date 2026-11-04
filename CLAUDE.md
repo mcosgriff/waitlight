@@ -24,7 +24,9 @@ answer, the list's sort and rims chips and a typed ZIP code. ZIP entry uses a bu
 centroids and place names (ADR-0005; `scripts/colorado_zips.py` makes it, `ZipTable` reads it), and `HereSource`
 picks "here" for the list and detail: the fix, else the ZIP. The Glance home-screen widget (`widget/`,
 `widgetContent`) shows the three nearest stations and redraws after each background check. The detail's map is
-a bundled image per station drawn from OpenStreetMap data (ADR-0006; `scripts/station_maps.py` makes them).
+a bundled image per station drawn from OpenStreetMap data (ADR-0006; `scripts/station_maps.py` makes them). Drive times are
+looked up in a bundled table routed with OSRM on OpenStreetMap's roads (ADR-0007; `scripts/drive_times.py`
+makes it, `DriveTable` reads it).
 `./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
@@ -44,10 +46,10 @@ with a comment saying why.
 - `:domain` — pure Kotlin, **no Android imports**. All business rules live here and get unit tests: the station
   list (`Stations`), opening hours and holidays (`AirCareHours`, `Holiday`), AirCare's wording
   (`WaitText`, `AirCareTimestamp`), ZIP codes and "here" (`ZipTable`, `here`), badges (`badgeFor`), freshness and the list's states (`listState`,
-  `refreshButton`, `shouldFetch`), when the background refresh runs (`backgroundPlan`), sorting and the hero
+  `refreshButton`, `shouldFetch`), when the background refresh runs (`backgroundPlan`), drive times (`DriveTable`), sorting and the hero
   (`arrange`, `fastestOverall`).
 - `:data` — fetching and reading AirCare's page (`AirCareClient`, `AirCarePage`, `WaitTimesRepository`, on Ktor
-  with OkHttp), location (`LocationSource`, precise or approximate, the user's choice; `HereSource`, fix or ZIP; `ZipCodes`, the bundled table and outlines), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
+  with OkHttp), location (`LocationSource`, precise or approximate, the user's choice; `HereSource`, fix or ZIP; `ZipCodes`, the bundled table and outlines; `DriveTimes`, the drive-time table), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.
   `./gradlew :data:testDebugUnitTest` runs its tests.
 - `:app` — Compose UI, navigation (Navigation 3), ViewModels, theme, the background refresh (WorkManager, `background/`), and
   later the Glance widget.
@@ -60,8 +62,9 @@ Each has an ADR in `docs/adr/` with its reasons and the options turned down.
   server of our own. Fetch only during opening hours, and no more often than AirCare updates
   (`shouldFetch`), except once at every app launch, whatever the time (`FetchReason.LAUNCH`). The page is the one network host the app talks to.
 - **No Google Play services or Google SDKs** ([ADR-0002](docs/adr/0002-no-play-services.md)): Android's own
-  `LocationManager`, not FusedLocationProvider; no Maps SDK; no Routes API. Drive times are estimated from
-  straight-line distance (`DriveEstimate`) and always shown as estimates. Directions open Google Maps by link.
+  `LocationManager`, not FusedLocationProvider; no Maps SDK; no Routes API. Drive times come from a bundled
+  table routed on OpenStreetMap's roads (ADR-0007, `DriveTable`, `scripts/drive_times.py`), never from
+  straight-line distance. Directions open the system's app picker on a `geo:` link.
   No analytics, crash reporting or ads. Check any new library's dependency tree for network code and Google
   pieces before adding it.
 - **Opening hours and holidays are hard-coded** ([ADR-0003](docs/adr/0003-hours-hard-coded.md)), in Denver's

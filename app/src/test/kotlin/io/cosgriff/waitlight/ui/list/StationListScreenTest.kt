@@ -23,6 +23,7 @@ import io.cosgriff.waitlight.ui.AT_ARVADA
 import io.cosgriff.waitlight.ui.AURORA
 import io.cosgriff.waitlight.ui.ZIP_80003
 import io.cosgriff.waitlight.ui.TALL_PHONE
+import io.cosgriff.waitlight.ui.TEST_DRIVES
 import io.cosgriff.waitlight.ui.denver
 import io.cosgriff.waitlight.ui.hasClickLabel
 import io.cosgriff.waitlight.ui.hasDescription
@@ -60,7 +61,7 @@ class StationListScreenTest {
         here: Here? = Here.Device(AT_ARVADA, null),
         locationAllowed: Boolean = here != null,
     ): StationListUi {
-        val ui = stationListUi(now, WaitTimes(waits, outcome), here, SortOrder.NEAREST, false, locationAllowed, false)
+        val ui = stationListUi(now, WaitTimes(waits, outcome), here, TEST_DRIVES, SortOrder.NEAREST, false, locationAllowed, false)
         compose.setContent {
             WaitlightTheme(dark = false) {
                 StationListContent(

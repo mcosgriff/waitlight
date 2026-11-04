@@ -137,7 +137,7 @@
     <string name="list_row_address">%1$s, %2$s</string>
     <string name="list_row_rims">Low-profile rims OK</string>
     <string name="list_row_miles">%1$.1f mi</string>
-    <string name="list_row_drive">≈ %1$d min drive</string>
+    <string name="list_row_drive">%1$d min drive</string>
     <string name="list_row_opens">Opens %1$s</string>
     <string name="list_row_opens_day">Opens %1$s %2$s</string>
     <string name="list_footer">Estimates from AirCare Colorado, refreshed about every 15 min. No diesel testing at any station.</string>
@@ -147,7 +147,8 @@
     <string name="detail_map">Map of the streets around the %1$s station</string>
     <string name="detail_map_credit">© OpenStreetMap contributors</string>
     <string name="detail_total">≈ %1$d min total · %2$d min drive (%3$.1f mi)</string>
-    <string name="detail_drive">≈ %1$d min drive (%2$.1f mi)</string>
+    <string name="detail_drive">%1$d min drive (%2$.1f mi)</string>
+    <string name="detail_miles">%1$.1f mi away</string>
     <string name="detail_updated">AirCare updated %1$s</string>
     <string name="detail_status_short">Short wait</string>
     <string name="detail_status_moderate">Moderate wait</string>
@@ -157,6 +158,7 @@
     <string name="detail_status_stale">May be out of date</string>
     <string name="detail_status_no_reading">No wait time yet</string>
     <string name="detail_directions">Directions</string>
+    <string name="detail_directions_chooser">Get directions with</string>
     <string name="detail_call">Call</string>
     <string name="detail_address_label">Address</string>
     <string name="detail_address">%1$s\n%2$s, CO %3$s</string>

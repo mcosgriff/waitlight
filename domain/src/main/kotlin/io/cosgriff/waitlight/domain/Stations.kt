@@ -4,7 +4,6 @@ import java.net.URLEncoder
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.pow
-import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -43,9 +42,15 @@ data class Station(
 ) {
     val address: String get() = "$street, $city, CO $zip"
 
-    /** Google Maps directions from wherever the phone is, in the format AirCare's own page links to. */
-    val directionsUrl: String
-        get() = "https://www.google.com/maps/dir/Current+Location/" + URLEncoder.encode(address, Charsets.UTF_8)
+    /**
+     * A `geo:` link to the station, pinned at its coordinates and labelled with its name, for whichever map app
+     * the user picks (Google Maps, CoMaps, OsmAnd…) to give directions from.
+     */
+    val mapUri: String
+        get() {
+            val at = "${location.latitude},${location.longitude}"
+            return "geo:$at?q=$at(" + URLEncoder.encode(name, Charsets.UTF_8).replace("+", "%20") + ")"
+        }
 
     /** The number to dial, digits only. */
     val dialNumber: String get() = phone.filter { it.isDigit() }
@@ -84,19 +89,4 @@ object Stations {
     private val byId = all.associateBy { it.id }
 
     operator fun get(id: Int): Station? = byId[id]
-}
-
-/**
- * A rough drive time from straight-line distance, for when no routing service is used (ADR-0002). Fitted to
- * Front Range driving: a few minutes to get going, then about a mile a minute once on the highways. Always
- * shown as an estimate.
- */
-object DriveEstimate {
-    private const val START_MINUTES = 5.0
-    private const val MINUTES_PER_STRAIGHT_MILE = 1.0
-
-    fun minutes(straightLineMiles: Double): Int {
-        require(straightLineMiles >= 0) { "distance can't be negative: $straightLineMiles" }
-        return (START_MINUTES + MINUTES_PER_STRAIGHT_MILE * straightLineMiles).roundToInt()
-    }
 }

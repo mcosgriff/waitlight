@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import io.cosgriff.waitlight.R
+import io.cosgriff.waitlight.domain.DriveTable
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.domain.WaitReading
@@ -18,6 +19,7 @@ import io.cosgriff.waitlight.ui.ARVADA
 import io.cosgriff.waitlight.ui.AT_ARVADA
 import io.cosgriff.waitlight.ui.BOULDER
 import io.cosgriff.waitlight.ui.TALL_PHONE
+import io.cosgriff.waitlight.ui.TEST_DRIVES
 import io.cosgriff.waitlight.ui.denver
 import io.cosgriff.waitlight.ui.hasDescription
 import io.cosgriff.waitlight.ui.hasTextSpaced
@@ -46,8 +48,9 @@ class StationDetailScreenTest {
         waits: Map<Int, Pair<WaitReading, Instant>> = threeWaits(denver("2026-11-02T14:14")),
         here: GeoPoint? = AT_ARVADA,
         dataUsable: Boolean = true,
+        drives: DriveTable = TEST_DRIVES,
     ) {
-        val row = rowsFor(waits, here).first { it.station.id == station }
+        val row = rowsFor(waits, here, drives).first { it.station.id == station }
         val badge = row.badge(now, WaitThresholds(), dataUsable)
         compose.setContent {
             WaitlightTheme(dark = false) {
@@ -79,7 +82,7 @@ class StationDetailScreenTest {
         show(ARVADA, now = denver("2026-11-02T14:50"))
         compose.onNode(hasDescription("Last known short wait, 13 minutes as of 2:14 PM, may be out of date")).assertExists()
         shown(text(R.string.detail_status_stale))
-        shown("≈ 5 min drive (0.0 mi)")
+        shown("5 min drive (0.0 mi)")
         compose.onNode(hasTextSpaced("≈ 18 min total · 5 min drive (0.0 mi)")).assertDoesNotExist()
     }
 
@@ -110,7 +113,15 @@ class StationDetailScreenTest {
         show(ARVADA, now = denver("2026-11-02T14:20"), waits = emptyMap(), here = null)
         compose.onNode(hasDescription(text(R.string.badge_desc_no_reading))).assertExists()
         shown(text(R.string.detail_status_no_reading))
-        compose.onNode(hasTextSpaced("≈ 5 min drive (0.0 mi)")).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("5 min drive (0.0 mi)")).assertDoesNotExist()
+    }
+
+    @Test
+    fun `outside the routed area - miles, no drive time and no total`() {
+        show(ARVADA, now = denver("2026-11-02T14:20"), drives = DriveTable.EMPTY)
+        shown("0.0 mi away")
+        compose.onNode(hasTextSpaced("5 min drive (0.0 mi)")).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("≈ 18 min total · 5 min drive (0.0 mi)")).assertDoesNotExist()
     }
 
     @Test
