@@ -1,6 +1,6 @@
 [versions]
 # Built with Android Studio; keep AGP current via Studio's AGP Upgrade Assistant.
-agp = "9.5.0"
+agp = "9.5.1"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 coroutines = "1.11.0"
@@ -26,7 +26,7 @@ junit = "4.13.2"
 # build.gradle.kts). Each Robolectric release names its own builds of it, so these move together: on a Robolectric
 # upgrade, take the version from its `AndroidSdk` list.
 robolectric = "4.17"
-robolectric-androidAll-sdk35 = "15-robolectric-13954326-i7"
+robolectric-androidAll-sdk35 = "17-robolectric-15733970-i7"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
