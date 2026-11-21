@@ -19,9 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -40,17 +37,25 @@ enum class HomeTab { WAITS, VANS }
 
 /**
  * The home screen, as drawn in `design/vans/source/EntryTabs.dc.html`: the wait list or the roadside vans, with a
- * Material 3 navigation bar under them. The vans tab's badge counts the vans reading cars now.
+ * Material 3 navigation bar under them. The vans tab's badge counts the vans reading cars now. The [tab] is kept
+ * by the caller, so a screen over this one can send the user to the vans.
  */
 @Composable
-fun HomeTabs(onOpenStation: (Int) -> Unit, onOpenVanSite: (String, LocalDate) -> Unit, onChangeLocation: () -> Unit, onOpenDriveBys: () -> Unit) {
+fun HomeTabs(
+    tab: HomeTab,
+    onSelectTab: (HomeTab) -> Unit,
+    onOpenStation: (Int) -> Unit,
+    onOpenVanSite: (String, LocalDate) -> Unit,
+    onChangeLocation: () -> Unit,
+    onOpenDriveBys: () -> Unit,
+    onOpenVehicles: () -> Unit,
+) {
     val viewModel: HomeViewModel = hiltViewModel()
     val reading by viewModel.readingNow.collectAsStateWithLifecycle()
-    var tab by rememberSaveable { mutableStateOf(HomeTab.WAITS) }
-    HomeTabsContent(tab, reading, onSelect = { tab = it }) {
+    HomeTabsContent(tab, reading, onSelect = onSelectTab) {
         when (tab) {
             HomeTab.WAITS -> StationListScreen(onOpenStation = onOpenStation, onChangeLocation = onChangeLocation)
-            HomeTab.VANS -> VansScreen(onOpenSite = onOpenVanSite, onChangeLocation = onChangeLocation, onOpenDriveBys = onOpenDriveBys)
+            HomeTab.VANS -> VansScreen(onOpenSite = onOpenVanSite, onChangeLocation = onChangeLocation, onOpenDriveBys = onOpenDriveBys, onOpenVehicles = onOpenVehicles)
         }
     }
 }

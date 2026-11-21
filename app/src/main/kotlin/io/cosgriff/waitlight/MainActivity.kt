@@ -25,11 +25,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         // Any app can start this activity, so the id is checked against the stations before it's used.
         val openStation = intent.getIntExtra(EXTRA_STATION, NO_STATION).takeIf { Stations[it] != null }
+        // A reminder's vehicle; one that isn't saved (any longer) closes its screen at once.
+        val openVehicle = intent.getLongExtra(EXTRA_VEHICLE, NO_VEHICLE).takeIf { it > 0 }
         setContent {
             WaitlightTheme {
                 // Gives every screen the theme's background and ink as its default colours.
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    WaitlightNavHost(openStation)
+                    WaitlightNavHost(openStation, openVehicle)
                 }
             }
         }
@@ -49,6 +51,8 @@ class MainActivity : ComponentActivity() {
     companion object {
         private const val EXTRA_STATION = "io.cosgriff.waitlight.STATION"
         private const val NO_STATION = -1
+        private const val EXTRA_VEHICLE = "io.cosgriff.waitlight.VEHICLE"
+        private const val NO_VEHICLE = -1L
 
         /** Opens the app on the list, afresh, as a tap on the widget does. */
         fun listIntent(context: Context): Intent = Intent(context, MainActivity::class.java)
@@ -58,5 +62,10 @@ class MainActivity : ComponentActivity() {
         fun stationIntent(context: Context, stationId: Int): Intent = listIntent(context)
             .setData("waitlight://station/$stationId".toUri())
             .putExtra(EXTRA_STATION, stationId)
+
+        /** Opens the app on [vehicleId]'s window, from a reminder, over the vans tab. */
+        fun vehicleIntent(context: Context, vehicleId: Long): Intent = listIntent(context)
+            .setData("waitlight://vehicle/$vehicleId".toUri())
+            .putExtra(EXTRA_VEHICLE, vehicleId)
     }
 }

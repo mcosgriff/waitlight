@@ -168,8 +168,8 @@ enum class ReminderKind {
     ;
 
     companion object {
-        /** What "Remind me" switches on for a new vehicle. */
-        val DEFAULTS: Set<ReminderKind> = setOf(WINDOW_OPENS, HALFWAY, CLOSING_SOON)
+        /** What "Remind me" switches on for a new vehicle: all of them ("window opening and closing, and the test date"). */
+        val DEFAULTS: Set<ReminderKind> = entries.toSet()
     }
 }
 

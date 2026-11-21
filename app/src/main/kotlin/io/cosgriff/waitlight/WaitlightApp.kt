@@ -6,6 +6,8 @@ import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
 import io.cosgriff.waitlight.background.BackgroundRefresh
 import io.cosgriff.waitlight.data.di.ApplicationScope
+import io.cosgriff.waitlight.reminders.ReminderNotifier
+import io.cosgriff.waitlight.reminders.Reminders
 import io.cosgriff.waitlight.widget.WidgetUpdater
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
@@ -18,6 +20,10 @@ class WaitlightApp : Application(), Configuration.Provider {
 
     @Inject lateinit var widgetUpdater: WidgetUpdater
 
+    @Inject lateinit var reminders: Reminders
+
+    @Inject lateinit var reminderNotifier: ReminderNotifier
+
     @Inject @ApplicationScope lateinit var scope: CoroutineScope
 
     /** WorkManager starts from here, not its own initializer (removed in the manifest), so workers get Hilt. */
@@ -28,5 +34,7 @@ class WaitlightApp : Application(), Configuration.Provider {
         super.onCreate()
         backgroundRefresh.schedule()
         widgetUpdater.start(scope)
+        reminderNotifier.createChannel()
+        reminders.start(scope)
     }
 }

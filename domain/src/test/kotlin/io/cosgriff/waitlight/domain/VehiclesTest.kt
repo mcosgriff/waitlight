@@ -148,8 +148,8 @@ class VehiclesTest {
         assertEquals(setOf(ReminderKind.CLOSING_SOON), run.settled[2])
         val sent = fit.copy(sent = fit.sent + run.settled.getValue(2))
         assertTrue(reminderRun(listOf(sent), emptyList(), at).settled.isEmpty())
-        assertEquals(sent.window.reminderAt(ReminderKind.TEST_DUE), nextReminderAt(listOf(sent.copy(reminders = ReminderKind.entries.toSet()))))
-        assertNull(nextReminderAt(listOf(sent)))
+        assertEquals(sent.window.reminderAt(ReminderKind.TEST_DUE), nextReminderAt(listOf(sent)))
+        assertNull(nextReminderAt(listOf(sent.copy(reminders = sent.reminders - ReminderKind.TEST_DUE))))
     }
 
     @Test

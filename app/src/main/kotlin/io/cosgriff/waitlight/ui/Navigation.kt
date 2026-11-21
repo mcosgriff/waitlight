@@ -22,3 +22,15 @@ data object LocationPrompt : NavKey
 /** The user's drive-by log. */
 @Serializable
 data object DriveBys : NavKey
+
+/** The user's vehicles, each with its RapidScreen window. */
+@Serializable
+data object Vehicles : NavKey
+
+/** One vehicle's window, drive-bys and reminders, by its id. */
+@Serializable
+data class VehicleDetail(val vehicleId: Long) : NavKey
+
+/** Adds a vehicle ([vehicleId] null) or edits one. */
+@Serializable
+data class EditVehicle(val vehicleId: Long? = null) : NavKey

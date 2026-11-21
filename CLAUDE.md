@@ -31,7 +31,9 @@ Roadside vans (`vans/` in `:data` and `:app`, `VanSites`/`VanSchedule` in `:doma
 navigation bar: AirCare's van page read on the phone, drive times from a growing catalog of routed sites (ADR-0008;
 `scripts/van_drive_times.py` makes it, `VanDriveTable` reads it; `van-sites.yml` adds new sites daily by PR). A
 site's detail draws a sketch turned to its direction of travel, and the drive-by log (`DriveBys`,
-`DriveByRepository`, `drive_bys.json`, backed up) lets the user note when they drove past a van.
+`DriveByRepository`, `drive_bys.json`, backed up) lets the user note when they drove past a van. Vehicles (`Vehicles.kt` in `:domain`, `vehicles/` in `:data`,
+`ui/vehicles/` and `reminders/` in `:app`) keep each renewal month, work out its RapidScreen window and due date,
+tag drive-bys with the vehicle, and post local reminders through WorkManager.
 `./gradlew build` is green
 (Gradle 9.9.1, AGP 9.5.2, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
@@ -106,7 +108,7 @@ the widget).
 - **Wait times** (stations, hours and holidays, reading AirCare, badges, freshness and states, sorting, the
   hero card): `docs/rules/wait-times.md`
 - **Roadside vans** (reading the van page, sites and their names, days, statuses, states, drive times from the
-  catalog, the vans list and detail): `docs/rules/vans.md`
+  catalog, the vans list and detail, vehicles, their windows and reminders): `docs/rules/vans.md`
 
 ## Conventions
 

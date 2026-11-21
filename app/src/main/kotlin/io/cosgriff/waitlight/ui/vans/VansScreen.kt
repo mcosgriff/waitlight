@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.AddTask
+import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.outlined.LocationOn
@@ -104,7 +105,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 @Composable
-fun VansScreen(onOpenSite: (key: String, date: LocalDate) -> Unit, onChangeLocation: () -> Unit, onOpenDriveBys: () -> Unit) {
+fun VansScreen(onOpenSite: (key: String, date: LocalDate) -> Unit, onChangeLocation: () -> Unit, onOpenDriveBys: () -> Unit, onOpenVehicles: () -> Unit) {
     val viewModel: VansViewModel = hiltViewModel()
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -116,6 +117,7 @@ fun VansScreen(onOpenSite: (key: String, date: LocalDate) -> Unit, onChangeLocat
         onOpenSite = onOpenSite,
         onChangeLocation = onChangeLocation,
         onOpenDriveBys = onOpenDriveBys,
+        onOpenVehicles = onOpenVehicles,
         onOpenVanPage = {
             try {
                 context.startActivity(Intent(Intent.ACTION_VIEW, VanClient.PAGE_URL.toUri()))
@@ -137,6 +139,7 @@ fun VansContent(
     onChangeLocation: () -> Unit,
     onOpenVanPage: () -> Unit,
     onOpenDriveBys: () -> Unit = {},
+    onOpenVehicles: () -> Unit = {},
 ) {
     var showHow by rememberSaveable { mutableStateOf(false) }
     val day = ui.day
@@ -148,6 +151,7 @@ fun VansContent(
         ) {
             item(key = "header") { Header(ui, onInfo = { showHow = true }, onRefresh = onRefresh, onChangeLocation = onChangeLocation) }
             item(key = "drive-bys") { DriveBysLine(ui, onOpenDriveBys) }
+            item(key = "vehicles") { VehiclesLine(ui.vehicles, onOpenVehicles) }
             banner(ui)?.let { kind -> item(key = "banner") { Banner(kind, ui) } }
             ui.hero?.let { hero -> item(key = "hero") { HeroCard(hero, onOpenSite) } }
             if (ui.list.days.isNotEmpty()) item(key = "days") { DayChips(ui, onPick) }
@@ -579,6 +583,18 @@ private fun DriveBysLine(ui: VansUi, onOpen: () -> Unit) {
     } else {
         pluralStringResource(R.plurals.driveby_summary, count, count)
     }
+    RecordLine(Icons.Outlined.AddTask, stringResource(R.string.driveby_list_title), detail, onOpen)
+}
+
+/** "My vehicles · 2 vehicles", opening them: each one's window and reminders. */
+@Composable
+private fun VehiclesLine(count: Int, onOpen: () -> Unit) {
+    val detail = if (count == 0) stringResource(R.string.vans_vehicles_none) else pluralStringResource(R.plurals.vans_vehicles_count, count, count)
+    RecordLine(Icons.Outlined.DirectionsCar, stringResource(R.string.vans_vehicles_title), detail, onOpen)
+}
+
+@Composable
+private fun RecordLine(icon: ImageVector, title: String, detail: String, onOpen: () -> Unit) {
     Surface(
         onClick = onOpen,
         shape = MaterialTheme.shapes.medium,
@@ -590,9 +606,9 @@ private fun DriveBysLine(ui: VansUi, onOpen: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(Icons.Outlined.AddTask, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.driveby_list_title), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
+                Text(title, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
                 Text(detail, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)

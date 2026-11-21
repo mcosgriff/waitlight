@@ -112,3 +112,46 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
   "PASSED ROADSIDE EMISSIONS" is the official word.
 - The log lists entries newest first, older-than-14-months ones marked, each deletable. A year shows on dates
   outside the current year.
+
+## Vehicles and reminders
+
+The code is in `:domain` (`Vehicles.kt`), `:data` (`vehicles/`) and `:app` (`ui/vehicles/`, `reminders/`). The
+design is `design/vehicles/source/` (issue #66).
+
+- **A vehicle** is a description in the user's own words ("2011 Volkswagen GTI") and its registration renewal
+  month and year, no day. **No VIN**, and no vehicle lookups of any kind: nothing would use a VIN, and ADR-0001
+  keeps the app on AirCare's host. Several vehicles are allowed.
+- Kept in `vehicles.json` in the app's files and, like `drive_bys.json`, **in** backups and device transfers. A
+  file that can't be read is kept aside as `vehicles.json.bad`.
+- **The window** (`RapidScreenWindow.of`): opens on the first of the month 14 months before the renewal month;
+  closes on the first of the month three months before it, or earlier if that is under 90 days before it (the
+  stricter number, decided 2026-11-20). Both days count. July 2027: May 1, 2026 to April 1, 2027. March 2027:
+  January 1 to December 1, 2026. May 2027: Feb 1 is only 89 days before, so it closes Jan 31.
+- **The test is due** by the end of the month after the renewal month: the renewal month plus AirCare's month of
+  grace. "Renews July 2027 · test due by Aug 31, 2027". "If the vans don't count: Station test in July".
+- **Where today falls** (`WindowState`): before (days until it opens), open (days left, 0 on its last day; how far
+  through), closed (too late for this renewal: plan a station test), past (the test date has gone; the likely
+  next renewal is two years on, as most vehicles test every two years, and the user sets it from the postcard).
+  A window with 14 days or fewer left is "closing soon".
+- **Counted drive-bys**: a drive-by is a vehicle's when it was logged for it, or, while there is only one
+  vehicle, when it has none (logged before vehicles were). Counted only inside the window, in Denver, up to now.
+  "1 of 2 drive-bys", then "3 drive-bys" past two. The app still **never says a vehicle qualifies**: only the
+  renewal postcard's "PASSED ROADSIDE EMISSIONS" does.
+- **Log a drive-by** asks which vehicle drove past only with two or more; the first with an open window is
+  picked to start. Each choice says where its window stands and what the drive-by would make the count.
+- **Reminders**, local notifications only, worked out on the phone (WorkManager), nothing fetched or sent; each
+  is switched on or off on the vehicle's page. All four go out at 9 AM Denver time:
+  - when the window opens;
+  - halfway through it (the middle day, rounded later), **only** with fewer than two drive-bys logged;
+  - 14 days before it closes;
+  - on the first of the renewal month, that the test is due by the end of the next month.
+- "Remind me" on a new vehicle turns all four on. `POST_NOTIFICATIONS` is asked for only when a reminder is
+  turned on; refused, the reminders stay off and the vehicle's page says notifications are off, with a way to
+  Android's settings.
+- A reminder goes out **once** per renewal. One whose day has already passed when the vehicle is added, its
+  renewal changed or the reminder turned on is skipped, not sent late. One that's no use any more (after the
+  window closed; after the test date for the test reminder) is dropped. If several come due together (the phone
+  was off), only the latest is posted. Changing the renewal starts the reminders afresh.
+- Tapping a reminder opens that vehicle's page over the vans tab. No "van posted near you" reminder: it would need
+  a background fetch of the van page, which ADR-0001 doesn't allow.
+

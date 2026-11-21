@@ -18,3 +18,8 @@
   (rounded coordinates and normalised description), never AirCare's `locationID`.
 - **Catalog** — every van site ever seen on AirCare's van page (`scripts/van_sites.json`); it only grows, and the
   van drive-time table covers it (ADR-0008).
+- **Renewal month** — the month a vehicle's registration renews, from the county's postcard; the app keeps the
+  month and year only.
+- **Window** — the RapidScreen window for a renewal: from 14 months before the renewal month until at least 90
+  days before it. Two clean readings inside it can skip that renewal's test.
+- **Reminder** — a local notification about a vehicle's window or test date; worked out and posted on the phone.

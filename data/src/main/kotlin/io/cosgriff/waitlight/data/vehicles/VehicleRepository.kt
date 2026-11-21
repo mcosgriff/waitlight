@@ -88,10 +88,13 @@ class VehicleRepository(
 
     private suspend fun edit(id: Long, edit: (Vehicle) -> Vehicle) = change { vehicles -> vehicles.map { if (it.id == id) edit(it) else it } }
 
+    // Saved before it's shown: the reminder check reschedules itself on the change, which can stop the worker that
+    // made it, and a reminder marked sent must be on disk by then or it would go out again.
     private suspend fun change(edit: (List<Vehicle>) -> List<Vehicle>) = lock.withLock {
         loaded.await()
-        state.value = edit(state.value)
-        save(state.value)
+        val next = edit(state.value)
+        save(next)
+        state.value = next
     }
 
     private fun load(): List<Vehicle> {
