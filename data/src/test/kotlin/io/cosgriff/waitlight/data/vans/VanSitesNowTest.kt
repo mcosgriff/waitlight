@@ -33,7 +33,6 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -131,11 +130,11 @@ class VanSitesNowTest {
         val sitesNow = sitesNow()
         val list = sitesNow.list(MutableStateFlow(null)).first { it.rowsOn(TODAY).all { row -> row.drive != null } }
         val row = list.rowsOn(TODAY)[3]
-        val site = sitesNow.site(row.site.key, TODAY).first { it.row?.drive != null }
+        val site = sitesNow.site(row.site.key, TODAY).first { it.detail?.row?.drive != null }.detail!!
         assertEquals(row, site.row)
         assertTrue(site.isToday)
-        assertNotNull(site.week)
-        assertEquals(list.list.fetchedAt, site.fetchedAt)
+        assertTrue(site.week.isNotEmpty())
+        assertEquals(list.list.fetchedAt, site.checkedAt)
     }
 
     @Test
