@@ -7,4 +7,6 @@
     <exclude domain="file" path="waits.json" />
     <!-- The last location found (LastLocationStore.FILE_NAME), for the widget: it stays on this phone. -->
     <exclude domain="file" path="location.txt" />
+    <!-- The last van schedule (VanStore.FILE_NAME): this week's at best. -->
+    <exclude domain="file" path="vans.json" />
 </full-backup-content>

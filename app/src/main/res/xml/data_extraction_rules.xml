@@ -5,12 +5,15 @@
 <data-extraction-rules>
     <!-- The last waits (WaitTimesStore.FILE_NAME): minutes old at best, so not worth restoring. -->
     <!-- The last location found (LastLocationStore.FILE_NAME), for the widget: it stays on this phone. -->
+    <!-- The last van schedule (VanStore.FILE_NAME): this week's at best. -->
     <cloud-backup>
         <exclude domain="file" path="waits.json" />
         <exclude domain="file" path="location.txt" />
+        <exclude domain="file" path="vans.json" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="file" path="waits.json" />
         <exclude domain="file" path="location.txt" />
+        <exclude domain="file" path="vans.json" />
     </device-transfer>
 </data-extraction-rules>
