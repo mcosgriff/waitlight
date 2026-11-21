@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.data.aircare.ListFetches
+import io.cosgriff.waitlight.data.aircare.RowsNow
+import io.cosgriff.waitlight.data.aircare.StationRowsNow
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
-import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.data.settings.Settings
 import io.cosgriff.waitlight.data.settings.SettingsStore
@@ -29,7 +30,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Clock
 import java.time.Instant
 import javax.inject.Inject
 
@@ -57,17 +57,17 @@ data class StationListUi(
 private data class Choices(val order: SortOrder, val rimsOnly: Boolean, val refreshing: Boolean, val locationAllowed: Boolean)
 
 /**
- * The station list. While the screen is showing it ticks every [TICK_MILLIS] to re-age the data and give the
- * repository a chance to fetch ([ListFetches]: the list's launch fetch first, then when AirCare's next update is
- * due). A tap on refresh asks for [FetchReason.MANUAL]. The repository decides, and says while it's fetching.
+ * The station list. Its rows come from the shared rows-at-now source ([StationRowsNow]), which re-ages them while
+ * the screen shows; alongside, every [FETCH_TICK_MILLIS] it gives the repository a chance to fetch ([ListFetches]:
+ * the list's launch fetch first, then when AirCare's next update is due). A tap on refresh asks for
+ * [FetchReason.MANUAL]. The repository decides, and says while it's fetching.
  */
 @HiltViewModel
 class StationListViewModel @Inject constructor(
     private val waitTimes: WaitTimesRepository,
     private val hereSource: HereSource,
-    private val driveTimes: DriveTimes,
+    private val rowsNow: StationRowsNow,
     private val settings: SettingsStore,
-    private val clock: Clock,
 ) : ViewModel() {
     private val saved = settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, Settings())
     private val fetches = waitTimes.forList()
@@ -75,23 +75,21 @@ class StationListViewModel @Inject constructor(
         Choices(s.order, s.rimsOnly, fetching, allowed)
     }
 
-    private val ticks = flow {
+    /** The list's chances to fetch, while it's on screen. */
+    private val fetchTicks = flow {
         while (true) {
-            emit(clock.instant())
+            emit(Unit)
             viewModelScope.launch { fetches.tick() }
-            delay(TICK_MILLIS)
+            delay(FETCH_TICK_MILLIS)
         }
     }
 
-    val ui: StateFlow<StationListUi> = combine(ticks, waitTimes.waitTimes, hereSource.here, driveTimes.table, choices, ::build)
+    val ui: StateFlow<StationListUi> = combine(rowsNow.rows(), choices, fetchTicks) { rows, choices, _ -> build(rows, choices) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_AFTER_MILLIS),
             build(
-                clock.instant(),
-                waitTimes.waitTimes.value,
-                hereSource.here.value,
-                driveTimes.table.value,
+                rowsNow.current(),
                 saved.value.let { Choices(it.order, it.rimsOnly, waitTimes.fetching.value, hereSource.locationAllowed.value) },
             ),
         )
@@ -110,16 +108,42 @@ class StationListViewModel @Inject constructor(
         viewModelScope.launch { waitTimes.refresh(FetchReason.MANUAL) }
     }
 
-    private fun build(now: Instant, times: WaitTimes, here: Here?, drives: DriveTable, choices: Choices): StationListUi =
-        stationListUi(now, times, here, drives, choices.order, choices.rimsOnly, choices.locationAllowed, choices.refreshing)
+    private fun build(rows: RowsNow, choices: Choices): StationListUi =
+        stationListUi(rows, choices.order, choices.rimsOnly, choices.locationAllowed, choices.refreshing)
 
     private companion object {
-        const val TICK_MILLIS = 30_000L
+        const val FETCH_TICK_MILLIS = 30_000L
         const val STOP_AFTER_MILLIS = 5_000L
     }
 }
 
-/** The list at [now] from the waits the app knows, where "here" is and the user's choices. */
+/** The list from the rows at now ([RowsNow]), where "here" is and the user's choices. */
+internal fun stationListUi(
+    now: RowsNow,
+    order: SortOrder,
+    rimsOnly: Boolean,
+    locationAllowed: Boolean,
+    refreshing: Boolean,
+): StationListUi {
+    val newest = now.times.newestUpdate
+    val state = listState(now.now, newest, now.times.lastOutcome)
+    val rows = arrange(now.rows, order, rimsOnly, state)
+    return StationListUi(
+        now = now.now,
+        state = state,
+        rows = rows,
+        hero = fastestOverall(rows, state),
+        refresh = refreshButton(state, now.now, newest),
+        newestUpdate = newest,
+        order = order,
+        rimsOnly = rimsOnly,
+        here = now.here,
+        locationAllowed = locationAllowed,
+        refreshing = refreshing,
+    )
+}
+
+/** The list at [now] from the waits, "here" and the drive table, as [StationRowsNow] makes them: for tests and previews. */
 internal fun stationListUi(
     now: Instant,
     times: WaitTimes,
@@ -129,21 +153,10 @@ internal fun stationListUi(
     rimsOnly: Boolean,
     locationAllowed: Boolean,
     refreshing: Boolean,
-): StationListUi {
-    val newest = times.newestUpdate
-    val state = listState(now, newest, times.lastOutcome)
-    val rows = arrange(rowsFor(times, here?.point, drives, now), order, rimsOnly, state)
-    return StationListUi(
-        now = now,
-        state = state,
-        rows = rows,
-        hero = fastestOverall(rows, state),
-        refresh = refreshButton(state, now, newest),
-        newestUpdate = newest,
-        order = order,
-        rimsOnly = rimsOnly,
-        here = here,
-        locationAllowed = locationAllowed,
-        refreshing = refreshing,
-    )
-}
+): StationListUi = stationListUi(
+    RowsNow(now, times, here, drives, rowsFor(times, here?.point, drives, now)),
+    order,
+    rimsOnly,
+    locationAllowed,
+    refreshing,
+)

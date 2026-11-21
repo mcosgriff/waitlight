@@ -34,7 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,8 +62,8 @@ import io.cosgriff.waitlight.ui.theme.waitColors
 @Composable
 fun StationDetailScreen(stationId: Int, onBack: () -> Unit) {
     val viewModel: StationDetailViewModel = hiltViewModel()
-    val ui by viewModel.ui.collectAsStateWithLifecycle()
-    val row = ui.rows[stationId] ?: return
+    LaunchedEffect(stationId) { viewModel.show(stationId) }
+    val row = viewModel.row.collectAsStateWithLifecycle().value ?: return
     val context = LocalContext.current
     val chooserTitle = stringResource(R.string.detail_directions_chooser)
     StationDetailContent(
