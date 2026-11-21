@@ -75,7 +75,7 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
   location stays the user's choice.
 - Hero, "Nearest van reading cars now": today's reading site with the least drive, with its place, drive and
   closing time. Hidden on another day, when none is reading, or without a drive time.
-- "Reading now" chip: today only, a filter to reading sites. The bottom bar's badge: how many are reading now.
+- "Reading now" chip: today only, while a site is reading, a filter to reading sites. The bottom bar's badge: how many are reading now.
 
 ## Detail
 

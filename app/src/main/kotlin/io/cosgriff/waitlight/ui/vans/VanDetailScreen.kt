@@ -135,7 +135,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                VanBadge(row.status, status, 64.dp)
+                VanBadge(row.status, status, 64.dp, ringColor = background)
                 Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Text(
                         vanNameText(site.name),

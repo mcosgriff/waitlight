@@ -3,12 +3,16 @@ package io.cosgriff.waitlight.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.HelpOutline
 import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.PauseCircleOutline
+import androidx.compose.material.icons.rounded.AirportShuttle
+import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Sensors
 import androidx.compose.material3.Icon
@@ -32,26 +36,38 @@ import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.theme.waitColors
 
-/** A van badge's look: its fill, icon colour and, for the outline kinds, its border. */
-data class VanBadgeLook(val container: Color, val content: Color, val border: Color?, val icon: ImageVector)
+/** A van badge's look: its fill, the van's colour, its border for the outline kinds, and the status icon and its colour. */
+data class VanBadgeLook(val container: Color, val content: Color, val border: Color?, val icon: ImageVector, val iconTint: Color)
 
 /**
- * A van site's badge, as `design/vans/source/Main.dc.html` draws it: a rounded square with the status's icon.
- * Colour is never the only signal: the icon differs per status, and [description] says it in words.
+ * A van site's badge: a van in a rounded square, filled by status, with the status's own icon on a small circle of
+ * [ringColor] (the colour behind the badge) at its lower right, as the wait badge has. Colour is never the only
+ * signal: the icon differs per status, and [description] says it in words.
  */
 @Composable
-fun VanBadge(status: VanStatus, description: String, size: Dp, modifier: Modifier = Modifier) {
+fun VanBadge(status: VanStatus, description: String, size: Dp, ringColor: Color, modifier: Modifier = Modifier) {
     val look = vanBadgeLook(status)
     val shape = RoundedCornerShape(size * 0.29f)
-    Box(
-        modifier
-            .size(size)
-            .background(look.container, shape)
-            .then(if (look.border != null) Modifier.border(1.5.dp, look.border, shape) else Modifier)
-            .clearAndSetSemantics { contentDescription = description; role = Role.Image },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(look.icon, contentDescription = null, tint = look.content, modifier = Modifier.size(size / 2))
+    Box(modifier.clearAndSetSemantics { contentDescription = description; role = Role.Image }) {
+        Box(
+            Modifier
+                .size(size)
+                .background(look.container, shape)
+                .then(if (look.border != null) Modifier.border(1.5.dp, look.border, shape) else Modifier),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Rounded.AirportShuttle, contentDescription = null, tint = look.content, modifier = Modifier.size(size * 0.54f))
+        }
+        Box(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .offset(4.dp, 4.dp)
+                .size(size * 0.46f)
+                .background(ringColor, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(look.icon, contentDescription = null, tint = look.iconTint, modifier = Modifier.size(size * 0.33f))
+        }
     }
 }
 
@@ -62,12 +78,12 @@ fun vanBadgeLook(status: VanStatus): VanBadgeLook {
     val outline = MaterialTheme.colorScheme.outline
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     return when (status) {
-        VanStatus.Reading -> VanBadgeLook(colors.short.container, colors.short.content, null, Icons.Rounded.Sensors)
-        VanStatus.Paused -> VanBadgeLook(colors.open.container, colors.open.content, null, Icons.Rounded.PauseCircleOutline)
-        VanStatus.OnSiteUnknown -> VanBadgeLook(colors.stale.container, colors.stale.content, null, Icons.AutoMirrored.Rounded.HelpOutline)
-        VanStatus.Done -> VanBadgeLook(Color.Transparent, muted, outline, Icons.Rounded.Schedule)
-        VanStatus.NotSetUpYet, is VanStatus.StartsAt, VanStatus.Scheduled ->
-            VanBadgeLook(Color.Transparent, muted, outline, Icons.Rounded.CalendarMonth)
+        VanStatus.Reading -> VanBadgeLook(colors.short.container, colors.short.content, null, Icons.Rounded.Sensors, colors.short.icon)
+        VanStatus.Paused -> VanBadgeLook(colors.open.container, colors.open.content, null, Icons.Rounded.PauseCircle, colors.open.icon)
+        VanStatus.OnSiteUnknown -> VanBadgeLook(colors.stale.container, colors.stale.content, null, Icons.AutoMirrored.Rounded.HelpOutline, colors.stale.icon)
+        VanStatus.Done -> VanBadgeLook(Color.Transparent, muted, outline, Icons.Rounded.Bedtime, muted)
+        is VanStatus.StartsAt -> VanBadgeLook(Color.Transparent, muted, outline, Icons.Rounded.Schedule, muted)
+        VanStatus.NotSetUpYet, VanStatus.Scheduled -> VanBadgeLook(Color.Transparent, muted, outline, Icons.Rounded.CalendarMonth, muted)
     }
 }
 

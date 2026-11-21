@@ -208,10 +208,10 @@ private fun Header(ui: VansUi, onInfo: () -> Unit, onRefresh: () -> Unit, onChan
             modifier = Modifier.padding(top = 2.dp),
         ) {
             PlaceLine(ui, onChangeLocation)
-            checkedText(ui)?.let { checked ->
-                Text("·", color = muted, modifier = Modifier.clearAndSetSemantics {})
-                Text(checked, style = MaterialTheme.typography.bodyMedium, color = muted)
-            }
+        }
+        // On its own line: with its date it doesn't fit beside the place.
+        checkedText(ui)?.let { checked ->
+            Text(checked, style = MaterialTheme.typography.bodyMedium, color = muted, modifier = Modifier.padding(start = 22.dp))
         }
         Text(
             stringResource(R.string.vans_pitch),
@@ -408,7 +408,8 @@ private fun SummaryLine(ui: VansUi, day: VanDay, onToggleReading: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(text, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-        if (ui.showReadingFilter && sites.isNotEmpty()) {
+        // Only while something is reading, or to turn the filter back off.
+        if (ui.showReadingFilter && (reading > 0 || ui.readingOnly)) {
             FilterChip(
                 selected = ui.readingOnly,
                 onClick = onToggleReading,
@@ -479,7 +480,7 @@ private fun VanRowItem(row: VanRow, state: VanListState, isToday: Boolean, onCli
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            VanBadge(row.status, badgeDescription, 48.dp)
+            VanBadge(row.status, badgeDescription, 48.dp, ringColor = MaterialTheme.colorScheme.surface)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(vanNameText(row.site.name), style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp, lineHeight = 20.sp))
                 Text(status, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold), color = vanStatusColor(row.status))
