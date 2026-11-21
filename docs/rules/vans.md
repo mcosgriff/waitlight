@@ -60,6 +60,9 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
 
 ## States
 
+- The header says when the page was fetched, always with the date: "Status checked Nov 20, 5:57 PM" (a schedule
+  kept from an earlier day must not read as today's).
+
 - **Live**: a weekday with the page read. **Weekend**: next week from Monday, info banner. **Stale**: the last
   fetch failed and the statuses are over 30 minutes old; the schedule still shows. **Broken**: the page couldn't
   be read; the last good schedule with every status "Scheduled", error banner, "Wait times still work". **Empty**:
@@ -77,7 +80,7 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
 ## Detail
 
 - No map tiles for weekly sites: the header is drawn, with the site's name and status.
-- Status, place, drive time, today's hours and "Status checked". **Directions** opens the system's app picker on
+- Status, place, drive time, today's hours and "Status checked" with its date and time. **Directions** opens the system's app picker on
   a `geo:` link to the pin, as for stations.
 - "When it's here": every date on the page's tabs the site is posted for, today in bold; "Next week: Not
   scheduled" when next week's tabs are read and it isn't on them.

@@ -153,7 +153,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
                         ?: stringResource(R.string.van_detail_place, row.place, hours)
                     Text(line, style = small, color = muted)
                     if (ui.isToday) {
-                        ui.fetchedAt?.let { Text(stringResource(R.string.van_detail_checked, TimeText.timeSince(it, ui.now)), style = small, color = muted) }
+                        ui.fetchedAt?.let { Text(stringResource(R.string.van_detail_checked, TimeText.dateTime(it)), style = small, color = muted) }
                     }
                 }
             }

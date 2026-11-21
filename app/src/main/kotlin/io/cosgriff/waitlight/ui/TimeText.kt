@@ -36,6 +36,12 @@ object TimeText {
     fun time(at: LocalTime, locale: Locale = Locale.getDefault()): String =
         time(LocalDate.of(2026, 1, 1).atTime(at).atZone(AirCareHours.zone), locale)
 
+    /** The date and time, for a van fetch: "Nov 20, 5:57 PM". */
+    fun dateTime(at: Instant, locale: Locale = Locale.getDefault()): String {
+        val local = at.atZone(AirCareHours.zone)
+        return format(local, if (local.minute == 0) "MMMdj" else "MMMdjmm", locale)
+    }
+
     /** "Monday". */
     fun weekday(date: LocalDate, locale: Locale = Locale.getDefault()): String = weekday(date.atStartOfDay(AirCareHours.zone), locale)
 

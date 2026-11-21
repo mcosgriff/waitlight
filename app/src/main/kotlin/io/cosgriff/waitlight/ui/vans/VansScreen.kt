@@ -254,7 +254,7 @@ private fun PlaceLine(ui: VansUi, onChangeLocation: () -> Unit) {
 @Composable
 private fun checkedText(ui: VansUi): String? {
     val at = ui.list.fetchedAt ?: return if (ui.refreshing) stringResource(R.string.vans_getting) else null
-    val time = TimeText.timeSince(at, ui.now)
+    val time = TimeText.dateTime(at)
     return when (ui.state) {
         VanListState.LIVE -> stringResource(R.string.vans_status_checked, time)
         VanListState.WEEKEND -> stringResource(R.string.vans_schedule_checked, time)
@@ -274,7 +274,7 @@ private fun banner(ui: VansUi): VanBanner? = when (ui.state) {
 @Composable
 private fun Banner(kind: VanBanner, ui: VansUi) {
     val colors = MaterialTheme.waitColors
-    val at = ui.list.fetchedAt?.let { TimeText.timeSince(it, ui.now) }.orEmpty()
+    val at = ui.list.fetchedAt?.let { TimeText.dateTime(it) }.orEmpty()
     val (look: BannerColors, icon: ImageVector) = when (kind) {
         VanBanner.WEEKEND -> colors.info to Icons.Rounded.CalendarMonth
         VanBanner.STALE -> colors.warning to Icons.Rounded.History

@@ -130,7 +130,7 @@ class VansScreenTest {
         compose.onNode(hasDescription("Done for today, Sheridan Blvd to SB US-285 (Hampden Ave)")).assertExists()
         compose.onNodeWithText(text(R.string.van_two_units)).assertExists()
         compose.onNodeWithText("4 sites today · 1 reading now").assertExists()
-        compose.onNode(hasTextSpaced("Status checked 4:52 PM")).assertExists()
+        compose.onNode(hasTextSpaced("Status checked Nov 20, 4:52 PM")).assertExists()
         compose.onNodeWithText("9 min").assertExists()
     }
 
@@ -225,6 +225,7 @@ class VanDetailScreenTest {
         compose.onNode(hasDescription("Reading cars now")).assertExists()
         compose.onNode(hasTextSpaced("Arvada · 9 min drive · until 5 PM")).assertExists()
         compose.onNode(hasTextSpaced("Today, Fri, Nov 20")).assertExists()
+        compose.onNode(hasTextSpaced("Status checked Nov 20, 4:52 PM")).assertExists()
         compose.onNode(hasTextSpaced("Mon, Nov 23")).assertExists()
         compose.onNode(hasDescription("Diagram: the unit sits on the on-ramp from Harlan St onto EB I-70")).assertExists()
         compose.onNodeWithText(text(R.string.van_detail_directions)).assertHeightIsAtLeast(48.dp).performClick()
