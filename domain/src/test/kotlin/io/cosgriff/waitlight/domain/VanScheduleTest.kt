@@ -138,6 +138,14 @@ class VanScheduleTest {
     }
 
     @Test
+    fun `drive times band like waits`() {
+        assertEquals(WaitBand.SHORT, driveBand(29))
+        assertEquals(WaitBand.MODERATE, driveBand(30))
+        assertEquals(WaitBand.MODERATE, driveBand(60))
+        assertEquals(WaitBand.LONG, driveBand(61))
+    }
+
+    @Test
     fun `a day with no sites, and one not posted`() {
         val days = list(denver("2026-11-20T16:52")).days
         val thanksgiving = days.first { it.date == LocalDate.of(2026, 11, 26) }

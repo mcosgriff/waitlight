@@ -228,9 +228,17 @@
     <string name="van_two_units">2 units</string>
     <string name="van_row_place_hours">%1$s · %2$s</string>
     <string name="van_row_drive">%1$d min</string>
-    <plurals name="van_row_drive_desc">
-        <item quantity="one">%d minute drive</item>
-        <item quantity="other">%d minute drive</item>
+    <plurals name="van_drive_desc_short">
+        <item quantity="one">Short drive, %d minute</item>
+        <item quantity="other">Short drive, %d minutes</item>
+    </plurals>
+    <plurals name="van_drive_desc_moderate">
+        <item quantity="one">Moderate drive, %d minute</item>
+        <item quantity="other">Moderate drive, %d minutes</item>
+    </plurals>
+    <plurals name="van_drive_desc_long">
+        <item quantity="one">Long drive, %d minute</item>
+        <item quantity="other">Long drive, %d minutes</item>
     </plurals>
 
     <!-- Vans list -->
@@ -303,7 +311,6 @@
     <string name="van_detail_diagram_plain">Diagram of the site: %1$s</string>
     <string name="van_detail_unit_ramp">Unit on the ramp</string>
     <string name="van_detail_unit_road">Unit by the road</string>
-    <string name="van_detail_drive">%1$s · %2$d min drive · %3$s</string>
     <string name="van_detail_place">%1$s · %2$s</string>
     <string name="van_detail_until">until %1$s</string>
     <string name="van_detail_checked">Status checked %1$s</string>

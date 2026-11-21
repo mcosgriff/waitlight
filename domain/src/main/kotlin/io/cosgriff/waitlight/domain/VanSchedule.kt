@@ -294,6 +294,13 @@ fun nearestFarAway(day: VanDay?): Int? {
     return nearest.takeIf { it > VanRules.FAR_MINUTES }
 }
 
+/**
+ * The band a drive of [minutes] falls in, by the wait badges' own thresholds ([WaitThresholds.STANDARD]): short
+ * under 30, moderate 30 to 60, long over 60, so a van's drive reads like a station's wait.
+ */
+fun driveBand(minutes: Int, thresholds: WaitThresholds = WaitThresholds.STANDARD): WaitBand =
+    WaitReading.Minutes(minutes).band(thresholds)!!
+
 /** How many of [day]'s sites are reading now: the bottom bar's badge and the "6 reading now" line. */
 fun readingCount(day: VanDay?): Int =
     ((day?.content as? VanDayContent.Sites)?.rows ?: emptyList()).count { it.status == VanStatus.Reading }

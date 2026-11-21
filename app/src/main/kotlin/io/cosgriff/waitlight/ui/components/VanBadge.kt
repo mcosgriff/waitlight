@@ -2,7 +2,10 @@ package io.cosgriff.waitlight.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -10,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.HelpOutline
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material.icons.rounded.AirportShuttle
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.PauseCircle
@@ -17,13 +22,17 @@ import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Sensors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -32,6 +41,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.VanName
+import io.cosgriff.waitlight.domain.WaitBand
+import io.cosgriff.waitlight.domain.driveBand
 import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.theme.waitColors
@@ -125,3 +136,35 @@ fun vanNameSpoken(name: VanName): String = when (name) {
 @Composable
 fun vanHoursText(opens: java.time.LocalTime, closes: java.time.LocalTime): String =
     stringResource(R.string.van_hours, TimeText.time(opens), TimeText.time(closes))
+
+/**
+ * A van site's drive time as a pill in the wait badges' colours and icons ([driveBand]): green with a tick under
+ * 30 minutes, yellow with a clock to 60, red with a warning over. Read aloud as "Short drive, 9 minutes", so
+ * colour is never the only signal.
+ */
+@Composable
+fun DriveTimePill(minutes: Int, modifier: Modifier = Modifier) {
+    val band = driveBand(minutes)
+    val colors = MaterialTheme.waitColors.forBand(band)
+    val description = when (band) {
+        WaitBand.SHORT -> pluralStringResource(R.plurals.van_drive_desc_short, minutes, minutes)
+        WaitBand.MODERATE -> pluralStringResource(R.plurals.van_drive_desc_moderate, minutes, minutes)
+        WaitBand.LONG -> pluralStringResource(R.plurals.van_drive_desc_long, minutes, minutes)
+    }
+    val icon = when (band) {
+        WaitBand.SHORT -> Icons.Rounded.CheckCircle
+        WaitBand.MODERATE -> Icons.Rounded.Schedule
+        WaitBand.LONG -> Icons.Rounded.Warning
+    }
+    Row(
+        modifier
+            .background(colors.container, RoundedCornerShape(50))
+            .padding(start = 6.dp, end = 10.dp, top = 4.dp, bottom = 4.dp)
+            .clearAndSetSemantics { contentDescription = description },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(icon, contentDescription = null, tint = colors.content, modifier = Modifier.size(16.dp))
+        Text(stringResource(R.string.van_row_drive, minutes), color = colors.content, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+    }
+}

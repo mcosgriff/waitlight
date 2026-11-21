@@ -90,6 +90,7 @@ import io.cosgriff.waitlight.domain.VanRow
 import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.domain.nearestFarAway
 import io.cosgriff.waitlight.ui.TimeText
+import io.cosgriff.waitlight.ui.components.DriveTimePill
 import io.cosgriff.waitlight.ui.components.VanBadge
 import io.cosgriff.waitlight.ui.components.vanHoursText
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
@@ -511,14 +512,7 @@ private fun VanRowItem(row: VanRow, state: VanListState, isToday: Boolean, onCli
                     }
                 }
             }
-            row.driveMinutes?.let { minutes ->
-                val spoken = pluralStringResource(R.plurals.van_row_drive_desc, minutes, minutes)
-                Text(
-                    stringResource(R.string.van_row_drive, minutes),
-                    style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.semantics { contentDescription = spoken },
-                )
-            }
+            row.driveMinutes?.let { DriveTimePill(it) }
         }
     }
 }

@@ -139,7 +139,7 @@ class VansScreenTest {
         compose.onNodeWithText(text(R.string.van_two_units)).assertExists()
         compose.onNodeWithText("4 sites today · 1 reading now").assertExists()
         compose.onNode(hasTextSpaced("Status checked Nov 20, 4:52 PM")).assertExists()
-        compose.onNodeWithText("9 min").assertExists()
+        compose.onNode(hasDescription("Short drive, 9 minutes")).assertExists()
     }
 
     @Test
@@ -148,6 +148,7 @@ class VansScreenTest {
         val ui = vansUi(denver("2026-11-20T16:52"), VanTimes(SCHEDULE), Here.Zip(ZIP_80003), far, ZipTable(listOf(ZIP_80003)), null, false, false, false)
         compose.setContent { WaitlightTheme(dark = false) { VansContent(ui, {}, {}, {}, { _, _ -> }, {}, {}) } }
         compose.onNodeWithText("The nearest van is 34 min away").assertExists()
+        compose.onNode(hasDescription("Moderate drive, 34 minutes")).assertExists()
     }
 
     @Test
@@ -290,7 +291,8 @@ class VanDetailScreenTest {
         show(HARLAN.key, LocalDate.of(2026, 11, 20))
         compose.onNodeWithText("Harlan St → EB I-70").assertExists()
         compose.onNode(hasDescription("Reading cars now")).assertExists()
-        compose.onNode(hasTextSpaced("Arvada · 9 min drive · until 5 PM")).assertExists()
+        compose.onNode(hasTextSpaced("Arvada · until 5 PM")).assertExists()
+        compose.onNode(hasDescription("Short drive, 9 minutes")).assertExists()
         compose.onNode(hasTextSpaced("Today, Fri, Nov 20")).assertExists()
         compose.onNode(hasTextSpaced("Status checked Nov 20, 4:52 PM")).assertExists()
         compose.onNode(hasTextSpaced("Mon, Nov 23")).assertExists()

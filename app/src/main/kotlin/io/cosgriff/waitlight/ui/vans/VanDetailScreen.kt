@@ -76,6 +76,7 @@ import io.cosgriff.waitlight.domain.VanSiteWeek
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.currentVanWeek
 import io.cosgriff.waitlight.ui.TimeText
+import io.cosgriff.waitlight.ui.components.DriveTimePill
 import io.cosgriff.waitlight.ui.components.VanBadge
 import io.cosgriff.waitlight.ui.components.vanHoursText
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
@@ -171,12 +172,11 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
                         vanHoursText(site.opens, site.closes)
                     }
                     val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
-                    val line = row.driveMinutes?.let { stringResource(R.string.van_detail_drive, row.place, it, hours) }
-                        ?: stringResource(R.string.van_detail_place, row.place, hours)
-                    Text(line, style = small, color = muted)
+                    Text(stringResource(R.string.van_detail_place, row.place, hours), style = small, color = muted)
                     if (ui.isToday) {
                         ui.fetchedAt?.let { Text(stringResource(R.string.van_detail_checked, TimeText.dateTime(it)), style = small, color = muted) }
                     }
+                    row.driveMinutes?.let { DriveTimePill(it, Modifier.padding(top = 4.dp)) }
                 }
             }
 
