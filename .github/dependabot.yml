@@ -5,6 +5,11 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    ignore:
+      # Robolectric names its own build of the Android framework jar for each SDK it runs (`@Config(sdk = [35])`);
+      # it moves with Robolectric by hand, from Robolectric's `AndroidSdk` list (libs.versions.toml). Dependabot
+      # would bump it to a newer Android's jar, which this Robolectric can't use.
+      - dependency-name: "org.robolectric:android-all-instrumented"
     cooldown:
       # Wait until a version has been out for 5 days; a bad release is usually caught and pulled by then.
       # Security updates ignore this.
