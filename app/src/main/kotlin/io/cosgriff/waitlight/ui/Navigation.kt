@@ -3,9 +3,13 @@ package io.cosgriff.waitlight.ui
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-/** The station list, nearest first. */
+/** The home screen: the station list, nearest first, and the roadside vans, under a bottom navigation bar. */
 @Serializable
 data object StationList : NavKey
+
+/** One van site on one day, by its site key (`VanSite.key`) and the day as an ISO date. */
+@Serializable
+data class VanDetail(val siteKey: String, val date: String) : NavKey
 
 /** One station, by AirCare's id for it. */
 @Serializable

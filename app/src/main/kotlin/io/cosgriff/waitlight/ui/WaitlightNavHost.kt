@@ -11,8 +11,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.cosgriff.waitlight.ui.detail.StationDetailScreen
-import io.cosgriff.waitlight.ui.list.StationListScreen
 import io.cosgriff.waitlight.ui.location.LocationPromptScreen
+import io.cosgriff.waitlight.ui.vans.VanDetailScreen
+import java.time.LocalDate
 
 /**
  * The app's screens. The list is the start once location is allowed or the prompt was answered, before that the
@@ -42,10 +43,14 @@ private fun WaitlightNavDisplay(start: NavKey, openStation: Int?, onLocationProm
         ),
         entryProvider = entryProvider {
             entry<StationList> {
-                StationListScreen(
+                HomeTabs(
                     onOpenStation = { backStack.add(StationDetail(it)) },
+                    onOpenVanSite = { key, date -> backStack.add(VanDetail(key, date.toString())) },
                     onChangeLocation = { backStack.add(LocationPrompt) },
                 )
+            }
+            entry<VanDetail> { key ->
+                VanDetailScreen(key.siteKey, LocalDate.parse(key.date), onBack = { backStack.removeLastOrNull() })
             }
             entry<StationDetail> { key -> StationDetailScreen(key.stationId, onBack = { backStack.removeLastOrNull() }) }
             entry<LocationPrompt> {

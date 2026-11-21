@@ -73,6 +73,8 @@ android {
         // Dependabot proposes new versions, after its cooldown; lint would flag them on day one.
         // AndroidGradlePluginVersion is the same check for Gradle and AGP themselves.
         disable += "NewerVersionAvailable"
+        // The same news for the version catalog's AndroidX libraries; it broke the build the day a release landed.
+        disable += "GradleDependency"
         disable += "AndroidGradlePluginVersion"
     }
 }

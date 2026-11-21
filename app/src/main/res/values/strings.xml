@@ -202,4 +202,116 @@
         <item quantity="one">You can still browse the %d station without location.</item>
         <item quantity="other">You can still browse all %d stations alphabetically without location.</item>
     </plurals>
+    <!-- Bottom navigation -->
+    <string name="nav_waits">Wait times</string>
+    <string name="nav_vans">Roadside vans</string>
+    <plurals name="nav_vans_reading">
+        <item quantity="one">%d van reading cars now</item>
+        <item quantity="other">%d vans reading cars now</item>
+    </plurals>
+
+    <!-- Van sites (list, hero, detail) -->
+    <string name="van_name_ramp">%1$s → %2$s</string>
+    <string name="van_name_ramp_spoken">%1$s to %2$s</string>
+    <string name="van_name_road">%1$s past %2$s</string>
+    <string name="van_status_reading">Reading cars now</string>
+    <string name="van_status_paused">Set up, not reading</string>
+    <string name="van_status_unknown">On site, status unknown</string>
+    <string name="van_status_not_set_up">Not set up yet</string>
+    <string name="van_status_done">Done for today</string>
+    <string name="van_status_starts">Starts at %1$s</string>
+    <string name="van_status_scheduled">Scheduled</string>
+    <string name="van_status_scheduled_today">Scheduled today</string>
+    <string name="van_status_scheduled_on">Scheduled %1$s</string>
+    <string name="van_badge_desc">%1$s, %2$s</string>
+    <string name="van_hours">%1$s–%2$s</string>
+    <string name="van_two_units">2 units</string>
+    <string name="van_row_place_hours">%1$s · %2$s</string>
+    <string name="van_row_drive">%1$d min</string>
+    <plurals name="van_row_drive_desc">
+        <item quantity="one">%d minute drive</item>
+        <item quantity="other">%d minute drive</item>
+    </plurals>
+
+    <!-- Vans list -->
+    <string name="vans_title">Roadside vans</string>
+    <string name="vans_info">How roadside vans work</string>
+    <string name="vans_pitch">Drive past one and you might skip your next test.</string>
+    <string name="vans_status_checked">Status checked %1$s</string>
+    <string name="vans_schedule_checked">Schedule checked %1$s</string>
+    <string name="vans_schedule_from">Schedule from %1$s</string>
+    <string name="vans_getting">Getting van sites…</string>
+    <string name="vans_refresh">Check the vans again</string>
+    <string name="vans_hero_label">Nearest van reading cars now</string>
+    <string name="vans_hero_detail">%1$s · %2$d min drive · ends %3$s</string>
+    <string name="vans_hero_open">Open %1$s</string>
+    <string name="vans_chip_today">Today</string>
+    <string name="vans_filter_reading">Reading now</string>
+    <plurals name="vans_summary_sites_today">
+        <item quantity="one">%d site today</item>
+        <item quantity="other">%d sites today</item>
+    </plurals>
+    <plurals name="vans_summary_reading">
+        <item quantity="one">%d reading now</item>
+        <item quantity="other">%d reading now</item>
+    </plurals>
+    <string name="vans_summary_join">%1$s · %2$s</string>
+    <string name="vans_summary_unavailable">live status unavailable</string>
+    <plurals name="vans_summary_reading_only">
+        <item quantity="one">%1$d of %2$d site reading cars now</item>
+        <item quantity="other">%1$d of %2$d sites reading cars now</item>
+    </plurals>
+    <plurals name="vans_summary_day">
+        <item quantity="one">%1$s · %2$d site · live status on the day</item>
+        <item quantity="other">%1$s · %2$d sites · live status on the day</item>
+    </plurals>
+    <string name="vans_none_title">No vans on %1$s</string>
+    <string name="vans_none_body">AirCare has no sites scheduled that day.</string>
+    <string name="vans_none_body_holiday">AirCare has no sites scheduled on the state holiday.</string>
+    <string name="vans_not_posted_title">%1$s’s sites aren’t posted yet</string>
+    <string name="vans_not_posted_body">AirCare usually posts next week’s sites ahead of time. Check back later this week.</string>
+    <string name="vans_empty_title">No van sites yet</string>
+    <string name="vans_empty_body">The schedule comes from AirCare’s van page and loads when you’re online.</string>
+    <string name="vans_weekend_title">No vans out on weekends</string>
+    <string name="vans_weekend_body">Units run on weekdays, roughly 5:30 AM to 7 PM. Showing next week’s sites.</string>
+    <string name="vans_broken_title">Van status unavailable</string>
+    <string name="vans_broken_body">AirCare changed their van page and the app can’t read it yet. Showing the schedule saved at %1$s. Wait times still work.</string>
+    <string name="vans_stale_title">Couldn’t check the vans</string>
+    <string name="vans_stale_body">AirCare’s site didn’t respond. Showing the schedule from %1$s; live status returns when it does.</string>
+    <string name="vans_footer">Sites, hours and status from AirCare Colorado. Weather can close a site early.</string>
+
+    <!-- How roadside vans work (sheet) -->
+    <string name="vans_how_title">Skip your test by driving past a van</string>
+    <string name="vans_how_intro">AirCare’s RapidScreen units sit beside on-ramps and roads in white vans or small green boxes. They read the exhaust of cars driving past and match it to registration records.</string>
+    <string name="vans_how_two_badge">2</string>
+    <string name="vans_how_two">You need two clean readings in the 14 months before your renewal.</string>
+    <string name="vans_how_window">Both must come at least 90 days before your renewal month. Renewing in July? Readings from May 1 last year to April 1 count.</string>
+    <string name="vans_how_when">Units run on weekdays between 5:30 AM and 7 PM, at sites that change every week. Bad weather can close a site early.</string>
+    <string name="vans_how_private">The app can’t see your readings. Waitlight is unofficial and not affiliated with AirCare Colorado.</string>
+    <string name="vans_how_page">AirCare’s van page</string>
+    <string name="vans_how_done">Got it</string>
+
+    <!-- Van site detail -->
+    <string name="van_detail_back">Back to vans</string>
+    <string name="van_detail_diagram_ramp">Diagram: the unit sits on the on-ramp from %1$s onto %2$s</string>
+    <string name="van_detail_diagram_road">Diagram: the unit sits on %1$s, past %2$s</string>
+    <string name="van_detail_diagram_plain">Diagram of the site: %1$s</string>
+    <string name="van_detail_unit_ramp">Unit on the ramp</string>
+    <string name="van_detail_unit_road">Unit by the road</string>
+    <string name="van_detail_drive">%1$s · %2$d min drive · %3$s</string>
+    <string name="van_detail_place">%1$s · %2$s</string>
+    <string name="van_detail_until">until %1$s</string>
+    <string name="van_detail_checked">Status checked %1$s</string>
+    <string name="van_detail_directions">Directions to the site</string>
+    <string name="van_detail_directions_chooser">Get directions with</string>
+    <string name="van_detail_get_read_title">To get read</string>
+    <string name="van_detail_get_read_ramp">Take the on-ramp from %1$s onto %2$s and drive normally. The unit reads your exhaust as you pass. No need to stop or slow down.</string>
+    <string name="van_detail_get_read_road">Drive %1$s past %2$s normally. The unit reads your exhaust as you pass. No need to stop or slow down.</string>
+    <string name="van_detail_get_read_plain">Drive past the unit normally. It reads your exhaust as you pass. No need to stop or slow down.</string>
+    <string name="van_detail_two_units">Two units at this site.</string>
+    <string name="van_detail_week_title">When it’s here</string>
+    <string name="van_detail_today">Today, %1$s</string>
+    <string name="van_detail_next_week">Next week</string>
+    <string name="van_detail_not_scheduled">Not scheduled</string>
+    <string name="van_detail_footer">Rain, snow or high wind can shut a site early. A reading counts only if your vehicle qualifies for RapidScreen; AirCare matches readings to your registration. Unofficial app, not affiliated with AirCare Colorado.</string>
 </resources>

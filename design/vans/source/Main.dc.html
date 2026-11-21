@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Roadside vans</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-family: 'Roboto Flex', system-ui, sans-serif; background: {{t.bg}}; color: {{t.ink}}">
+
+<header style="display: flex; flex-direction: column; gap: 6px; padding: 20px 16px 10px 20px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.3px">Roadside vans</h1>
+<a href="HowItWorks.dc.html" aria-label="How roadside vans work" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: {{t.ink}}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 7.8v.01"></path></svg>
+</a>
+</div>
+<div style="display: flex; align-items: center; gap: 6px; font-size: 14px; flex-wrap: wrap; color: {{t.muted}}">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>
+<span>Arvada, CO 80003</span>
+<span aria-hidden="true">·</span>
+<span>{{checkedText}}</span>
+</div>
+<span style="font-size: 13px; padding-left: 22px; color: {{t.muted2}}">Drive past one and you might skip your next test.</span>
+</header>
+
+<sc-if value="{{hasBanner}}" hint-placeholder-val="{{false}}">
+<section role="status" style="margin: 0 16px 6px 16px; padding: 12px 14px; border-radius: 16px; display: flex; gap: 12px; align-items: flex-start; background: {{banner.bg}}; color: {{banner.fg}}">
+<span aria-hidden="true" style="display: flex; padding-top: 1px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5"></path><path d="M12 16.3v.01"></path></svg>
+</span>
+<div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<span style="font-size: 15px; font-weight: 600">{{banner.title}}</span>
+<span style="font-size: 13px; line-height: 1.45">{{banner.body}}</span>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{showHero}}" hint-placeholder-val="{{true}}">
+<section style="margin: 0 16px; padding: 14px 16px; border-radius: 20px; color: #FFFFFF; display: flex; align-items: center; gap: 14px; background: {{t.hero}}">
+<div aria-hidden="true" style="width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: {{t.goBg}}; color: {{t.goFg}}">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8a6 6 0 0 1 0 8.4"></path><path d="M7.8 16.2a6 6 0 0 1 0-8.4"></path><path d="M19.1 4.9a10 10 0 0 1 0 14.2"></path><path d="M4.9 19.1a10 10 0 0 1 0-14.2"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: {{t.heroSub}}">Nearest van reading cars now</span>
+<span style="font-size: 18px; font-weight: 600">Harlan St → EB I-70</span>
+<span style="font-size: 14px; color: {{t.heroSub2}}">Arvada · 3.1 mi · ends 5 PM (8 min)</span>
+</div>
+<a href="VanDetail.dc.html" aria-label="Open Harlan Street to eastbound I-70" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.14); color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+</section>
+</sc-if>
+
+<div style="display: flex; gap: 8px; padding: 12px 16px 4px 16px; overflow-x: auto">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="6">
+<button onClick="{{d.pick}}" aria-pressed="{{d.pressed}}" style="flex-shrink: 0; height: 40px; min-width: 56px; padding: 0 12px; border-radius: 20px; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; border: {{d.border}}; background: {{d.bg}}; color: {{d.fg}}">
+<span style="font-size: 13px; font-weight: 600">{{d.top}}</span>
+<span style="font-size: 11px; opacity: 0.85">{{d.bottom}}</span>
+</button>
+</sc-for>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px 8px 20px">
+<span style="font-size: 13px; color: {{t.muted}}">{{summary}}</span>
+<sc-if value="{{showFilter}}" hint-placeholder-val="{{true}}">
+<button onClick="{{toggleLive}}" aria-pressed="{{liveOnly}}" style="flex-shrink: 0; height: 34px; padding: 0 12px; border-radius: 17px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; border: {{chipLive.border}}; background: {{chipLive.bg}}; color: {{chipLive.fg}}">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8a6 6 0 0 1 0 8.4"></path><path d="M7.8 16.2a6 6 0 0 1 0-8.4"></path></svg>
+Reading now
+</button>
+</sc-if>
+</div>
+
+<sc-if value="{{hasEmpty}}" hint-placeholder-val="{{false}}">
+<section style="margin: 4px 16px; padding: 18px 16px; border-radius: 16px; display: flex; gap: 14px; align-items: flex-start; background: {{t.surface}}">
+<div aria-hidden="true" style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: {{t.unkBg}}; color: {{t.unkFg}}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16"></path><path d="M9 3v4"></path><path d="M15 3v4"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<span style="font-size: 16px; font-weight: 600">{{empty.title}}</span>
+<span style="font-size: 14px; line-height: 1.45; color: {{t.muted}}">{{empty.body}}</span>
+</div>
+</section>
+</sc-if>
+
+<ul style="list-style: none; margin: 0; padding: 0 12px 12px 12px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; overflow-y: auto">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<li>
+<a href="VanDetail.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 16px; text-decoration: none; min-height: 72px; box-sizing: border-box; background: {{t.surface}}; color: {{t.ink}}">
+<div role="img" aria-label="{{r.aria}}" style="width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-sizing: border-box; background: {{r.bg}}; color: {{r.fg}}; border: {{r.border}}">
+<sc-if value="{{r.isGo}}" hint-placeholder-val="{{true}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8a6 6 0 0 1 0 8.4"></path><path d="M7.8 16.2a6 6 0 0 1 0-8.4"></path><path d="M19.1 4.9a10 10 0 0 1 0 14.2"></path><path d="M4.9 19.1a10 10 0 0 1 0-14.2"></path></svg></sc-if>
+<sc-if value="{{r.isPause}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M10 9v6"></path><path d="M14 9v6"></path></svg></sc-if>
+<sc-if value="{{r.isUnk}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.4"></path><path d="M12 16.8v.01"></path></svg></sc-if>
+<sc-if value="{{r.isDone}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5V12l3 2"></path></svg></sc-if>
+<sc-if value="{{r.isSched}}" hint-placeholder-val="{{false}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16"></path><path d="M9 3v4"></path><path d="M15 3v4"></path></svg></sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+<span style="font-size: 15px; font-weight: 600; line-height: 1.3">{{r.name}}</span>
+<span style="font-size: 13px; font-weight: 600; color: {{r.wordColor}}">{{r.word}}</span>
+<div style="display: flex; align-items: center; gap: 6px; min-width: 0">
+<span style="font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: {{t.muted2}}">{{r.place}} · {{r.hours}}</span>
+<sc-if value="{{r.two}}" hint-placeholder-val="{{false}}">
+<span style="flex-shrink: 0; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 2px 6px; color: {{t.tagFg}}; background: {{t.tagBg}}">2 units</span>
+</sc-if>
+</div>
+</div>
+<span style="font-size: 15px; font-weight: 600; flex-shrink: 0">{{r.mi}} mi</span>
+</a>
+</li>
+</sc-for>
+</ul>
+
+<footer style="padding: 8px 20px 10px 20px; font-size: 12px; line-height: 1.4; border-top: 1px solid {{t.line}}; background: {{t.bg}}; color: {{t.muted2}}">Sites, hours and status from AirCare Colorado. Weather can close a site early.</footer>
+
+<nav aria-label="Main" style="display: flex; height: 72px; flex-shrink: 0; border-top: 1px solid {{t.line}}; background: {{t.surface}}">
+<a href="EntryTabs.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; font-size: 12px; font-weight: 500; color: {{t.muted}}">
+<span style="width: 56px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 1.5"></path><path d="M9.5 2.5h5"></path></svg>
+</span>
+Wait times
+</a>
+<a href="Main.dc.html" aria-current="page" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; font-size: 12px; font-weight: 700; color: {{t.ink}}">
+<span style="width: 56px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; background: {{t.navPill}}; color: {{t.navPillFg}}">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 6.5h11v10h-11z"></path><path d="M13.5 9.5h4l3.5 3.5v3.5h-7.5"></path><circle cx="6.5" cy="17.5" r="1.8"></circle><circle cx="17" cy="17.5" r="1.8"></circle></svg>
+</span>
+Roadside vans
+</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scenario":{"editor":"enum","options":["live","weekend","broken"],"default":"live","section":"State"},"day":{"editor":"enum","options":["today","mon","tue","wed","thu","fri"],"default":"today","section":"State"},"dark":{"editor":"boolean","default":false,"section":"State"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { day: null, liveOnly: false };
+  }
+  renderVals() {
+    const dark = !!(this.props.dark ?? false);
+    const sc = this.props.scenario ?? 'live';
+    const L = {
+      bg: '#F6F7F4', surface: '#FFFFFF', ink: '#17201B', muted: '#4A554F', muted2: '#56615B', line: '#E3E6E1',
+      hero: '#1F4E5F', heroSub: '#CFE3EA', heroSub2: '#E3EEF1', accent: '#1F4E5F', accentFg: '#FFFFFF',
+      chipOffBg: '#FFFFFF', chipOffBorder: '#C9CFCB', tagBg: '#E2EDF0', tagFg: '#1F4E5F',
+      goBg: '#1B7F3B', goFg: '#FFFFFF', goWord: '#1B7F3B', pauseBg: '#6B7570', pauseFg: '#FFFFFF',
+      unkBg: '#E3E6E1', unkFg: '#3E4843', outline: '#C9CFCB', outlineFg: '#4A554F',
+      infoBg: '#E3E6E1', infoFg: '#17201B', errBg: '#FBE3E1', errFg: '#7A1A14', navPill: '#E2EDF0', navPillFg: '#1F4E5F'
+    };
+    const D = {
+      bg: '#0F1513', surface: '#1A2320', ink: '#E4EBE7', muted: '#A6B2AC', muted2: '#A6B2AC', line: '#26302C',
+      hero: '#16343E', heroSub: '#A9D6E2', heroSub2: '#D3E6EB', accent: '#8CC7D6', accentFg: '#0B2730',
+      chipOffBg: '#1A2320', chipOffBorder: '#3E4B46', tagBg: '#1F3A43', tagFg: '#A9D6E2',
+      goBg: '#6FCF8A', goFg: '#00391A', goWord: '#6FCF8A', pauseBg: '#8C9792', pauseFg: '#101513',
+      unkBg: '#2A3430', unkFg: '#C4CEC9', outline: '#3E4B46', outlineFg: '#A6B2AC',
+      infoBg: '#222D29', infoFg: '#E4EBE7', errBg: '#3A1714', errFg: '#FFC9C3', navPill: '#1F3A43', navPillFg: '#A9D6E2'
+    };
+    const t = dark ? D : L;
+
+    // Real snapshot: AirCare van page, Fri Nov 20 2026, 4:52 PM MT. Distances straight-line from Arvada 80003.
+    const today = [
+      { name: 'Harlan St → EB I-70', place: 'Arvada', hours: '7 AM–5 PM', mi: 3.1, s: 'go' },
+      { name: 'Pecos St → WB I-70', place: 'Denver', hours: '7 AM–5 PM', mi: 4.3, s: 'unk' },
+      { name: 'NB I-25 → WB I-70', place: 'Denver', hours: '7 AM–5 PM', mi: 5.1, s: 'go' },
+      { name: 'NB I-25 → WB I-70', place: 'Denver', hours: '6:30 AM–5 PM', mi: 5.1, s: 'go', two: true },
+      { name: 'Washington St → WB I-70', place: 'Denver', hours: '6:30 AM–5 PM', mi: 5.1, s: 'unk' },
+      { name: 'Sheridan Blvd → SB US-285 (Hampden)', place: 'Denver', hours: '8 AM–12:30 PM', mi: 12.1, s: 'done' },
+      { name: 'Federal Blvd → SB US-285 (Hampden)', place: 'Sheridan', hours: '8 AM–1 PM', mi: 12.3, s: 'done' },
+      { name: 'Green Valley Ranch Blvd → SB Peña Blvd', place: 'Denver', hours: '7:30 AM–5 PM', mi: 14.8, s: 'unk' },
+      { name: 'E 56th Ave → SB Peña Blvd', place: 'Denver', hours: '7:30 AM–12:30 PM', mi: 14.9, s: 'done' },
+      { name: 'Ken Caryl Ave → EB C-470', place: 'Littleton', hours: '7 AM–5 PM', mi: 17.8, s: 'unk' },
+      { name: 'Kipling Pkwy → EB C-470', place: 'Littleton', hours: '7 AM–5 PM', mi: 18.7, s: 'go' },
+      { name: 'Lucent Blvd → WB C-470', place: 'Highlands Ranch', hours: '7 AM–5 PM', mi: 18.7, s: 'unk' },
+      { name: 'Broadway → EB C-470', place: 'Highlands Ranch', hours: '7 AM–5 PM', mi: 18.7, s: 'unk' },
+      { name: 'Wadsworth Blvd → WB C-470', place: 'Littleton', hours: '7 AM–5 PM', mi: 19.0, s: 'go' },
+      { name: 'CO-257 → EB US-34 Business', place: 'Greeley', hours: '7 AM–5 PM', mi: 41.3, s: 'unk' },
+      { name: 'NB SH-257 → EB US-34 Business', place: 'Greeley', hours: '7 AM–5 PM', mi: 41.6, s: 'unk' },
+      { name: '27th St → WB US-34', place: 'Greeley', hours: '7 AM–5 PM', mi: 43.1, s: 'unk' },
+      { name: 'EB SH-192 (Carpenter Rd) past CR-9', place: 'Fort Collins', hours: '7 AM–5:30 PM', mi: 45.0, s: 'go' },
+      { name: 'LCR-32 → NB I-25', place: 'Windsor', hours: '7 AM–5 PM', mi: 45.3, s: 'pause' },
+      { name: 'Harmony Rd → SB I-25', place: 'Fort Collins', hours: '7 AM–5 PM', mi: 48.1, s: 'unk' }
+    ];
+    // Next week, M–Th tab (Thanksgiving week: entries say Mon, Tues and/or Wed only).
+    const nextWeek = [
+      { name: 'Sheridan Blvd → EB I-76', place: 'Arvada', hours: '6:30 AM–6 PM', mi: 2.3, days: ['wed'] },
+      { name: 'Pecos Blvd → WB I-76', place: 'Denver', hours: '6:30 AM–6 PM', mi: 3.3, days: ['wed'] },
+      { name: 'Washington St → WB I-70', place: 'Denver', hours: '6:30 AM–5 PM', mi: 5.1, days: ['mon', 'tue', 'wed'] },
+      { name: 'NB I-25 → WB I-70', place: 'Denver', hours: '7 AM–5 PM', mi: 5.1, days: ['mon', 'tue', 'wed'] },
+      { name: 'NB I-25 → WB I-70', place: 'Denver', hours: '6:30 AM–5 PM', mi: 5.1, days: ['mon', 'tue', 'wed'], two: true },
+      { name: 'Wadsworth Pkwy → WB US-36', place: 'Broomfield', hours: '7–11 AM', mi: 6.4, days: ['mon', 'tue'] },
+      { name: 'SB Wadsworth Pkwy from WB US-287', place: 'Broomfield', hours: '7–11 AM', mi: 6.4, days: ['mon', 'tue'] },
+      { name: 'EB US-287 from SB Wadsworth', place: 'Broomfield', hours: '7–11 AM', mi: 6.5, days: ['mon', 'tue'] },
+      { name: 'SB Wadsworth Blvd → EB US-6', place: 'Lakewood', hours: '7 AM–2 PM', mi: 7.2, days: ['mon', 'tue'] },
+      { name: 'Kipling St → EB US-6', place: 'Lakewood', hours: '7:30 AM–2 PM', mi: 7.5, days: ['mon', 'tue', 'wed'] },
+      { name: 'SB Kipling St → EB US-6', place: 'Lakewood', hours: '8 AM–2 PM', mi: 7.5, days: ['mon', 'tue', 'wed'] },
+      { name: 'Belleview Ave → NB Santa Fe Dr', place: 'Littleton', hours: '8 AM–1 PM', mi: 14.3, days: ['mon', 'tue', 'wed'] },
+      { name: 'Alameda Ave → SB I-225', place: 'Aurora', hours: '6 AM–2 PM', mi: 15.1, days: ['mon', 'tue', 'wed'] },
+      { name: 'Tower Rd → NB Peña Blvd', place: 'Denver', hours: '7:30 AM–2 PM', mi: 15.8, days: ['mon', 'tue'] },
+      { name: 'EB Peña Blvd → NB E-470', place: 'Denver', hours: '7:30 AM–2 PM', mi: 16.9, days: ['mon', 'tue'] },
+      { name: 'SH-52 → SB I-25', place: 'Erie', hours: '7:30 AM–3 PM', mi: 18.4, days: ['mon', 'tue'] },
+      { name: 'EB County Line Rd → SB I-25', place: 'Centennial', hours: '7 AM–12 PM', mi: 21.0, days: ['mon', 'tue', 'wed'] }
+    ];
+    const counts = { mon: 27, tue: 27, wed: 18, thu: 0, fri: null };
+    const dateOf = { mon: 'Nov 23', tue: 'Nov 24', wed: 'Nov 25', thu: 'Nov 26', fri: 'Nov 27' };
+    const longDay = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday' };
+
+    const weekend = sc === 'weekend';
+    const broken = sc === 'broken';
+    let day = this.state.day ?? (this.props.day ?? 'today');
+    if (weekend && day === 'today') day = 'mon';
+
+    const STATUS = {
+      go: { bg: t.goBg, fg: t.goFg, border: 'none', isGo: true, word: 'Reading cars now', wordColor: t.goWord },
+      pause: { bg: t.pauseBg, fg: t.pauseFg, border: 'none', isPause: true, word: 'Set up, not reading', wordColor: t.muted },
+      unk: { bg: t.unkBg, fg: t.unkFg, border: 'none', isUnk: true, word: 'On site, status unknown', wordColor: t.muted },
+      done: { bg: 'transparent', fg: t.outlineFg, border: '1.5px solid ' + t.outline, isDone: true, word: 'Done for today', wordColor: t.muted },
+      sched: { bg: 'transparent', fg: t.outlineFg, border: '1.5px solid ' + t.outline, isSched: true, word: 'Scheduled', wordColor: t.muted }
+    };
+    const blank = { isGo: false, isPause: false, isUnk: false, isDone: false, isSched: false, two: false };
+
+    let rows = [];
+    let empty = null;
+    let summary = '';
+    if (day === 'today') {
+      const src = this.state.liveOnly && !broken ? today.filter((r) => r.s === 'go') : today;
+      rows = src.map((r) => {
+        const st = broken ? STATUS.sched : STATUS[r.s];
+        const word = broken ? 'Scheduled today' : st.word;
+        return { ...blank, ...r, ...st, word, mi: r.mi.toFixed(1), two: !!r.two,
+          aria: word + ', ' + r.name.replace('→', 'to') };
+      });
+      summary = broken ? '20 sites today · live status unavailable'
+        : this.state.liveOnly ? '6 of 20 sites reading cars now' : '20 sites today · 6 reading now';
+    } else if (day === 'thu') {
+      empty = { title: 'No vans on Thursday, Nov 26', body: 'AirCare has no sites scheduled on Thanksgiving Day.' };
+      summary = 'Thanksgiving';
+    } else if (day === 'fri') {
+      empty = { title: 'Friday’s sites aren’t posted yet', body: 'AirCare usually posts next week’s sites ahead of time. Check back later this week.' };
+      summary = 'Fri, Nov 27';
+    } else {
+      rows = nextWeek.filter((r) => r.days.indexOf(day) >= 0).map((r) => ({
+        ...blank, ...r, ...STATUS.sched, mi: r.mi.toFixed(1), two: !!r.two,
+        aria: 'Scheduled ' + longDay[day] + ', ' + r.name.replace('→', 'to')
+      }));
+      summary = longDay[day] + ' · ' + counts[day] + ' sites · live status on the day';
+    }
+
+    const dayList = weekend
+      ? [['mon', 'Mon', '23'], ['tue', 'Tue', '24'], ['wed', 'Wed', '25'], ['thu', 'Thu', '26'], ['fri', 'Fri', '27']]
+      : [['today', 'Today', 'Fri 20'], ['mon', 'Mon', '23'], ['tue', 'Tue', '24'], ['wed', 'Wed', '25'], ['thu', 'Thu', '26'], ['fri', 'Fri', '27']];
+    const on = { bg: t.accent, fg: t.accentFg, border: '1px solid ' + t.accent };
+    const off = { bg: t.chipOffBg, fg: t.ink, border: '1px solid ' + t.chipOffBorder };
+    const days = dayList.map(([k, top, bottom]) => ({
+      top, bottom, pressed: day === k ? 'true' : 'false', ...(day === k ? on : off),
+      pick: () => this.setState({ day: k })
+    }));
+
+    let banner = null;
+    if (weekend) banner = { bg: t.infoBg, fg: t.infoFg, title: 'No vans out on weekends', body: 'Units run on weekdays, roughly 5:30 AM to 7 PM. Showing next week’s sites.' };
+    if (broken) banner = { bg: t.errBg, fg: t.errFg, title: 'Van status unavailable', body: 'AirCare changed their van page and the app can’t read it yet. Showing the schedule saved this morning at 9:10 AM. Wait times still work.' };
+
+    let checkedText = 'Status checked 4:52 PM';
+    if (weekend) checkedText = 'Schedule checked Sat 10:05 AM';
+    if (broken) checkedText = 'Schedule from 9:10 AM';
+
+    return {
+      t, days, rows, summary, banner, hasBanner: !!banner, empty, hasEmpty: !!empty, checkedText,
+      showHero: day === 'today' && !broken && !weekend,
+      showFilter: day === 'today' && !broken,
+      liveOnly: this.state.liveOnly ? 'true' : 'false',
+      chipLive: this.state.liveOnly ? on : off,
+      toggleLive: () => this.setState({ liveOnly: !this.state.liveOnly })
+    };
+  }
+}
+</script>
+</body>
+</html>

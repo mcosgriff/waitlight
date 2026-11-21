@@ -26,6 +26,8 @@ android {
         abortOnError = true
         warningsAsErrors = true
         disable += "NewerVersionAvailable"
+        // The same news for the version catalog's AndroidX libraries; it broke the build the day a release landed.
+        disable += "GradleDependency"
         disable += "AndroidGradlePluginVersion"
     }
 }
