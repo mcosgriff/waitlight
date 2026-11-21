@@ -75,10 +75,12 @@ import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.domain.VanSiteWeek
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.currentVanWeek
+import io.cosgriff.waitlight.domain.vanRowStatus
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.DriveTimePill
 import io.cosgriff.waitlight.ui.components.VanBadge
 import io.cosgriff.waitlight.ui.components.driveByWhen
+import io.cosgriff.waitlight.ui.components.rowStatusText
 import io.cosgriff.waitlight.ui.components.vanHoursText
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
@@ -131,7 +133,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
     val site = row.site
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val background = MaterialTheme.colorScheme.background
-    val status = rowStatusText(row, ui.state, ui.isToday)
+    val status = rowStatusText(vanRowStatus(row, ui.state, ui.isToday))
     Column(
         Modifier
             .fillMaxSize()

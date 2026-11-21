@@ -1,7 +1,8 @@
 # Roadside vans
 
 Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans" tab. The code is in `:domain`
-(`VanSites.kt`, `VanSchedule.kt`, `VanDriveTable.kt`) and `:data` (`vans/`); each rule below has a test there.
+(`VanSites.kt`, `VanSchedule.kt`, `VanDriveTable.kt`, `VanListHeader.kt`) and `:data` (`vans/`); each rule below
+has a test there.
 
 ## Reading AirCare's van page
 
@@ -79,7 +80,8 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
 
 - Nearest first by drive minutes from the van table (ADR-0008); sites without a time after, by name. **Never by
   straight-line distance**, and no miles shown. "Here" is the wait list's (fix, else ZIP); precise or approximate
-  location stays the user's choice.
+  location stays the user's choice. The header names it as the wait list does, with the same links: a typed ZIP and
+  "Location off" open the location prompt.
 - Hero, "Nearest van reading cars now": today's reading site with the least drive, with its place, drive and
   closing time. Hidden on another day, when none is reading, or without a drive time.
 - Each site's drive time is a pill, as its row's `VanDrive` says (`vanList` decides). **Only while the site is

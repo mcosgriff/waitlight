@@ -30,6 +30,7 @@ import io.cosgriff.waitlight.domain.vanSiteWeek
 import io.cosgriff.waitlight.ui.TALL_PHONE
 import io.cosgriff.waitlight.ui.ZIP_80003
 import io.cosgriff.waitlight.ui.denver
+import io.cosgriff.waitlight.ui.hasClickLabel
 import io.cosgriff.waitlight.ui.hasDescription
 import io.cosgriff.waitlight.ui.hasTextSpaced
 import io.cosgriff.waitlight.ui.text
@@ -106,6 +107,7 @@ class VansScreenTest {
 
     private val picked = mutableListOf<LocalDate>()
     private val opened = mutableListOf<Pair<String, LocalDate>>()
+    private var prompts = 0
 
     private fun show(
         now: Instant = denver("2026-11-20T16:52"),
@@ -117,7 +119,7 @@ class VansScreenTest {
         val ui = vansUi(now, VanTimes(SCHEDULE, outcome), here, DRIVES, ZipTable(listOf(ZIP_80003)), selected, readingOnly, false, false)
         compose.setContent {
             WaitlightTheme(dark = false) {
-                VansContent(ui, onPick = { picked += it }, onToggleReading = {}, onRefresh = {}, onOpenSite = { k, d -> opened += k to d }, onChangeLocation = {}, onOpenVanPage = {})
+                VansContent(ui, onPick = { picked += it }, onToggleReading = {}, onRefresh = {}, onOpenSite = { k, d -> opened += k to d }, onChangeLocation = { prompts++ }, onOpenVanPage = {})
             }
         }
     }
@@ -170,11 +172,10 @@ class VansScreenTest {
     }
 
     @Test
-    fun `another day is scheduled, without the hero or the filter`() {
+    fun `another day - heard as scheduled that day, and its summary`() {
         show(selected = LocalDate.of(2026, 11, 23))
         compose.onNode(hasDescription("Scheduled Monday, Harlan St to EB I-70")).assertExists()
-        compose.onNodeWithText(text(R.string.vans_hero_label).uppercase()).assertDoesNotExist()
-        compose.onNodeWithText(text(R.string.vans_filter_reading)).assertDoesNotExist()
+        compose.onNodeWithText("Monday · 1 site · live status on the day").assertExists()
     }
 
     @Test
@@ -191,27 +192,33 @@ class VansScreenTest {
     }
 
     @Test
-    fun `the weekend shows next week, with its banner`() {
+    fun `the weekend - its banner and the schedule checked`() {
         show(now = denver("2026-11-21T10:05"))
         compose.onNodeWithText(text(R.string.vans_weekend_title)).assertExists()
-        compose.onNode(hasDescription("Scheduled Monday, Harlan St to EB I-70")).assertExists()
-        compose.onNodeWithText(text(R.string.vans_chip_today)).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("Schedule checked Nov 20, 4:52 PM")).assertExists()
     }
 
     @Test
-    fun `an unreadable page shows the schedule, every site scheduled today`() {
+    fun `an unreadable page - its banner, scheduled today, status unavailable`() {
         show(now = denver("2026-11-20T12:00"), outcome = FetchOutcome.UNREADABLE)
         compose.onNodeWithText(text(R.string.vans_broken_title)).assertExists()
+        compose.onNode(hasTextSpaced("Schedule from Nov 20, 4:52 PM")).assertExists()
         compose.onNode(hasDescription("Scheduled today, Harlan St to EB I-70")).assertExists()
         compose.onNodeWithText("4 sites today · live status unavailable").assertExists()
-        compose.onNodeWithText(text(R.string.vans_hero_label).uppercase()).assertDoesNotExist()
     }
 
     @Test
-    fun `the reading-now filter keeps the reading sites`() {
+    fun `the reading-now filter - its count`() {
         show(readingOnly = true)
-        compose.onNodeWithText("Pecos St → WB I-70").assertDoesNotExist()
         compose.onNodeWithText("1 of 4 sites reading cars now").assertExists()
+    }
+
+    @Test
+    fun `a typed ZIP opens the location prompt, as on the wait list`() {
+        show(here = Here.Zip(ZIP_80003))
+        compose.onNodeWithText(text(R.string.list_place, "Arvada", "80003"), useUnmergedTree = true).assertExists()
+        compose.onNode(hasClickLabel(text(R.string.list_change_zip))).assertHeightIsAtLeast(48.dp).performClick()
+        assertEquals(1, prompts)
     }
 
     @Test

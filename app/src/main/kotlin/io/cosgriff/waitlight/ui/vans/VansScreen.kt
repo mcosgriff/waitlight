@@ -5,7 +5,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,8 +28,6 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LocationOff
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.History
@@ -83,21 +80,25 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.data.vans.VanClient
-import io.cosgriff.waitlight.domain.Here
+import io.cosgriff.waitlight.domain.ReadingFilter
+import io.cosgriff.waitlight.domain.VanBanner
+import io.cosgriff.waitlight.domain.VanCheckedLine
 import io.cosgriff.waitlight.domain.VanDay
 import io.cosgriff.waitlight.domain.VanDayContent
 import io.cosgriff.waitlight.domain.VanListState
 import io.cosgriff.waitlight.domain.VanRow
-import io.cosgriff.waitlight.domain.VanStatus
+import io.cosgriff.waitlight.domain.VanRowStatus
+import io.cosgriff.waitlight.domain.VanSummary
 import io.cosgriff.waitlight.domain.nearestFarAway
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.DriveTimePill
+import io.cosgriff.waitlight.ui.components.PlaceLine
 import io.cosgriff.waitlight.ui.components.VanBadge
+import io.cosgriff.waitlight.ui.components.rowStatusText
 import io.cosgriff.waitlight.ui.components.vanHoursText
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
 import io.cosgriff.waitlight.ui.components.vanStatusColor
-import io.cosgriff.waitlight.ui.components.vanStatusText
 import io.cosgriff.waitlight.ui.theme.BannerColors
 import io.cosgriff.waitlight.ui.theme.waitColors
 import java.time.LocalDate
@@ -140,7 +141,8 @@ fun VansContent(
     onOpenVehicles: () -> Unit = {},
 ) {
     var showHow by rememberSaveable { mutableStateOf(false) }
-    val day = ui.day
+    val header = ui.header
+    val day = header.day
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -150,10 +152,10 @@ fun VansContent(
             item(key = "header") { Header(ui, onInfo = { showHow = true }, onRefresh = onRefresh, onChangeLocation = onChangeLocation) }
             item(key = "drive-bys") { DriveBysLine(ui, onOpenDriveBys) }
             item(key = "vehicles") { VehiclesLine(ui.vehicles, onOpenVehicles) }
-            banner(ui)?.let { kind -> item(key = "banner") { Banner(kind, ui) } }
-            ui.hero?.let { hero -> item(key = "hero") { HeroCard(hero, onOpenSite) } }
-            if (ui.list.days.isNotEmpty()) item(key = "days") { DayChips(ui, onPick) }
-            if (day != null) item(key = "summary") { SummaryLine(ui, day, onToggleReading) }
+            header.banner?.let { banner -> item(key = "banner") { Banner(banner) } }
+            header.hero?.let { hero -> item(key = "hero") { HeroCard(hero, onOpenSite) } }
+            if (ui.list.days.isNotEmpty()) item(key = "days") { DayChips(ui.list.days, shown = day?.date, onPick) }
+            header.summary?.let { summary -> item(key = "summary") { SummaryLine(summary, header.filter, onToggleReading) } }
             nearestFarAway(day)?.let { minutes -> item(key = "far") { FarAwayNote(minutes) } }
             when {
                 ui.state == VanListState.EMPTY -> item(key = "empty") {
@@ -173,8 +175,9 @@ fun VansContent(
                     )
                 }
             }
-            items(ui.rows, key = { "${it.site.key}@${it.date}" }) { row ->
-                VanRowItem(row, ui.state, isToday = day?.isToday == true, onClick = { onOpenSite(row.site.key, row.date) })
+            items(header.rows, key = { "${it.row.site.key}@${it.row.date}" }) { item ->
+                val row = item.row
+                VanRowItem(row, item.status, onClick = { onOpenSite(row.site.key, row.date) })
             }
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -199,7 +202,7 @@ private fun Header(ui: VansUi, onInfo: () -> Unit, onRefresh: () -> Unit, onChan
                 modifier = Modifier.weight(1f).semantics { heading() },
             )
             // Retry only where it helps: a failed fetch, or no schedule yet.
-            if (ui.state == VanListState.STALE || ui.state == VanListState.EMPTY) {
+            if (ui.header.retry) {
                 IconButton(
                     onClick = onRefresh,
                     enabled = !ui.refreshing,
@@ -218,10 +221,11 @@ private fun Header(ui: VansUi, onInfo: () -> Unit, onRefresh: () -> Unit, onChan
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.padding(top = 2.dp),
         ) {
-            PlaceLine(ui, onChangeLocation)
+            PlaceLine(ui.header.place, onChangeLocation)
         }
         // On its own line: with its date it doesn't fit beside the place.
-        checkedText(ui)?.let { checked ->
+        ui.header.checked?.let { line ->
+            val checked = checked(line)
             Text(checked, style = MaterialTheme.typography.bodyMedium, color = muted, modifier = Modifier.padding(start = 22.dp))
         }
         Text(
@@ -234,67 +238,27 @@ private fun Header(ui: VansUi, onInfo: () -> Unit, onRefresh: () -> Unit, onChan
     }
 }
 
-/** Where "here" is, worded as on the wait list; "Location off" opens the location prompt. */
+/** "Status checked Nov 20, 4:52 PM", or how old the schedule is when its statuses can't be gone by. */
 @Composable
-private fun PlaceLine(ui: VansUi, onChangeLocation: () -> Unit) {
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val here = ui.here
-    val placeText = here?.place?.let { stringResource(R.string.list_place, it.place, it.zip) }
-    if (here == null && !ui.locationAllowed) {
-        val label = stringResource(R.string.list_location_turn_on)
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.heightIn(min = 48.dp).clickable(onClickLabel = label, onClick = onChangeLocation),
-        ) {
-            Icon(Icons.Outlined.LocationOff, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-            Text(stringResource(R.string.list_location_off), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-        }
-        return
-    }
-    Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = muted, modifier = Modifier.size(16.dp))
-    val text = when {
-        placeText != null -> placeText
-        here != null -> stringResource(R.string.list_near_you)
-        else -> stringResource(R.string.list_finding_location)
-    }
-    Text(text, style = MaterialTheme.typography.bodyMedium, color = muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-}
-
-/** "Status checked 4:52 PM", or how old the schedule is when its statuses can't be gone by. */
-@Composable
-private fun checkedText(ui: VansUi): String? {
-    val at = ui.list.fetchedAt ?: return if (ui.refreshing) stringResource(R.string.vans_getting) else null
-    val time = TimeText.dateTime(at)
-    return when (ui.state) {
-        VanListState.LIVE -> stringResource(R.string.vans_status_checked, time)
-        VanListState.WEEKEND -> stringResource(R.string.vans_schedule_checked, time)
-        VanListState.STALE, VanListState.BROKEN, VanListState.EMPTY -> stringResource(R.string.vans_schedule_from, time)
-    }
-}
-
-private enum class VanBanner { WEEKEND, STALE, BROKEN }
-
-private fun banner(ui: VansUi): VanBanner? = when (ui.state) {
-    VanListState.WEEKEND -> VanBanner.WEEKEND
-    VanListState.STALE -> VanBanner.STALE
-    VanListState.BROKEN -> VanBanner.BROKEN
-    VanListState.LIVE, VanListState.EMPTY -> null
+private fun checked(line: VanCheckedLine): String = when (line) {
+    is VanCheckedLine.StatusChecked -> stringResource(R.string.vans_status_checked, TimeText.dateTime(line.at))
+    is VanCheckedLine.ScheduleChecked -> stringResource(R.string.vans_schedule_checked, TimeText.dateTime(line.at))
+    is VanCheckedLine.ScheduleFrom -> stringResource(R.string.vans_schedule_from, TimeText.dateTime(line.at))
+    VanCheckedLine.Getting -> stringResource(R.string.vans_getting)
 }
 
 @Composable
-private fun Banner(kind: VanBanner, ui: VansUi) {
+private fun Banner(banner: VanBanner) {
     val colors = MaterialTheme.waitColors
-    val at = ui.list.fetchedAt?.let { TimeText.dateTime(it) }.orEmpty()
-    val (look: BannerColors, icon: ImageVector) = when (kind) {
-        VanBanner.WEEKEND -> colors.info to Icons.Rounded.CalendarMonth
-        VanBanner.STALE -> colors.warning to Icons.Rounded.History
-        VanBanner.BROKEN -> colors.error to Icons.Rounded.ErrorOutline
+    val (look: BannerColors, icon: ImageVector) = when (banner) {
+        VanBanner.Weekend -> colors.info to Icons.Rounded.CalendarMonth
+        is VanBanner.Stale -> colors.warning to Icons.Rounded.History
+        is VanBanner.Broken -> colors.error to Icons.Rounded.ErrorOutline
     }
-    val (title, body) = when (kind) {
-        VanBanner.WEEKEND -> stringResource(R.string.vans_weekend_title) to stringResource(R.string.vans_weekend_body)
-        VanBanner.STALE -> stringResource(R.string.vans_stale_title) to stringResource(R.string.vans_stale_body, at)
-        VanBanner.BROKEN -> stringResource(R.string.vans_broken_title) to stringResource(R.string.vans_broken_body, at)
+    val (title, body) = when (banner) {
+        VanBanner.Weekend -> stringResource(R.string.vans_weekend_title) to stringResource(R.string.vans_weekend_body)
+        is VanBanner.Stale -> stringResource(R.string.vans_stale_title) to stringResource(R.string.vans_stale_body, TimeText.dateTime(banner.since))
+        is VanBanner.Broken -> stringResource(R.string.vans_broken_title) to stringResource(R.string.vans_broken_body, TimeText.dateTime(banner.since))
     }
     Surface(
         shape = MaterialTheme.shapes.medium,
@@ -353,13 +317,12 @@ private fun HeroCard(hero: VanRow, onOpenSite: (String, LocalDate) -> Unit) {
 }
 
 @Composable
-private fun DayChips(ui: VansUi, onPick: (LocalDate) -> Unit) {
-    val shown = ui.day?.date
+private fun DayChips(days: List<VanDay>, shown: LocalDate?, onPick: (LocalDate) -> Unit) {
     Row(
         Modifier.horizontalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, top = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        ui.list.days.forEach { day -> DayChip(day, selected = day.date == shown, onClick = { onPick(day.date) }) }
+        days.forEach { day -> DayChip(day, selected = day.date == shown, onClick = { onPick(day.date) }) }
     }
 }
 
@@ -390,28 +353,21 @@ private fun DayChip(day: VanDay, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SummaryLine(ui: VansUi, day: VanDay, onToggleReading: () -> Unit) {
-    val sites = (day.content as? VanDayContent.Sites)?.rows.orEmpty()
-    val reading = sites.count { it.status == VanStatus.Reading }
-    val text = when {
-        day.content is VanDayContent.NoSites || day.content == VanDayContent.NotPosted -> TimeText.shortDate(day.date)
-        day.isToday && ui.state == VanListState.BROKEN -> stringResource(
+private fun SummaryLine(summary: VanSummary, filter: ReadingFilter, onToggleReading: () -> Unit) {
+    val text = when (summary) {
+        is VanSummary.Date -> TimeText.shortDate(summary.date)
+        is VanSummary.TodayUnavailable -> stringResource(
             R.string.vans_summary_join,
-            pluralStringResource(R.plurals.vans_summary_sites_today, sites.size, sites.size),
+            pluralStringResource(R.plurals.vans_summary_sites_today, summary.sites, summary.sites),
             stringResource(R.string.vans_summary_unavailable),
         )
-        day.isToday && ui.readingOnly -> pluralStringResource(R.plurals.vans_summary_reading_only, sites.size, reading, sites.size)
-        day.isToday -> stringResource(
+        is VanSummary.ReadingOnly -> pluralStringResource(R.plurals.vans_summary_reading_only, summary.sites, summary.reading, summary.sites)
+        is VanSummary.Today -> stringResource(
             R.string.vans_summary_join,
-            pluralStringResource(R.plurals.vans_summary_sites_today, sites.size, sites.size),
-            pluralStringResource(R.plurals.vans_summary_reading, reading, reading),
+            pluralStringResource(R.plurals.vans_summary_sites_today, summary.sites, summary.sites),
+            pluralStringResource(R.plurals.vans_summary_reading, summary.reading, summary.reading),
         )
-        else -> pluralStringResource(
-            R.plurals.vans_summary_day,
-            sites.size,
-            TimeText.weekday(day.date),
-            sites.size,
-        )
+        is VanSummary.Day -> pluralStringResource(R.plurals.vans_summary_day, summary.sites, TimeText.weekday(summary.date), summary.sites)
     }
     Row(
         Modifier.fillMaxWidth().padding(start = 20.dp, end = 16.dp),
@@ -419,10 +375,9 @@ private fun SummaryLine(ui: VansUi, day: VanDay, onToggleReading: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(text, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-        // Only while something is reading, or to turn the filter back off.
-        if (ui.showReadingFilter && (reading > 0 || ui.readingOnly)) {
+        if (filter.shown) {
             FilterChip(
-                selected = ui.readingOnly,
+                selected = filter.selected,
                 onClick = onToggleReading,
                 label = { Text(stringResource(R.string.vans_filter_reading), style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp, fontWeight = FontWeight.Medium)) },
                 leadingIcon = { Icon(Icons.Rounded.Sensors, contentDescription = null, modifier = Modifier.size(16.dp)) },
@@ -437,7 +392,7 @@ private fun SummaryLine(ui: VansUi, day: VanDay, onToggleReading: () -> Unit) {
                 ),
                 border = FilterChipDefaults.filterChipBorder(
                     enabled = true,
-                    selected = ui.readingOnly,
+                    selected = filter.selected,
                     borderColor = MaterialTheme.colorScheme.outline,
                     selectedBorderColor = MaterialTheme.colorScheme.primary,
                 ),
@@ -462,23 +417,11 @@ private fun EmptyCard(title: String, body: String) {
     }
 }
 
-/**
- * A row's status as it reads, and as it's heard: "Scheduled today" when the page can't be read, "Scheduled Monday"
- * for another day.
- */
 @Composable
-internal fun rowStatusText(row: VanRow, state: VanListState, isToday: Boolean, spoken: Boolean = false): String = when {
-    row.status != VanStatus.Scheduled -> vanStatusText(row.status)
-    isToday && state == VanListState.BROKEN -> stringResource(R.string.van_status_scheduled_today)
-    !isToday && spoken -> stringResource(R.string.van_status_scheduled_on, TimeText.weekday(row.date))
-    else -> vanStatusText(row.status)
-}
-
-@Composable
-private fun VanRowItem(row: VanRow, state: VanListState, isToday: Boolean, onClick: () -> Unit) {
+private fun VanRowItem(row: VanRow, rowStatus: VanRowStatus, onClick: () -> Unit) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val status = rowStatusText(row, state, isToday)
-    val spokenStatus = rowStatusText(row, state, isToday, spoken = true)
+    val status = rowStatusText(rowStatus)
+    val spokenStatus = rowStatusText(rowStatus, spoken = true)
     val badgeDescription = stringResource(R.string.van_badge_desc, spokenStatus, vanNameSpoken(row.site.name))
     Surface(
         onClick = onClick,
