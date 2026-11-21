@@ -27,6 +27,9 @@ picks "here" for the list and detail: the fix, else the ZIP. The Glance home-scr
 a bundled image per station drawn from OpenStreetMap data (ADR-0006; `scripts/station_maps.py` makes them). Drive times are
 looked up in a bundled table routed with OSRM on OpenStreetMap's roads (ADR-0007; `scripts/drive_times.py`
 makes it, `DriveTable` reads it).
+Roadside vans (`vans/` in `:data` and `:app`, `VanSites`/`VanSchedule` in `:domain`) are a second tab in a bottom
+navigation bar: AirCare's van page read on the phone, drive times from a growing catalog of routed sites (ADR-0008;
+`scripts/van_drive_times.py` makes it, `VanDriveTable` reads it).
 `./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
@@ -58,8 +61,8 @@ with a comment saying why.
 
 Each has an ADR in `docs/adr/` with its reasons and the options turned down.
 
-- **The phone reads AirCare's page itself** ([ADR-0001](docs/adr/0001-phone-reads-aircare-directly.md)). No
-  server of our own. Fetch only during opening hours, and no more often than AirCare updates
+- **The phone reads AirCare's pages itself** ([ADR-0001](docs/adr/0001-phone-reads-aircare-directly.md)): the
+  wait-times page and, since its 2026-11-20 amendment, the van page and its tables. No server of our own. Fetch only during opening hours, and no more often than AirCare updates
   (`shouldFetch`), except once at every app launch, whatever the time (`FetchReason.LAUNCH`). The page is the one network host the app talks to.
 - **No Google Play services or Google SDKs** ([ADR-0002](docs/adr/0002-no-play-services.md)): Android's own
   `LocationManager`, not FusedLocationProvider; no Maps SDK; no Routes API. Drive times come from a bundled
@@ -100,6 +103,8 @@ the widget).
 
 - **Wait times** (stations, hours and holidays, reading AirCare, badges, freshness and states, sorting, the
   hero card): `docs/rules/wait-times.md`
+- **Roadside vans** (reading the van page, sites and their names, days, statuses, states, drive times from the
+  catalog, the vans list and detail): `docs/rules/vans.md`
 
 ## Conventions
 
