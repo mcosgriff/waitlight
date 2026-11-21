@@ -29,7 +29,9 @@ looked up in a bundled table routed with OSRM on OpenStreetMap's roads (ADR-0007
 makes it, `DriveTable` reads it).
 Roadside vans (`vans/` in `:data` and `:app`, `VanSites`/`VanSchedule` in `:domain`) are a second tab in a bottom
 navigation bar: AirCare's van page read on the phone, drive times from a growing catalog of routed sites (ADR-0008;
-`scripts/van_drive_times.py` makes it, `VanDriveTable` reads it).
+`scripts/van_drive_times.py` makes it, `VanDriveTable` reads it; `van-sites.yml` adds new sites daily by PR). A
+site's detail draws a sketch turned to its direction of travel, and the drive-by log (`DriveBys`,
+`DriveByRepository`, `drive_bys.json`, backed up) lets the user note when they drove past a van.
 `./gradlew build` is green
 (Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case

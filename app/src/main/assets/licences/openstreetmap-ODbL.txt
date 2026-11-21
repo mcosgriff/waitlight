@@ -14,3 +14,8 @@ through the Overpass API. No OpenStreetMap map tiles or third-party map styles w
 colours and line widths are Waitlight's own. The data in the images dates from when they were
 last generated and may be out of date; corrections belong in OpenStreetMap itself:
 https://www.openstreetmap.org/fixthemap
+
+The drive-time tables (data/src/main/assets/drive_minutes.bin for the stations and van_drive_minutes.bin for
+the roadside van sites) are also derived from OpenStreetMap data, under the same licence: drive minutes routed
+on Geofabrik's Colorado extract of OpenStreetMap with OSRM's car profile, by scripts/drive_times.py and
+scripts/van_drive_times.py.
