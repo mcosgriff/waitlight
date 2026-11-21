@@ -12,7 +12,9 @@ import io.cosgriff.waitlight.data.settings.Settings
 import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.domain.DriveTable
 import io.cosgriff.waitlight.domain.Here
+import io.cosgriff.waitlight.domain.ListHeader
 import io.cosgriff.waitlight.domain.ListState
+import io.cosgriff.waitlight.domain.listHeader
 import io.cosgriff.waitlight.domain.RefreshButton
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.StationRow
@@ -49,6 +51,8 @@ data class StationListUi(
     /** Location is allowed, though perhaps not found yet. */
     val locationAllowed: Boolean,
     val refreshing: Boolean,
+    /** What the header, banner, chips and closed rows show, decided in `:domain` ([listHeader]). */
+    val header: ListHeader,
 ) {
     val hasLocation: Boolean get() = here != null
 }
@@ -128,18 +132,20 @@ internal fun stationListUi(
     val newest = now.times.newestUpdate
     val state = listState(now.now, newest, now.times.lastOutcome)
     val rows = arrange(now.rows, order, rimsOnly, state)
+    val refresh = refreshButton(state, now.now, newest)
     return StationListUi(
         now = now.now,
         state = state,
         rows = rows,
         hero = fastestOverall(rows, state),
-        refresh = refreshButton(state, now.now, newest),
+        refresh = refresh,
         newestUpdate = newest,
         order = order,
         rimsOnly = rimsOnly,
         here = now.here,
         locationAllowed = locationAllowed,
         refreshing = refreshing,
+        header = listHeader(state, now.now, newest, refresh, now.here, locationAllowed, order),
     )
 }
 

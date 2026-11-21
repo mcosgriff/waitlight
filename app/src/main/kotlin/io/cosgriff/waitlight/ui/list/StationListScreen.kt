@@ -65,16 +65,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.cosgriff.waitlight.R
-import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.Badge
-import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.ListState
+import io.cosgriff.waitlight.domain.ListBanner
+import io.cosgriff.waitlight.domain.NextLine
+import io.cosgriff.waitlight.domain.Opening
 import io.cosgriff.waitlight.domain.OpeningDay
+import io.cosgriff.waitlight.domain.PlaceLine
+import io.cosgriff.waitlight.domain.UpdatedLine
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.StationRow
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.WaitThresholds
-import io.cosgriff.waitlight.domain.openingDay
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.BadgeSize
 import io.cosgriff.waitlight.ui.components.WaitBadge
@@ -82,7 +84,6 @@ import io.cosgriff.waitlight.ui.components.forBand
 import io.cosgriff.waitlight.ui.theme.BannerColors
 import io.cosgriff.waitlight.ui.theme.waitColors
 import java.time.Duration
-import java.time.Instant
 
 @Composable
 fun StationListScreen(onOpenStation: (Int) -> Unit, onChangeLocation: () -> Unit) {
@@ -115,11 +116,12 @@ fun StationListContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item(key = "header") { Header(ui, onRefresh, onChangeLocation) }
+            val opening = ui.header.opening
             when {
-                ui.state == ListState.CLOSED -> item(key = "closed") { ClosedCard(ui.now) }
+                opening != null -> item(key = "closed") { ClosedCard(opening) }
                 ui.hero != null -> item(key = "hero") { HeroCard(ui.hero, onOpenStation) }
             }
-            banner(ui)?.let { banner ->
+            ui.header.banner?.let { banner ->
                 val asOf = ui.newestUpdate?.let { TimeText.timeSince(it, ui.now) }
                 item(key = "banner") { BannerCard(banner, asOf, onRefresh) }
             }
@@ -175,34 +177,34 @@ private fun Header(ui: StationListUi, onRefresh: () -> Unit, onChangeLocation: (
 }
 
 /**
- * Where "here" is: the place for the phone's fix or the typed ZIP code ("Arvada, CO 80003"), "Near you" for a fix
- * near no Colorado ZIP, "Finding your location…" while waiting for a fix, or "Location off". A ZIP code and
- * "Location off" open the location prompt, to change or clear the ZIP or turn location on.
+ * Where "here" is, as [placeLine] decides it: a typed ZIP code's place and "Location off" open the location prompt,
+ * to change or clear the ZIP or turn location on.
  */
 @Composable
 private fun PlaceLine(ui: StationListUi, onChangeLocation: () -> Unit) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val here = ui.here
-    val placeText = here?.place?.let { stringResource(R.string.list_place, it.place, it.zip) }
-    when {
-        here is Here.Zip ->
-            PromptLink(Icons.Outlined.LocationOn, placeText.orEmpty(), stringResource(R.string.list_change_zip), onChangeLocation)
-        here != null || ui.locationAllowed -> {
+    when (val line = ui.header.place) {
+        is PlaceLine.Zip -> PromptLink(
+            Icons.Outlined.LocationOn,
+            stringResource(R.string.list_place, line.place.place, line.place.zip),
+            stringResource(R.string.list_change_zip),
+            onChangeLocation,
+        )
+        PlaceLine.LocationOff -> PromptLink(
+            Icons.Outlined.LocationOff,
+            stringResource(R.string.list_location_off),
+            stringResource(R.string.list_location_turn_on),
+            onChangeLocation,
+        )
+        is PlaceLine.Device, PlaceLine.NearYou, PlaceLine.Finding -> {
             Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = muted, modifier = Modifier.size(16.dp))
-            val text = when {
-                placeText != null -> placeText
-                here != null -> stringResource(R.string.list_near_you)
+            val text = when (line) {
+                is PlaceLine.Device -> stringResource(R.string.list_place, line.place.place, line.place.zip)
+                PlaceLine.NearYou -> stringResource(R.string.list_near_you)
                 else -> stringResource(R.string.list_finding_location)
             }
             Text(text, style = MaterialTheme.typography.bodyMedium, color = muted)
         }
-        else ->
-            PromptLink(
-                Icons.Outlined.LocationOff,
-                stringResource(R.string.list_location_off),
-                stringResource(R.string.list_location_turn_on),
-                onChangeLocation,
-            )
     }
 }
 
@@ -241,36 +243,27 @@ private fun RefreshIconButton(ui: StationListUi, onRefresh: () -> Unit) {
 }
 
 @Composable
-private fun updatedText(ui: StationListUi): String {
-    val newest = ui.newestUpdate
-    return when {
-        ui.state == ListState.CLOSED ->
-            stringResource(R.string.list_closed_since, TimeText.time(AirCareHours.lastClosing(ui.now)))
-        newest == null && ui.state == ListState.DUE -> stringResource(R.string.list_getting_waits)
-        newest == null -> stringResource(R.string.list_no_waits_yet)
-        ui.state == ListState.LIVE || ui.state == ListState.DUE -> {
-            val minutes = Duration.between(newest, ui.now).toMinutes().coerceAtLeast(0).toInt()
-            if (minutes == 0) stringResource(R.string.list_updated_just_now)
-            else pluralStringResource(R.plurals.list_updated_minutes, minutes, minutes)
-        }
-        else -> stringResource(R.string.list_last_updated, TimeText.timeSince(newest, ui.now))
-    }
+private fun updatedText(ui: StationListUi): String = when (val line = ui.header.updated) {
+    is UpdatedLine.ClosedSince -> stringResource(R.string.list_closed_since, TimeText.time(line.at))
+    UpdatedLine.Getting -> stringResource(R.string.list_getting_waits)
+    UpdatedLine.NoneYet -> stringResource(R.string.list_no_waits_yet)
+    is UpdatedLine.MinutesAgo ->
+        if (line.minutes == 0) stringResource(R.string.list_updated_just_now)
+        else pluralStringResource(R.plurals.list_updated_minutes, line.minutes, line.minutes)
+    is UpdatedLine.LastUpdated -> stringResource(R.string.list_last_updated, TimeText.timeSince(line.at, ui.now))
 }
 
 /** The line under the header, and its colour. */
 @Composable
 private fun nextText(ui: StationListUi): Pair<String?, Color> {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val newest = ui.newestUpdate
-    return when (ui.state) {
-        ListState.CLOSED -> stringResource(R.string.list_waits_return) to muted
-        ListState.LIVE -> ui.refresh.nextUpdateInMinutes?.let { pluralStringResource(R.plurals.list_next_update, it, it) } to muted
-        ListState.DUE ->
-            if (newest == null) null to muted
-            else stringResource(R.string.list_new_data) to MaterialTheme.colorScheme.primary
-        ListState.STALE, ListState.OFFLINE ->
-            (newest?.let { age(Duration.between(it, ui.now)) }) to MaterialTheme.waitColors.moderate.icon
-        ListState.BROKEN -> stringResource(R.string.list_waits_unavailable) to MaterialTheme.colorScheme.error
+    return when (val line = ui.header.next) {
+        null -> null to muted
+        NextLine.WaitsReturn -> stringResource(R.string.list_waits_return) to muted
+        is NextLine.NextUpdateIn -> pluralStringResource(R.plurals.list_next_update, line.minutes, line.minutes) to muted
+        NextLine.NewData -> stringResource(R.string.list_new_data) to MaterialTheme.colorScheme.primary
+        is NextLine.Age -> age(line.age) to MaterialTheme.waitColors.moderate.icon
+        NextLine.Unavailable -> stringResource(R.string.list_waits_unavailable) to MaterialTheme.colorScheme.error
     }
 }
 
@@ -340,13 +333,12 @@ private fun HeroCard(hero: StationRow, onOpenStation: (Int) -> Unit) {
 }
 
 @Composable
-private fun ClosedCard(now: Instant) {
-    val opening = AirCareHours.nextOpening(now)
-    val time = TimeText.time(opening)
-    val body = when (openingDay(now, opening)) {
+private fun ClosedCard(opening: Opening) {
+    val time = TimeText.time(opening.at)
+    val body = when (opening.day) {
         OpeningDay.TODAY -> stringResource(R.string.list_closed_today, time)
         OpeningDay.TOMORROW -> stringResource(R.string.list_closed_tomorrow, time)
-        OpeningDay.LATER -> stringResource(R.string.list_closed_later, TimeText.weekday(opening), time)
+        OpeningDay.LATER -> stringResource(R.string.list_closed_later, TimeText.weekday(opening.at), time)
     }
     val closed = MaterialTheme.waitColors.closed
     Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surface, modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
@@ -362,33 +354,24 @@ private fun ClosedCard(now: Instant) {
     }
 }
 
-private enum class BannerKind { STALE, OFFLINE, BROKEN }
-
-private fun banner(ui: StationListUi): BannerKind? = when (ui.state) {
-    ListState.STALE -> BannerKind.STALE
-    ListState.OFFLINE -> BannerKind.OFFLINE
-    ListState.BROKEN -> BannerKind.BROKEN
-    else -> null
-}
-
 /** The stale, offline and broken banners. [asOf] is the newest data's time, if there is any. */
 @Composable
-private fun BannerCard(kind: BannerKind, asOf: String?, onRetry: () -> Unit) {
+private fun BannerCard(kind: ListBanner, asOf: String?, onRetry: () -> Unit) {
     val colors = MaterialTheme.waitColors
     val (bannerColors: BannerColors, icon: ImageVector) = when (kind) {
-        BannerKind.STALE -> colors.warning to Icons.Rounded.History
-        BannerKind.OFFLINE -> colors.info to Icons.Rounded.CloudOff
-        BannerKind.BROKEN -> colors.error to Icons.Rounded.ErrorOutline
+        ListBanner.STALE -> colors.warning to Icons.Rounded.History
+        ListBanner.OFFLINE -> colors.info to Icons.Rounded.CloudOff
+        ListBanner.BROKEN -> colors.error to Icons.Rounded.ErrorOutline
     }
     val title = when (kind) {
-        BannerKind.STALE -> stringResource(R.string.list_stale_title)
-        BannerKind.OFFLINE -> stringResource(R.string.list_offline_title)
-        BannerKind.BROKEN -> stringResource(R.string.list_broken_title)
+        ListBanner.STALE -> stringResource(R.string.list_stale_title)
+        ListBanner.OFFLINE -> stringResource(R.string.list_offline_title)
+        ListBanner.BROKEN -> stringResource(R.string.list_broken_title)
     }
     val body = when (kind) {
-        BannerKind.STALE -> asOf?.let { stringResource(R.string.list_stale_body, it) } ?: stringResource(R.string.list_stale_body_no_data)
-        BannerKind.OFFLINE -> asOf?.let { stringResource(R.string.list_offline_body, it) } ?: stringResource(R.string.list_offline_body_no_data)
-        BannerKind.BROKEN -> asOf?.let { stringResource(R.string.list_broken_body, it) } ?: stringResource(R.string.list_broken_body_no_data)
+        ListBanner.STALE -> asOf?.let { stringResource(R.string.list_stale_body, it) } ?: stringResource(R.string.list_stale_body_no_data)
+        ListBanner.OFFLINE -> asOf?.let { stringResource(R.string.list_offline_body, it) } ?: stringResource(R.string.list_offline_body_no_data)
+        ListBanner.BROKEN -> asOf?.let { stringResource(R.string.list_broken_body, it) } ?: stringResource(R.string.list_broken_body_no_data)
     }
     Surface(
         shape = MaterialTheme.shapes.medium,
@@ -402,7 +385,7 @@ private fun BannerCard(kind: BannerKind, asOf: String?, onRetry: () -> Unit) {
                 Text(title, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
                 Text(body, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 19.sp))
                 // An unreadable page won't read better for asking again; the header's button still retries.
-                if (kind != BannerKind.BROKEN) {
+                if (kind != ListBanner.BROKEN) {
                     OutlinedButton(
                         onClick = onRetry,
                         border = BorderStroke(1.dp, bannerColors.content),
@@ -422,11 +405,10 @@ private fun Chips(ui: StationListUi, onSort: (SortOrder) -> Unit, onToggleRims: 
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp),
     ) {
-        // Without a location the list is alphabetical whatever the chip says, so the sort chips go.
-        if (ui.hasLocation) {
-            val closed = ui.state == ListState.CLOSED
-            WaitlightChip(stringResource(R.string.list_sort_nearest), ui.order == SortOrder.NEAREST || closed) { onSort(SortOrder.NEAREST) }
-            WaitlightChip(stringResource(R.string.list_sort_fastest), ui.order == SortOrder.FASTEST_OVERALL && !closed) { onSort(SortOrder.FASTEST_OVERALL) }
+        val chips = ui.header.chips
+        if (chips.shown) {
+            WaitlightChip(stringResource(R.string.list_sort_nearest), chips.nearestSelected) { onSort(SortOrder.NEAREST) }
+            WaitlightChip(stringResource(R.string.list_sort_fastest), chips.fastestSelected) { onSort(SortOrder.FASTEST_OVERALL) }
         }
         WaitlightChip(stringResource(R.string.list_filter_rims), ui.rimsOnly, onToggleRims)
     }
@@ -518,18 +500,17 @@ private fun StationRowItem(row: StationRow, ui: StationListUi, onClick: () -> Un
                 row.driveMinutes?.let {
                     Text(stringResource(R.string.list_row_drive, it), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
                 }
-                if (ui.state == ListState.CLOSED) Text(opensText(ui.now), style = MaterialTheme.typography.bodySmall, color = muted)
+                ui.header.opening?.let { Text(opensText(it), style = MaterialTheme.typography.bodySmall, color = muted) }
             }
         }
     }
 }
 
 @Composable
-private fun opensText(now: Instant): String {
-    val opening = AirCareHours.nextOpening(now)
-    val time = TimeText.time(opening)
-    return when (openingDay(now, opening)) {
+private fun opensText(opening: Opening): String {
+    val time = TimeText.time(opening.at)
+    return when (opening.day) {
         OpeningDay.TODAY, OpeningDay.TOMORROW -> stringResource(R.string.list_row_opens, time)
-        OpeningDay.LATER -> stringResource(R.string.list_row_opens_day, TimeText.shortWeekday(opening), time)
+        OpeningDay.LATER -> stringResource(R.string.list_row_opens_day, TimeText.shortWeekday(opening.at), time)
     }
 }
