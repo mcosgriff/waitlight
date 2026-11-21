@@ -33,7 +33,7 @@ navigation bar: AirCare's van page read on the phone, drive times from a growing
 site's detail draws a sketch turned to its direction of travel, and the drive-by log (`DriveBys`,
 `DriveByRepository`, `drive_bys.json`, backed up) lets the user note when they drove past a van.
 `./gradlew build` is green
-(Gradle 9.6.0, AGP 9.5.0, lint included). Keep it green; lint fails the build on a warning as on an error
+(Gradle 9.9.1, AGP 9.5.2, lint included). Keep it green; lint fails the build on a warning as on an error
 (`warningsAsErrors`, in `:app` and `:data`), and there is no baseline: fix a warning, or suppress that one case
 with a comment saying why.
 
