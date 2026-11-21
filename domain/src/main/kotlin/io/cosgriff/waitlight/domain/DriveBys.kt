@@ -7,9 +7,17 @@ import java.time.LocalTime
 /**
  * A time the user says they drove past a van site: their own record, kept on the phone. The app can't see whether
  * the unit read the car, or whether the reading was clean, so this is never a claim that a reading counted. The
- * site's description and point are kept with it, so an entry outlives the site leaving AirCare's page.
+ * site's description and point are kept with it, so an entry outlives the site leaving AirCare's page. [vehicleId]
+ * is the [Vehicle] that drove past; null for entries logged before vehicles were, or with none saved.
  */
-data class DriveBy(val id: Long, val siteKey: String, val description: String, val point: GeoPoint, val at: Instant) {
+data class DriveBy(
+    val id: Long,
+    val siteKey: String,
+    val description: String,
+    val point: GeoPoint,
+    val at: Instant,
+    val vehicleId: Long? = null,
+) {
     val name: VanName get() = VanName.of(description)
 }
 
