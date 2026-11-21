@@ -2,6 +2,7 @@ package io.cosgriff.waitlight.data.aircare
 
 import android.util.Log
 import io.cosgriff.waitlight.data.di.ApplicationScope
+import io.cosgriff.waitlight.data.fetchFailure
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.FetchReason
 import io.cosgriff.waitlight.domain.WaitTimes
@@ -14,7 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.net.UnknownHostException
 import java.time.Clock
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -90,8 +90,7 @@ class WaitTimesRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            // No network shows up as a failed DNS lookup, wrapped or not; anything else is AirCare's end.
-            val outcome = if (e.causes().any { it is UnknownHostException }) FetchOutcome.OFFLINE else FetchOutcome.FAILED
+            val outcome = fetchFailure(e)
             Log.i(TAG, "Fetch $outcome", e)
             state.value = state.value.copy(lastOutcome = outcome)
             return
@@ -110,8 +109,6 @@ class WaitTimesRepository @Inject constructor(
             }
         }
     }
-
-    private fun Throwable.causes() = generateSequence(this) { it.cause }
 
     private companion object {
         const val TAG = "Waitlight"

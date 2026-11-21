@@ -1,12 +1,11 @@
 package io.cosgriff.waitlight.data.vehicles
 
-import android.util.Log
+import io.cosgriff.waitlight.data.AtomicJsonFile
 import io.cosgriff.waitlight.domain.ReminderKind
 import io.cosgriff.waitlight.domain.Vehicle
 import io.cosgriff.waitlight.domain.renewing
 import io.cosgriff.waitlight.domain.settled
 import io.cosgriff.waitlight.domain.withReminder
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,9 +18,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.Instant
 import java.time.YearMonth
@@ -33,10 +30,20 @@ import java.time.YearMonth
  */
 class VehicleRepository(
     /** Called off the main thread. */
-    private val file: () -> File,
+    file: () -> File,
     scope: CoroutineScope,
-    private val io: CoroutineDispatcher = Dispatchers.IO,
+    io: CoroutineDispatcher = Dispatchers.IO,
 ) {
+    // Kept aside when unreadable: the vehicles are the user's own record and can't be fetched again.
+    private val stored = AtomicJsonFile(
+        file,
+        AtomicJsonFile.Unreadable.KEEP_ASIDE,
+        what = "The vehicles",
+        io,
+        read = { text -> json.decodeFromString<List<Stored>>(text).map { it.toVehicle() } },
+        write = { vehicles -> json.encodeToString(vehicles.map(Stored::of)) },
+    )
+
     private val state = MutableStateFlow<List<Vehicle>>(emptyList())
     private val lock = Mutex()
 
@@ -97,33 +104,13 @@ class VehicleRepository(
         state.value = next
     }
 
-    private fun load(): List<Vehicle> {
-        val vehicles = try {
-            val file = file()
-            if (!file.exists()) emptyList() else json.decodeFromString<List<Stored>>(file.readText()).map { it.toVehicle() }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "The vehicles couldn't be read; kept aside, starting empty", e)
-            runCatching { file().renameTo(File(file().parentFile, "${FILE_NAME}.bad")) }
-            emptyList()
-        }
+    private suspend fun load(): List<Vehicle> {
+        val vehicles = stored.load().orEmpty()
         state.compareAndSet(emptyList(), vehicles)
         return vehicles
     }
 
-    private suspend fun save(vehicles: List<Vehicle>) = withContext(io) {
-        try {
-            val file = file()
-            val partial = File(file.parentFile, "${file.name}.tmp")
-            partial.writeText(json.encodeToString(vehicles.map(Stored::of)))
-            if (!partial.renameTo(file)) error("couldn't replace $file")
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "The vehicles couldn't be saved", e)
-        }
-    }
+    private suspend fun save(vehicles: List<Vehicle>) = stored.save(vehicles)
 
     /** One vehicle as the file keeps it. Reminder names the app doesn't know (from a newer version) are dropped. */
     @Serializable
@@ -146,7 +133,6 @@ class VehicleRepository(
 
     companion object {
         const val FILE_NAME = "vehicles.json"
-        private const val TAG = "Waitlight"
-        private val json = Json { ignoreUnknownKeys = true }
+        private val json = AtomicJsonFile.json
     }
 }

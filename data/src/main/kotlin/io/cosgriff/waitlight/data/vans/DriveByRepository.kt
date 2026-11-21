@@ -1,10 +1,9 @@
 package io.cosgriff.waitlight.data.vans
 
-import android.util.Log
+import io.cosgriff.waitlight.data.AtomicJsonFile
 import io.cosgriff.waitlight.data.di.ApplicationScope
 import io.cosgriff.waitlight.domain.DriveBy
 import io.cosgriff.waitlight.domain.GeoPoint
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,9 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.Instant
 
@@ -27,10 +24,20 @@ import java.time.Instant
  */
 class DriveByRepository(
     /** Called off the main thread. */
-    private val file: () -> File,
+    file: () -> File,
     scope: CoroutineScope,
-    private val io: CoroutineDispatcher = Dispatchers.IO,
+    io: CoroutineDispatcher = Dispatchers.IO,
 ) {
+    // Kept aside when unreadable: the log is the user's own record and can't be fetched again.
+    private val stored = AtomicJsonFile(
+        file,
+        AtomicJsonFile.Unreadable.KEEP_ASIDE,
+        what = "The drive-by log",
+        io,
+        read = { text -> json.decodeFromString<List<Stored>>(text).map { it.toDriveBy() } },
+        write = { entries -> json.encodeToString(entries.map(Stored::of)) },
+    )
+
     private val state = MutableStateFlow<List<DriveBy>>(emptyList())
     private val lock = Mutex()
 
@@ -58,33 +65,13 @@ class DriveByRepository(
         save(state.value)
     }
 
-    private fun load(): List<DriveBy> {
-        val entries = try {
-            val file = file()
-            if (!file.exists()) emptyList() else json.decodeFromString<List<Stored>>(file.readText()).map { it.toDriveBy() }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "The drive-by log couldn't be read; kept aside, starting empty", e)
-            runCatching { file().renameTo(File(file().parentFile, "${FILE_NAME}.bad")) }
-            emptyList()
-        }
+    private suspend fun load(): List<DriveBy> {
+        val entries = stored.load().orEmpty()
         state.compareAndSet(emptyList(), entries)
         return entries
     }
 
-    private suspend fun save(entries: List<DriveBy>) = withContext(io) {
-        try {
-            val file = file()
-            val partial = File(file.parentFile, "${file.name}.tmp")
-            partial.writeText(json.encodeToString(entries.map(Stored::of)))
-            if (!partial.renameTo(file)) error("couldn't replace $file")
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "The drive-by log couldn't be saved", e)
-        }
-    }
+    private suspend fun save(entries: List<DriveBy>) = stored.save(entries)
 
     /** One entry as the file keeps it. [vehicleId] came with vehicles; entries saved before them have none. */
     @Serializable
@@ -105,8 +92,8 @@ class DriveByRepository(
     }
 
     companion object {
+        /** In the app's files directory; `backup_rules.xml` and `data_extraction_rules.xml` name it too. */
         const val FILE_NAME = "drive_bys.json"
-        private const val TAG = "Waitlight"
-        private val json = Json { ignoreUnknownKeys = true }
+        private val json = AtomicJsonFile.json
     }
 }

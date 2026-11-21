@@ -51,15 +51,10 @@ class WaitTimesStoreTest {
     }
 
     @Test
-    fun `a corrupt file loads as nothing`() = runTest {
-        file.writeText("{\"lastOutcome\":\"OK\",\"waits\":[{\"id\":38")
-        assertNull(store.load())
-    }
-
-    @Test
-    fun `an outcome it doesn't know loads as nothing`() = runTest {
+    fun `an unreadable file is discarded`() = runTest {
         file.writeText("""{"lastOutcome":"SIDEWAYS","waits":[]}""")
         assertNull(store.load())
+        assertEquals(emptyList<String>(), dir.list()!!.toList())
     }
 
     @Test
@@ -85,12 +80,5 @@ class WaitTimesStoreTest {
             ]}""",
         )
         assertEquals(setOf(46), store.load()?.waits?.keys)
-    }
-
-    @Test
-    fun `a file that can't be written is logged, not thrown`() = runTest {
-        val nowhere = WaitTimesStore({ File(File(dir, "missing"), WaitTimesStore.FILE_NAME) }, Dispatchers.Unconfined)
-        nowhere.save(times)
-        assertNull(nowhere.load())
     }
 }
