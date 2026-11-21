@@ -20,8 +20,8 @@ import kotlin.coroutines.resume
 
 /**
  * Where the phone is, from Android's own [LocationManager] (ADR-0002: no Play services). The app asks for precise
- * location, so the miles and drive estimates are right; approximate, which Android blurs by a mile or two, works
- * too. The location stays on the phone.
+ * location, so drive times are looked up from the right spot; approximate, which Android blurs by a mile or two,
+ * works too. The location stays on the phone.
  */
 @Singleton
 class AndroidPhoneFix @Inject constructor(@param:ApplicationContext private val context: Context) : PhoneFix {

@@ -136,7 +136,6 @@
 
     <string name="list_row_address">%1$s, %2$s</string>
     <string name="list_row_rims">Low-profile rims OK</string>
-    <string name="list_row_miles">%1$.1f mi</string>
     <string name="list_row_drive">%1$d min drive</string>
     <string name="list_row_opens">Opens %1$s</string>
     <string name="list_row_opens_day">Opens %1$s %2$s</string>
@@ -146,9 +145,8 @@
     <string name="detail_back">Back to list</string>
     <string name="detail_map">Map of the streets around the %1$s station</string>
     <string name="detail_map_credit">© OpenStreetMap contributors</string>
-    <string name="detail_total">≈ %1$d min total · %2$d min drive (%3$.1f mi)</string>
-    <string name="detail_drive">%1$d min drive (%2$.1f mi)</string>
-    <string name="detail_miles">%1$.1f mi away</string>
+    <string name="detail_total">≈ %1$d min total · %2$d min drive</string>
+    <string name="detail_drive">%1$d min drive</string>
     <string name="detail_updated">AirCare updated %1$s</string>
     <string name="detail_status_short">Short wait</string>
     <string name="detail_status_moderate">Moderate wait</string>
@@ -177,7 +175,8 @@
     <string name="widget_description">Wait times at the three AirCare stations nearest you</string>
     <string name="widget_updated">Updated %1$s</string>
     <string name="widget_needs_location">Open Waitlight and allow location or enter a ZIP code to see the stations nearest you.</string>
-    <string name="widget_miles">%1$.1f mi</string>
+    <string name="widget_drive">%1$d min drive</string>
+    <string name="widget_out_of_area">No AirCare station has a drive time from here. Open Waitlight to see them all.</string>
     <string name="widget_status_short">Short</string>
     <string name="widget_status_moderate">Moderate</string>
     <string name="widget_status_long">Long</string>
@@ -188,7 +187,7 @@
 
     <!-- Location prompt -->
     <string name="location_title">Find the closest station</string>
-    <string name="location_body">Share your location to sort AirCare stations by distance. It stays on your phone and is only used to measure miles.</string>
+    <string name="location_body">Share your location to sort AirCare stations by drive time. It stays on your phone and is only used to look up how long the drive is.</string>
     <string name="location_use">Use my location</string>
     <string name="location_or">or</string>
     <string name="location_zip_label">ZIP code</string>

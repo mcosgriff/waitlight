@@ -3,6 +3,7 @@ package io.cosgriff.waitlight.data.location
 import android.util.Log
 import io.cosgriff.waitlight.domain.DriveTable
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,8 +15,8 @@ import kotlinx.coroutines.launch
 /**
  * The bundled drive-time table (ADR-0007, `assets/drive_minutes.bin`), read once, off the main thread, as soon
  * as this is made. [table] is [DriveTable.EMPTY] until then; rows show no drive time for that moment. A table
- * that can't be read is logged and stays empty, never a crash: the list then shows miles without drive times,
- * and "Fastest overall" has nothing to add.
+ * that can't be read is logged and stays empty, never a crash: the list then shows no drive times and goes by
+ * name, and "Fastest overall" has nothing to add.
  */
 class DriveTimes(
     /** The table's bytes; called off the main thread. */
@@ -26,9 +27,14 @@ class DriveTimes(
     private val loaded = MutableStateFlow(DriveTable.EMPTY)
     val table: StateFlow<DriveTable> = loaded.asStateFlow()
 
+    private val ready = CompletableDeferred<DriveTable>()
+
     init {
-        scope.launch(io) { loaded.value = load() }
+        scope.launch(io) { load().also { loaded.value = it; ready.complete(it) } }
     }
+
+    /** The table once read: for the widget, drawn in a process that may have just started. */
+    suspend fun current(): DriveTable = ready.await()
 
     private fun load(): DriveTable = try {
         DriveTable.parse(read())

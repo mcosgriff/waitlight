@@ -102,12 +102,13 @@ test there.
 
 ## Sorting and the hero
 
-- Distance is straight-line, for sorting by nearest. Drive minutes come from the bundled routed table
-  (`DriveTable`, ADR-0007): no traffic, shown without "≈" ("12 min drive"). Never from straight-line distance.
-- No drive time where the table has none (outside the gas emissions program area, far from a road): miles
-  only.
-- Nearest: by distance. Fastest overall: drive + wait, any wait counted as at most 90 ("60+" counts as 90);
-  stations without an estimate after the rest, by distance; ties go to the nearer. While closed, nearest.
+- **No straight-line distance is shown or sorted by** (decided 2026-11-20, #61). Drive minutes come from the
+  bundled routed table (`DriveTable`, ADR-0007): no traffic, shown without "≈" ("12 min drive").
+- No drive time where the table has none (outside the gas emissions program area, far from a road): nothing
+  shown in its place, never miles or a guess.
+- Nearest: by drive minutes; stations with no drive time after the rest, by name. Fastest overall: drive + wait,
+  any wait counted as at most 90 ("60+" counts as 90); stations without an estimate after the rest, by drive;
+  ties go to the shorter drive. While closed, nearest.
 - No location: alphabetical, whatever the chip.
 - Low-profile rims chip: a filter, on top of either order.
 - Both chips are remembered across launches.
@@ -119,7 +120,7 @@ test there.
 ## Where "here" is
 
 - "Use my location" asks for precise location, with approximate in the same request, so Android's dialog offers
-  both. Either is allowed location; approximate is off by a mile or two, which shows in the miles and drive
+  both. Either is allowed location; approximate is off by a mile or two, which shows in the drive
   estimates. Someone who gave approximate switches in system settings; the app doesn't ask again.
 - **Location permission wins:** with location allowed and a fix found, distances are from the fix. Otherwise
   from the saved ZIP code's centroid, if there is one. Otherwise there's no "here" and the list is
@@ -140,8 +141,9 @@ test there.
 
 ## The widget
 
-- The three nearest stations (`widgetContent`, `WIDGET_STATIONS`), nearest first by straight-line distance, each
-  with its badge, name, miles and a status word. Same rows, badges and rules as the list (`rowsFor`):
+- The three stations with the shortest drives (`widgetContent`, `WIDGET_STATIONS`), shortest first, each with
+  its badge, name, drive time and a status word. Stations with no drive time are left out; when none has one
+  (here is outside the routed area), it says so (`OutOfArea`) rather than guessing. Same rows, badges and rules as the list (`rowsFor`):
   closed outside hours, stale on each station's own timestamp, all stale when the page can't be read, "no
   reading" before the first fetch. Every badge has its icon and the list's content description.
 - "Here" is the list's ("Where "here" is"; `HereSource.current`): the fix, else the saved ZIP code.

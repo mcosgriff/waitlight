@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import io.cosgriff.waitlight.data.aircare.AirCareClient
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
 import io.cosgriff.waitlight.data.aircare.WaitTimesStore
+import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.data.location.LastLocationStore
 import io.cosgriff.waitlight.data.location.PhoneFix
@@ -13,6 +14,7 @@ import io.cosgriff.waitlight.domain.Badge
 import io.cosgriff.waitlight.domain.WaitTimes
 import io.cosgriff.waitlight.domain.WidgetContent
 import io.cosgriff.waitlight.ui.AT_ARVADA
+import io.cosgriff.waitlight.ui.uniformDriveBytes
 import io.cosgriff.waitlight.ui.denver
 import io.cosgriff.waitlight.ui.threeWaits
 import io.ktor.client.HttpClient
@@ -85,7 +87,8 @@ class WidgetUpdaterTest {
         )
         val settings = SettingsStore(PreferenceDataStoreFactory.create(scope = scope) { File(dir, "settings.preferences_pb") })
         val here = HereSource(AllowedPhone(), lastFix, settings, ZipCodes({ "" }, Dispatchers.Unconfined), scope)
-        WidgetUpdater(host, repository, here, clock)
+        val drives = DriveTimes(read = { uniformDriveBytes(5) }, scope = CoroutineScope(Dispatchers.Unconfined), io = Dispatchers.Unconfined)
+        WidgetUpdater(host, repository, here, drives, clock)
     }
 
     @After fun tearDown() {

@@ -9,7 +9,10 @@ import kotlin.math.sqrt
 
 /** A point on the map, in degrees. */
 data class GeoPoint(val latitude: Double, val longitude: Double) {
-    /** Straight-line (great-circle) distance in miles. Used for sorting by nearest. */
+    /**
+     * Straight-line (great-circle) distance in miles. Only for naming where the phone is (the nearest ZIP); never
+     * shown, and never used to sort stations or vans, which go by routed drive time.
+     */
     fun milesTo(other: GeoPoint): Double {
         val lat1 = Math.toRadians(latitude)
         val lat2 = Math.toRadians(other.latitude)

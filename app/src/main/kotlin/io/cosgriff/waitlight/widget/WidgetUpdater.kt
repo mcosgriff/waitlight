@@ -4,6 +4,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.cosgriff.waitlight.data.aircare.WaitTimesRepository
+import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.domain.WidgetContent
 import io.cosgriff.waitlight.domain.widgetContent
@@ -43,6 +44,7 @@ class WidgetUpdater @Inject constructor(
     private val host: WidgetHost,
     private val repository: WaitTimesRepository,
     private val here: HereSource,
+    private val drives: DriveTimes,
     private val clock: Clock,
 ) {
     private val latest = MutableStateFlow<WidgetDrawing?>(null)
@@ -84,7 +86,7 @@ class WidgetUpdater @Inject constructor(
 
     /** Works out the widget at [now] and sets its next redraw. */
     private suspend fun prepare(now: Instant): WidgetDrawing {
-        val drawing = WidgetDrawing(widgetContent(repository.current(), here.current()?.point, now), now)
+        val drawing = WidgetDrawing(widgetContent(repository.current(), here.current()?.point, drives.current(), now), now)
         latest.value = drawing
         when (val at = widgetRedrawAt(drawing.content, now)) {
             null -> host.cancelRedraws()

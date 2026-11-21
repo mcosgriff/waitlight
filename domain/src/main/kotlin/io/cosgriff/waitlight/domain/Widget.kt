@@ -13,21 +13,25 @@ sealed interface WidgetContent {
      */
     data object NeedsLocation : WidgetContent
 
+    /** Here has no drive time to any station: outside the area the drive table covers. */
+    data object OutOfArea : WidgetContent
+
     /**
-     * The [WIDGET_STATIONS] nearest stations, nearest first, each with its distance, and the newest AirCare time
-     * of all of them.
+     * The [WIDGET_STATIONS] nearest stations by drive, nearest first, each with its drive time, and the newest
+     * AirCare time of all of them.
      */
     data class Nearest(val rows: List<StationRow>, val newestUpdate: Instant?) : WidgetContent
 }
 
 /**
- * The widget at [now]: the nearest stations to [here], the same rows as the list's ([rowsFor]), or
- * [WidgetContent.NeedsLocation] without a location.
+ * The widget at [now]: the stations with the shortest drives from [here] ([drives]), the same rows as the list's
+ * ([rowsFor]); [WidgetContent.NeedsLocation] without a location, and [WidgetContent.OutOfArea] when no station has
+ * a drive time from there. Never a guess from straight-line distance or the alphabet.
  */
-fun widgetContent(times: WaitTimes, here: GeoPoint?, now: Instant): WidgetContent {
+fun widgetContent(times: WaitTimes, here: GeoPoint?, drives: DriveTable, now: Instant): WidgetContent {
     if (here == null) return WidgetContent.NeedsLocation
-    // The widget shows miles, not drive times.
-    val all = rowsFor(times, here, DriveTable.EMPTY, now)
+    val all = rowsFor(times, here, drives, now).filter { it.driveMinutes != null }
+    if (all.isEmpty()) return WidgetContent.OutOfArea
     val state = listState(now, times.newestUpdate, times.lastOutcome)
     val nearest = arrange(all, SortOrder.NEAREST, lowProfileRimsOnly = false, state = state).take(WIDGET_STATIONS)
     return WidgetContent.Nearest(nearest, times.newestUpdate)
