@@ -278,6 +278,11 @@
     <string name="vans_broken_body">AirCare changed their van page and the app can’t read it yet. Showing the schedule saved at %1$s. Wait times still work.</string>
     <string name="vans_stale_title">Couldn’t check the vans</string>
     <string name="vans_stale_body">AirCare’s site didn’t respond. Showing the schedule from %1$s; live status returns when it does.</string>
+    <plurals name="vans_far_title">
+        <item quantity="one">The nearest van is %d min away</item>
+        <item quantity="other">The nearest van is %d min away</item>
+    </plurals>
+    <string name="vans_far_body">If none is on your way, a test at a station may be quicker. Wait times are on the other tab.</string>
     <string name="vans_footer">Sites, hours and status from AirCare Colorado. Weather can close a site early.</string>
 
     <!-- How roadside vans work (sheet) -->

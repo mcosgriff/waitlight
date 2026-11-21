@@ -48,7 +48,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -64,6 +69,7 @@ import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.cosgriff.waitlight.R
+import io.cosgriff.waitlight.domain.Heading
 import io.cosgriff.waitlight.domain.VanName
 import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.domain.VanSiteWeek
@@ -71,7 +77,6 @@ import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.currentVanWeek
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.VanBadge
-import io.cosgriff.waitlight.ui.components.vanBadgeLook
 import io.cosgriff.waitlight.ui.components.vanHoursText
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
@@ -256,9 +261,10 @@ private fun WeekLine(day: String, hours: String, bold: Boolean, muted: Boolean) 
 }
 
 /**
- * The site drawn, not mapped: weekly sites have no bundled map (ADR-0006 is for the fixed stations). A ramp is a
- * highway across the top, the cross street down the middle and the ramp curving between, the unit on it in its
- * badge's colour; a road site is the road with the cross street and the unit just past it. The content
+ * The site drawn, not mapped: weekly sites have no bundled map (ADR-0006 is for the fixed stations). It is drawn
+ * eastbound and turned to the site's direction of travel ([VanName.heading]): a ramp is the highway with the cross
+ * street and the on-ramp joining from the right of the traffic, as in the US, the unit on it; a road site is the
+ * road with the cross street and the unit just past it. An arrow shows which way the traffic goes. The content
  * description says the same in words, and the status is in the text below, so colour is not the only signal.
  */
 @Composable
@@ -267,8 +273,14 @@ private fun SiteDiagram(name: VanName, status: VanStatus, modifier: Modifier = M
     val ground = MaterialTheme.colorScheme.surfaceContainerHighest
     val lane = MaterialTheme.colorScheme.outline
     val accent = MaterialTheme.colorScheme.primary
-    val pin = vanBadgeLook(status).let { if (it.border == null) it.container else MaterialTheme.waitColors.open.container }
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val pin = when (status) {
+        VanStatus.Reading -> MaterialTheme.waitColors.short.container
+        VanStatus.Paused -> MaterialTheme.waitColors.open.container
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val labelStyle = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+    val unitStyle = labelStyle.copy(color = accent, fontSize = 12.sp)
+    val measurer = rememberTextMeasurer()
     val description = when (name) {
         is VanName.Ramp -> stringResource(R.string.van_detail_diagram_ramp, name.from, name.onto)
         is VanName.Road -> stringResource(R.string.van_detail_diagram_road, name.road, name.past)
@@ -280,48 +292,91 @@ private fun SiteDiagram(name: VanName, status: VanStatus, modifier: Modifier = M
         is VanName.Plain -> name.text to null
     }
     val unitLabel = stringResource(if (name is VanName.Ramp) R.string.van_detail_unit_ramp else R.string.van_detail_unit_road)
-    Box(modifier.background(ground).clearAndSetSemantics { contentDescription = description; role = Role.Image }) {
-        Canvas(Modifier.matchParentSize()) {
-            val w = size.width
-            val h = size.height
-            val bandTop = h * 0.30f
-            val bandHeight = h * 0.26f
-            drawRect(road, topLeft = Offset(0f, bandTop), size = Size(w, bandHeight))
-            drawLine(lane, Offset(0f, bandTop + bandHeight / 2), Offset(w, bandTop + bandHeight / 2), strokeWidth = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(14.dp.toPx(), 12.dp.toPx())))
-            val crossX = w * 0.34f
-            if (crossLabel != null) {
-                drawRect(road, topLeft = Offset(crossX - 20.dp.toPx(), 0f), size = Size(40.dp.toPx(), h))
+    val heading = name.heading ?: Heading.EAST
+    Canvas(modifier.background(ground).clearAndSetSemantics { contentDescription = description; role = Role.Image }) {
+        // Drawn in the traffic's own frame: `along` runs the way the traffic goes, `across` to its right, each -1..1
+        // over the canvas, then placed by heading. The highway sits a little to the traffic's left, so the ramp
+        // and the unit have room on its right.
+        val frame = TrafficFrame(heading, center, size.width / 2, size.height / 2)
+        val band = 40.dp.toPx()
+        val roadB = -0.25f
+        val crossA = -0.45f
+        val laneB = roadB + frame.acrossFraction(band * 0.25f)
+        drawLine(road, frame.at(-2f, roadB), frame.at(2f, roadB), strokeWidth = band)
+        drawLine(lane, frame.at(-2f, roadB), frame.at(2f, roadB), strokeWidth = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(14.dp.toPx(), 12.dp.toPx())))
+        if (crossLabel != null) drawLine(road, frame.at(crossA, -2f), frame.at(crossA, 2f), strokeWidth = 34.dp.toPx())
+        // Which way the traffic goes.
+        val tip = frame.at(0.72f, laneB)
+        val tail = frame.at(0.42f, laneB)
+        drawLine(accent, tail, tip, strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
+        val back = (tail - tip) / (tail - tip).getDistance() * 9.dp.toPx()
+        val side = Offset(-back.y, back.x)
+        drawLine(accent, tip + back + side, tip, strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
+        drawLine(accent, tip + back - side, tip, strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
+        val unitAt = if (name is VanName.Ramp) {
+            // From the cross street, on the traffic's right, curving onto the highway with it.
+            val joinB = roadB + frame.acrossFraction(band * 0.45f)
+            val p0 = frame.at(crossA, 1.3f)
+            val p1 = frame.at(crossA, 0.35f)
+            val p2 = frame.at(crossA + 0.2f, joinB)
+            val p3 = frame.at(0.25f, joinB)
+            val ramp = Path().apply {
+                moveTo(p0.x, p0.y)
+                cubicTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
             }
-            val unit: Offset
-            if (name is VanName.Ramp) {
-                val ramp = Path().apply {
-                    moveTo(crossX + 12.dp.toPx(), h)
-                    cubicTo(crossX + 12.dp.toPx(), h * 0.72f, crossX + 60.dp.toPx(), bandTop + bandHeight + 6.dp.toPx(), w * 0.72f, bandTop + bandHeight - 4.dp.toPx())
-                }
-                drawPath(ramp, road, style = Stroke(width = 20.dp.toPx(), cap = StrokeCap.Round))
-                drawPath(ramp, accent, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 8.dp.toPx()))))
-                unit = Offset(crossX + 48.dp.toPx(), h * 0.68f)
-            } else {
-                unit = Offset(if (crossLabel != null) crossX + 70.dp.toPx() else w / 2, bandTop + bandHeight * 0.75f)
-            }
-            // Direction of travel, along the main road.
-            val arrowY = bandTop + bandHeight * 0.75f
-            drawLine(accent, Offset(w * 0.78f, arrowY), Offset(w * 0.90f, arrowY), strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
-            drawLine(accent, Offset(w * 0.88f, arrowY - 8.dp.toPx()), Offset(w * 0.90f, arrowY), strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
-            drawLine(accent, Offset(w * 0.88f, arrowY + 8.dp.toPx()), Offset(w * 0.90f, arrowY), strokeWidth = 3.dp.toPx(), cap = StrokeCap.Round)
-            drawCircle(Color.White, radius = 18.dp.toPx(), center = unit)
-            drawCircle(pin, radius = 15.dp.toPx(), center = unit)
-            drawCircle(Color.White, radius = 2.5.dp.toPx(), center = unit)
+            drawPath(ramp, road, style = Stroke(width = 18.dp.toPx(), cap = StrokeCap.Round))
+            drawPath(ramp, accent, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 8.dp.toPx()))))
+            bezier(p0, p1, p2, p3, 0.55f)
+        } else {
+            frame.at(if (crossLabel != null) crossA + 0.35f else 0f, laneB)
         }
-        Text(mainLabel, color = labelColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.align(Alignment.TopStart).padding(start = 72.dp, top = DIAGRAM_HEIGHT * 0.30f - 20.dp))
-        if (crossLabel != null) {
-            Text(crossLabel, color = labelColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 28.dp, start = 40.dp))
-        }
-        Text(unitLabel, color = labelColor, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 52.dp))
+        drawCircle(Color.White, radius = 17.dp.toPx(), center = unitAt)
+        drawCircle(pin, radius = 14.dp.toPx(), center = unitAt)
+        drawCircle(Color.White, radius = 2.5.dp.toPx(), center = unitAt)
+        // Labels stay upright: the highway's on its far side from the ramp, the cross street's beside it.
+        label(measurer, mainLabel, labelStyle, frame.at(0.15f, roadB - frame.acrossFraction(band * 0.5f + 16.dp.toPx())))
+        if (crossLabel != null) label(measurer, crossLabel, labelStyle, frame.at(crossA - 0.25f, 0.7f))
+        label(measurer, unitLabel, unitStyle, unitAt + Offset(0f, 30.dp.toPx()))
     }
 }
 
+/**
+ * The canvas seen from the traffic: [at] places a point [along] the way it goes and [across] to its right, each
+ * -1..1 over the canvas's half-width and half-height, whichever way [heading] lies on screen (north is up).
+ */
+private class TrafficFrame(private val heading: Heading, private val center: Offset, private val halfWidth: Float, private val halfHeight: Float) {
+    fun at(along: Float, across: Float): Offset = when (heading) {
+        Heading.EAST -> Offset(center.x + along * halfWidth, center.y + across * halfHeight)
+        Heading.WEST -> Offset(center.x - along * halfWidth, center.y - across * halfHeight)
+        Heading.SOUTH -> Offset(center.x - across * halfWidth, center.y + along * halfHeight)
+        Heading.NORTH -> Offset(center.x + across * halfWidth, center.y - along * halfHeight)
+    }
+
+    /** [pixels] across the traffic, as a fraction of the half-size across it. */
+    fun acrossFraction(pixels: Float): Float = pixels / if (heading == Heading.EAST || heading == Heading.WEST) halfHeight else halfWidth
+}
+
+/** The cubic Bézier through [p0]..[p3] at [t]. */
+private fun bezier(p0: Offset, p1: Offset, p2: Offset, p3: Offset, t: Float): Offset {
+    val u = 1 - t
+    return p0 * (u * u * u) + p1 * (3 * u * u * t) + p2 * (3 * u * t * t) + p3 * (t * t * t)
+}
+
+/** [text] centred on [at], kept inside the canvas. */
+private fun DrawScope.label(measurer: TextMeasurer, text: String, style: TextStyle, at: Offset) {
+    val layout = measurer.measure(text, style, maxLines = 1)
+    var x = (at.x - layout.size.width / 2f).coerceIn(8.dp.toPx(), (size.width - layout.size.width - 8.dp.toPx()).coerceAtLeast(8.dp.toPx()))
+    val y = (at.y - layout.size.height / 2f).coerceIn(4.dp.toPx(), size.height - layout.size.height - 20.dp.toPx())
+    // Clear of the back button in the top left corner.
+    val button = 72.dp.toPx() + WindowStatusAllowance.toPx()
+    if (x < button && y < button) x = button
+    drawText(layout, topLeft = Offset(x, y))
+}
+
 private val DIAGRAM_HEIGHT = 220.dp
+
+/** Room for the status bar above the back button, which sits under it. */
+private val WindowStatusAllowance = 8.dp
 
 /** "Fri, Nov 20, 7:15 AM": a drive-by's moment, in Denver; with the year when it isn't this year's. */
 @Composable

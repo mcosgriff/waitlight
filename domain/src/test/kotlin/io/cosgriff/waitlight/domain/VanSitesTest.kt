@@ -88,6 +88,16 @@ class VanSitesTest {
     }
 
     @Test
+    fun `the direction of travel, from the highway or the road`() {
+        assertEquals(Heading.EAST, VanName.of("ON-RAMP TO EB I-70 FROM HARLAN ST.").heading)
+        assertEquals(Heading.WEST, VanName.of("ON-RAMP to WB I-70 from NB I-25 (two units at site)").heading)
+        assertEquals(Heading.SOUTH, VanName.of("ON-RAMP to SB PENA from E 56th Ave").heading)
+        assertEquals(Heading.NORTH, VanName.of("NB TAFT HILL RD. after HARMONY RD.").heading)
+        assertEquals(Heading.EAST, VanName.of("EB US-34 BUSINESS from CO-257").heading)
+        assertNull(VanName.of("SOMEWHERE NEW").heading)
+    }
+
+    @Test
     fun `statuses in AirCare's words`() {
         assertEquals(VanLiveStatus.TESTING, VanLiveStatus.parse("On-site: Testing"))
         assertEquals(VanLiveStatus.NOT_TESTING, VanLiveStatus.parse("On-site: Not Testing"))

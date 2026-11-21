@@ -67,6 +67,9 @@ object VanRules {
     /** How often to fetch the van page while the vans list is on screen. */
     val REFRESH_INTERVAL: Duration = Duration.ofMinutes(15)
 
+    /** Farther than this by road, the nearest van is out of the way, and the list says so. */
+    const val FAR_MINUTES = 20
+
     /** A launch fetch this soon after another is the same one. */
     val LAUNCH_GAP: Duration = Duration.ofMinutes(1)
 
@@ -279,6 +282,16 @@ fun nearestReading(day: VanDay): VanRow? {
     if (!day.isToday) return null
     val rows = (day.content as? VanDayContent.Sites)?.rows ?: return null
     return rows.filter { it.status == VanStatus.Reading && it.driveMinutes != null }.minByOrNull { it.driveMinutes!! }
+}
+
+/**
+ * The nearest of [day]'s sites by drive, in minutes, when it is over [VanRules.FAR_MINUTES]: the list then says a
+ * station test may be quicker. Null when a site is nearer, when no site has a drive time, or the day has no sites.
+ */
+fun nearestFarAway(day: VanDay?): Int? {
+    val rows = (day?.content as? VanDayContent.Sites)?.rows ?: return null
+    val nearest = rows.mapNotNull { it.driveMinutes }.minOrNull() ?: return null
+    return nearest.takeIf { it > VanRules.FAR_MINUTES }
 }
 
 /** How many of [day]'s sites are reading now: the bottom bar's badge and the "6 reading now" line. */

@@ -36,6 +36,12 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
 - **Place** is from the bundled ZIP table by the pin's coordinates (`ZipTable.placeOf`, ADR-0005), not AirCare's
   city, which is sometimes wrong ("Fort Lupton" for a Fort Collins site); AirCare's city only when no ZIP is near.
 
+## The RapidScreen rule as the app words it
+
+- Two clean readings within 14 months, at least **90 days** before the renewal month (July: May 1 last year to
+  April 1), as AirCare's van page says. Their RapidScreen info page says 60 days (to May 1); the app keeps the
+  stricter 90, decided 2026-11-20, so nobody counts on a reading that comes too late.
+
 ## Days
 
 - "Current Week" is the week of today's date in Denver, by the injected `Clock`; on Saturday and Sunday it is
@@ -75,11 +81,16 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
   location stays the user's choice.
 - Hero, "Nearest van reading cars now": today's reading site with the least drive, with its place, drive and
   closing time. Hidden on another day, when none is reading, or without a drive time.
+- **Out of the way**: when the day's nearest site by drive is over 20 minutes (`nearestFarAway`,
+  `VanRules.FAR_MINUTES`), a note says a station test may be quicker. No note without drive times.
 - "Reading now" chip: today only, while a site is reading, a filter to reading sites. The bottom bar's badge: how many are reading now.
 
 ## Detail
 
-- No map tiles for weekly sites: the header is drawn, with the site's name and status.
+- No map tiles for weekly sites: the header is a sketch, turned to the site's direction of travel
+  (`VanName.heading`, from "NB/SB/EB/WB" on the highway or road): the road runs that way, an arrow shows the
+  traffic, a ramp joins from the right of it (US), and the unit sits on the ramp, or on the road past the cross
+  street. Labels stay upright. Without a direction it's drawn eastbound.
 - Status, place, drive time, today's hours and "Status checked" with its date and time. **Directions** opens the system's app picker on
   a `geo:` link to the pin, as for stations.
 - "When it's here": every date on the page's tabs the site is posted for, today in bold; "Next week: Not

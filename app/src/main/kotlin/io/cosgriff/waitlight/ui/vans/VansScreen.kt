@@ -88,6 +88,7 @@ import io.cosgriff.waitlight.domain.VanDayContent
 import io.cosgriff.waitlight.domain.VanListState
 import io.cosgriff.waitlight.domain.VanRow
 import io.cosgriff.waitlight.domain.VanStatus
+import io.cosgriff.waitlight.domain.nearestFarAway
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.VanBadge
 import io.cosgriff.waitlight.ui.components.vanHoursText
@@ -148,6 +149,7 @@ fun VansContent(
             ui.hero?.let { hero -> item(key = "hero") { HeroCard(hero, onOpenSite) } }
             if (ui.list.days.isNotEmpty()) item(key = "days") { DayChips(ui, onPick) }
             if (day != null) item(key = "summary") { SummaryLine(ui, day, onToggleReading) }
+            nearestFarAway(day)?.let { minutes -> item(key = "far") { FarAwayNote(minutes) } }
             when {
                 ui.state == VanListState.EMPTY -> item(key = "empty") {
                     EmptyCard(stringResource(R.string.vans_empty_title), stringResource(R.string.vans_empty_body))
@@ -598,6 +600,21 @@ private fun DriveBysLine(ui: VansUi, onOpen: () -> Unit) {
                 Text(detail, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** The nearest van is out of the way: a station test may be quicker. */
+@Composable
+private fun FarAwayNote(minutes: Int) {
+    val info = MaterialTheme.waitColors.info
+    Surface(shape = MaterialTheme.shapes.medium, color = info.container, contentColor = info.content, modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.padding(top = 1.dp).size(20.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(pluralStringResource(R.plurals.vans_far_title, minutes, minutes), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
+                Text(stringResource(R.string.vans_far_body), style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 19.sp))
+            }
         }
     }
 }

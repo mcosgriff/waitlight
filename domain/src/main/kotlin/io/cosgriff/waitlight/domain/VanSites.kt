@@ -107,6 +107,17 @@ data class VanSiteText(val description: String, val days: Set<DayOfWeek>, val op
  * inside are AirCare's, tidied.
  */
 sealed interface VanName {
+    /**
+     * Which way the traffic the unit reads is going: from the highway a ramp joins ("EB I-70" is east), or the
+     * road a unit sits on ("NB Taft Hill Rd" is north). Null when the text names no direction.
+     */
+    val heading: Heading?
+        get() = when (this) {
+            is Ramp -> Heading.of(onto)
+            is Road -> Heading.of(road)
+            is Plain -> null
+        }
+
     /** An on-ramp: from [from] onto [onto] ("Harlan St" onto "EB I-70"). */
     data class Ramp(val from: String, val onto: String) : VanName
 
@@ -160,6 +171,24 @@ sealed interface VanName {
         }
 
         private val wordParts = Regex("""^(\(*)(.*?)([).,]*)$""")
+    }
+}
+
+/** A direction of travel, from AirCare's "NB", "SB", "EB" and "WB". */
+enum class Heading {
+    NORTH, SOUTH, EAST, WEST;
+
+    companion object {
+        private val bound = Regex("""\b([NSEW])B\b""")
+
+        /** The first direction [text] names, or null. */
+        fun of(text: String): Heading? = when (bound.find(text.uppercase())?.groupValues?.get(1)) {
+            "N" -> NORTH
+            "S" -> SOUTH
+            "E" -> EAST
+            "W" -> WEST
+            else -> null
+        }
     }
 }
 

@@ -127,6 +127,17 @@ class VanScheduleTest {
     }
 
     @Test
+    fun `a nearest van over 20 minutes away is out of the way`() {
+        val today = list(denver("2026-11-20T16:52")).days.first()
+        assertNull(nearestFarAway(today))
+        val far = vanList(VanTimes(schedule), denver("2026-11-20T16:52"), here, { s, _ -> if (s.key == harlan.key) 21 else null }) { "Arvada" }
+        assertEquals(21, nearestFarAway(far.days.first()))
+        val exactly = vanList(VanTimes(schedule), denver("2026-11-20T16:52"), here, { _, _ -> 20 }) { "Arvada" }
+        assertNull(nearestFarAway(exactly.days.first()))
+        assertNull(nearestFarAway(list(denver("2026-11-20T16:52"), from = null).days.first()))
+    }
+
+    @Test
     fun `a day with no sites, and one not posted`() {
         val days = list(denver("2026-11-20T16:52")).days
         val thanksgiving = days.first { it.date == LocalDate.of(2026, 11, 26) }

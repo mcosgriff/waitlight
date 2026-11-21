@@ -121,6 +121,12 @@ class VansScreenTest {
     }
 
     @Test
+    fun `no far-away note when a van is near`() {
+        show()
+        compose.onNodeWithText(text(R.string.vans_far_body)).assertDoesNotExist()
+    }
+
+    @Test
     fun `today has the hero, each status in words, nearest first by drive`() {
         show()
         compose.onNodeWithText(text(R.string.vans_hero_label).uppercase()).assertExists()
@@ -134,6 +140,14 @@ class VansScreenTest {
         compose.onNodeWithText("4 sites today · 1 reading now").assertExists()
         compose.onNode(hasTextSpaced("Status checked Nov 20, 4:52 PM")).assertExists()
         compose.onNodeWithText("9 min").assertExists()
+    }
+
+    @Test
+    fun `a far-off nearest van says a station may be quicker`() {
+        val far = uniformVanDrives(mapOf(HARLAN.key to 34, PECOS.key to 40))
+        val ui = vansUi(denver("2026-11-20T16:52"), VanTimes(SCHEDULE), Here.Zip(ZIP_80003), far, ZipTable(listOf(ZIP_80003)), null, false, false, false)
+        compose.setContent { WaitlightTheme(dark = false) { VansContent(ui, {}, {}, {}, { _, _ -> }, {}, {}) } }
+        compose.onNodeWithText("The nearest van is 34 min away").assertExists()
     }
 
     @Test
