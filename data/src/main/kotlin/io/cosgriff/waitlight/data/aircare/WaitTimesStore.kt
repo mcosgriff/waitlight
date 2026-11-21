@@ -1,58 +1,43 @@
 package io.cosgriff.waitlight.data.aircare
 
 import android.util.Log
+import io.cosgriff.waitlight.data.AtomicJsonFile
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.Stations
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.WaitTimes
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.Instant
 
 /**
  * Keeps the last [WaitTimes] in a small JSON file in the app's own files, so the waits survive a restart. The
  * file is left out of backups: it's minutes old at best. Nothing read from it is trusted: an unreadable file is
- * logged and read as no waits, and a reading for a station no longer in [Stations] is dropped.
+ * logged, discarded and read as no waits, and a reading for a station no longer in [Stations] is dropped.
  */
 class WaitTimesStore(
     /** Called off the main thread, since finding the app's files directory can touch the disk. */
-    private val file: () -> File,
-    private val io: CoroutineDispatcher = Dispatchers.IO,
+    file: () -> File,
+    io: CoroutineDispatcher = Dispatchers.IO,
 ) {
+    // Discarded when unreadable: the launch fetch gets the waits again.
+    private val stored = AtomicJsonFile(
+        file,
+        AtomicJsonFile.Unreadable.DISCARD,
+        what = "The stored waits",
+        io,
+        read = { json.decodeFromString(Stored.serializer(), it).toWaitTimes() },
+        write = { json.encodeToString(Stored.serializer(), Stored.of(it)) },
+    )
+
     /** The stored waits, or null when there are none or they can't be read. */
-    suspend fun load(): WaitTimes? = withContext(io) {
-        val stored = try {
-            val file = file()
-            if (!file.exists()) return@withContext null
-            json.decodeFromString<Stored>(file.readText())
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "Stored waits couldn't be read; starting empty", e)
-            return@withContext null
-        }
-        stored.toWaitTimes()
-    }
+    suspend fun load(): WaitTimes? = stored.load()
 
     /** Replaces the stored waits with [times]. A failed write is logged; the waits in memory are still right. */
-    suspend fun save(times: WaitTimes) = withContext(io) {
-        try {
-            val file = file()
-            val partial = File(file.parentFile, "${file.name}.tmp")
-            partial.writeText(json.encodeToString(Stored.serializer(), Stored.of(times)))
-            if (!partial.renameTo(file)) error("couldn't replace $file")
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w(TAG, "The waits couldn't be saved", e)
-        }
-    }
+    suspend fun save(times: WaitTimes) = stored.save(times)
 
     @Serializable
     private data class Stored(val lastOutcome: FetchOutcome, val waits: List<StoredWait>) {
@@ -114,6 +99,6 @@ class WaitTimesStore(
         const val FILE_NAME = "waits.json"
 
         private const val TAG = "Waitlight"
-        private val json = Json { ignoreUnknownKeys = true }
+        private val json = AtomicJsonFile.json
     }
 }

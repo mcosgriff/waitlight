@@ -4,6 +4,7 @@ import io.cosgriff.waitlight.domain.GeoPoint
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
@@ -34,11 +35,13 @@ class LastLocationStoreTest {
     }
 
     @Test
-    fun `an unreadable or impossible file reads as no location`() = runTest {
+    fun `an unreadable or impossible file is discarded`() = runTest {
         val store = LastLocationStore({ file }, StandardTestDispatcher(testScheduler))
         file.writeText("not a place")
         assertNull(store.load())
+        assertFalse(file.exists())
         file.writeText("123.0,-105.0")
         assertNull(store.load())
+        assertEquals(emptyList<String>(), folder.root.list()!!.toList())
     }
 }

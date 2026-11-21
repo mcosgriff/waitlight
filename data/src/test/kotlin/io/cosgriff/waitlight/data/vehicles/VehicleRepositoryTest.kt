@@ -61,6 +61,6 @@ class VehicleRepositoryTest {
     fun `an unreadable file is kept aside, not lost`() = runTest {
         file.writeText("not json")
         assertTrue(repository().loaded().isEmpty())
-        assertTrue(File(dir, "${VehicleRepository.FILE_NAME}.bad").exists())
+        assertEquals("not json", File(dir, "vehicles.json.bad").readText())
     }
 }

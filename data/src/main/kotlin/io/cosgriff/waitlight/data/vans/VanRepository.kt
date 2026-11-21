@@ -2,6 +2,7 @@ package io.cosgriff.waitlight.data.vans
 
 import android.util.Log
 import io.cosgriff.waitlight.data.di.ApplicationScope
+import io.cosgriff.waitlight.data.fetchFailure
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.FetchReason
 import io.cosgriff.waitlight.domain.VanSchedule
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.net.UnknownHostException
 import java.time.Clock
 import java.time.Instant
 import javax.inject.Inject
@@ -72,7 +72,7 @@ class VanRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            val outcome = if (e.causes().any { it is UnknownHostException }) FetchOutcome.OFFLINE else FetchOutcome.FAILED
+            val outcome = fetchFailure(e)
             Log.i(TAG, "Van page fetch $outcome", e)
             return state.value.copy(lastOutcome = outcome)
         }
@@ -100,8 +100,6 @@ class VanRepository @Inject constructor(
         Log.i(TAG, "Fetched van sites: ${read.map { it.sites?.size }} ($reason)")
         return VanTimes(VanSchedule(read, now), FetchOutcome.OK)
     }
-
-    private fun Throwable.causes() = generateSequence(this) { it.cause }
 
     private companion object {
         const val TAG = "Waitlight"
