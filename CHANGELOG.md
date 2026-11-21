@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0](https://github.com/mcosgriff/waitlight/compare/v0.5.0...v0.6.0) (2026-11-21)
+
+
+### Features
+
+* roadside vans (RapidScreen) ([#60](https://github.com/mcosgriff/waitlight/issues/60)) ([0a2faa0](https://github.com/mcosgriff/waitlight/commit/0a2faa0f59f1deb2ad4277c5493b46d3c76a8ee7))
+* stations by drive time; shared rows-at-now; typed list header ([#65](https://github.com/mcosgriff/waitlight/issues/65)) ([105b28d](https://github.com/mcosgriff/waitlight/commit/105b28d6fec9d9c7106466f304253d239c727882))
+* vehicles, reading windows and reminders ([#69](https://github.com/mcosgriff/waitlight/issues/69)) ([00c1f7d](https://github.com/mcosgriff/waitlight/commit/00c1f7d36d8d44ee874636bd6389cf8812130d1f))
+
 ## [0.5.0](https://github.com/mcosgriff/waitlight/compare/v0.4.0...v0.5.0) (2026-11-04)
 
 
