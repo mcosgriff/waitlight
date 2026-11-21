@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.1](https://github.com/mcosgriff/waitlight/compare/v0.6.0...v0.6.1) (2026-11-21)
+
+
+### Code Refactoring
+
+* **data:** one atomic JSON file module and one fetch-error classifier ([#78](https://github.com/mcosgriff/waitlight/issues/78)) ([76edb43](https://github.com/mcosgriff/waitlight/commit/76edb43dc90dcd4f69016ce8e664a42094979e89)), closes [#75](https://github.com/mcosgriff/waitlight/issues/75)
+* **vans:** a van row carries its drive look ([#76](https://github.com/mcosgriff/waitlight/issues/76)) ([802ff6e](https://github.com/mcosgriff/waitlight/commit/802ff6e5c71dc86f33cc1820372207e74ed2576b)), closes [#72](https://github.com/mcosgriff/waitlight/issues/72)
+* **vans:** one "van sites at now" source for the list, detail and bottom bar ([#80](https://github.com/mcosgriff/waitlight/issues/80)) ([76d4bc3](https://github.com/mcosgriff/waitlight/commit/76d4bc352bf414cddab5a5cb659685fdef98b117))
+* **vans:** the fetch reason behind VanRepository, like ListFetches ([#77](https://github.com/mcosgriff/waitlight/issues/77)) ([67dd4b5](https://github.com/mcosgriff/waitlight/commit/67dd4b502a5792044cd794f1ab839f10c6083437)), closes [#74](https://github.com/mcosgriff/waitlight/issues/74)
+* **vans:** typed header lines from :domain instead of rules in VansScreen ([#79](https://github.com/mcosgriff/waitlight/issues/79)) ([4c80e63](https://github.com/mcosgriff/waitlight/commit/4c80e631d85d996e2c0f4d1085e384154fb69885)), closes [#71](https://github.com/mcosgriff/waitlight/issues/71)
+
 ## [0.6.0](https://github.com/mcosgriff/waitlight/compare/v0.5.0...v0.6.0) (2026-11-21)
 
 
