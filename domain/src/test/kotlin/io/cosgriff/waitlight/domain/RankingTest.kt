@@ -17,14 +17,17 @@ class RankingTest {
     /** Somewhere in Arvada, 80003. */
     private val arvada = GeoPoint(39.8277, -105.0656)
 
-    /** A row whose drive time is [drive], by default 5 minutes plus a minute a mile, so the sums below are easy to check. */
+    /**
+     * A row [miles] from the user (null: no location) whose drive time is [drive], by default 5 minutes plus a minute
+     * a mile, so the sums below are easy to check. The miles only make the drive; rows carry no distance.
+     */
     private fun row(
         name: String,
         reading: WaitReading,
         miles: Double?,
         at: Instant = updated,
         drive: Int? = miles?.let { (5 + it).roundToInt() },
-    ) = StationRow(Stations.all.single { it.name == name }, reading, at, miles, drive, badgeFor(reading, at, now, WaitThresholds.STANDARD))
+    ) = StationRow(Stations.all.single { it.name == name }, reading, at, miles != null, drive, badgeFor(reading, at, now, WaitThresholds.STANDARD))
 
     @Test
     fun `the catalog has the 18 stations with unique ids`() {
@@ -35,7 +38,7 @@ class RankingTest {
     }
 
     @Test
-    fun `distances are straight-line miles`() {
+    fun `straight-line miles, used only to name where the phone is`() {
         val arvadaStation = Stations[38]!!
         val golden = Stations[40]!!
         // About 5.5 miles apart as the crow flies.
@@ -85,7 +88,38 @@ class RankingTest {
     }
 
     @Test
-    fun `fastest overall, then stations without an estimate by distance`() {
+    fun `nearest is the shortest drive, not the shortest crow's flight`() {
+        val rows = listOf(
+            // Closer as the crow flies, but a longer drive.
+            row("Golden", WaitReading.Minutes(8), 2.0, drive = 25),
+            row("Broomfield", WaitReading.Minutes(19), 6.4, drive = 12),
+            row("Arvada", WaitReading.Minutes(13), 3.1, drive = 9),
+        )
+        assertEquals(listOf("Arvada", "Broomfield", "Golden"), names(arrange(rows, SortOrder.NEAREST, false, ListState.LIVE)))
+    }
+
+    @Test
+    fun `stations with no drive time go last, by name`() {
+        val rows = listOf(
+            row("Sheridan", WaitReading.Minutes(8), 2.0, drive = null),
+            row("Aurora", WaitReading.Minutes(8), 9.0, drive = null),
+            row("Arvada", WaitReading.Minutes(13), 30.0, drive = 40),
+        )
+        assertEquals(listOf("Arvada", "Aurora", "Sheridan"), names(arrange(rows, SortOrder.NEAREST, false, ListState.LIVE)))
+    }
+
+    @Test
+    fun `fastest overall ties go to the shorter drive`() {
+        val rows = listOf(
+            row("Golden", WaitReading.Minutes(10), 0.0, drive = 20), // 30
+            row("Arvada", WaitReading.Minutes(20), 0.0, drive = 10), // 30
+        )
+        assertEquals("Arvada", fastestOverall(rows, ListState.LIVE)?.station?.name)
+        assertEquals(listOf("Arvada", "Golden"), names(arrange(rows, SortOrder.FASTEST_OVERALL, false, ListState.LIVE)))
+    }
+
+    @Test
+    fun `fastest overall, then stations without an estimate by drive`() {
         val rows = listOf(
             row("Arvada", WaitReading.Minutes(40), 3.1), // 8 + 40 = 48
             row("Golden", WaitReading.Minutes(8), 8.2), // 13 + 8 = 21

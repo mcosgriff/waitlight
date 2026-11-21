@@ -51,7 +51,7 @@ with a comment saying why.
 - `:domain` — pure Kotlin, **no Android imports**. All business rules live here and get unit tests: the station
   list (`Stations`), opening hours and holidays (`AirCareHours`, `Holiday`), AirCare's wording
   (`WaitText`, `AirCareTimestamp`), ZIP codes and "here" (`ZipTable`, `here`), badges (`badgeFor`), freshness and the list's states (`listState`,
-  `refreshButton`, `shouldFetch`), when the background refresh runs (`backgroundPlan`), drive times (`DriveTable`), sorting and the hero
+  `refreshButton`, `shouldFetch`, and the header's lines, banner and chips, `listHeader`), when the background refresh runs (`backgroundPlan`), drive times (`DriveTable`), sorting and the hero
   (`arrange`, `fastestOverall`).
 - `:data` — fetching and reading AirCare's page (`AirCareClient`, `AirCarePage`, `WaitTimesRepository`, on Ktor
   with OkHttp), location (`PhoneFix`, the phone's fix and permission, on `LocationManager` as `AndroidPhoneFix`, precise or approximate, the user's choice; `HereSource`, fix or ZIP, which finds the fix and forgets it when location is revoked; `ZipCodes`, the bundled table and outlines; `DriveTimes`, the drive-time table), settings (DataStore), the Hilt module. The one `Clock` and `HttpClient` come from here.

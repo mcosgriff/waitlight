@@ -34,7 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,8 +62,8 @@ import io.cosgriff.waitlight.ui.theme.waitColors
 @Composable
 fun StationDetailScreen(stationId: Int, onBack: () -> Unit) {
     val viewModel: StationDetailViewModel = hiltViewModel()
-    val ui by viewModel.ui.collectAsStateWithLifecycle()
-    val row = ui.rows[stationId] ?: return
+    LaunchedEffect(stationId) { viewModel.show(stationId) }
+    val row = viewModel.row.collectAsStateWithLifecycle().value ?: return
     val context = LocalContext.current
     val chooserTitle = stringResource(R.string.detail_directions_chooser)
     StationDetailContent(
@@ -143,15 +143,15 @@ fun StationDetailContent(row: StationRow, onBack: () -> Unit, onDirections: () -
                     val (status, statusColor) = status(badge)
                     Text(status, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold), color = statusColor)
                     val drive = row.driveMinutes
-                    val miles = row.distanceMiles
                     val total = row.totalMinutes
                     val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
-                    if (miles != null) {
-                        // A total only while the wait it adds is current; no drive time outside the routed area.
-                        val text = when {
-                            drive == null -> stringResource(R.string.detail_miles, miles)
-                            total != null && badge is Badge.Live -> stringResource(R.string.detail_total, total, drive, miles)
-                            else -> stringResource(R.string.detail_drive, drive, miles)
+                    // A total only while the wait it adds is current; no drive time outside the routed area, and
+                    // never a straight-line distance instead (ADR-0007).
+                    if (drive != null) {
+                        val text = if (total != null && badge is Badge.Live) {
+                            stringResource(R.string.detail_total, total, drive)
+                        } else {
+                            stringResource(R.string.detail_drive, drive)
                         }
                         Text(text, style = small, color = muted)
                     }

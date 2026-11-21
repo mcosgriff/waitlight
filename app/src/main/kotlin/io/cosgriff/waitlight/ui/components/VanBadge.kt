@@ -138,12 +138,28 @@ fun vanHoursText(opens: java.time.LocalTime, closes: java.time.LocalTime): Strin
     stringResource(R.string.van_hours, TimeText.time(opens), TimeText.time(closes))
 
 /**
- * A van site's drive time as a pill in the wait badges' colours and icons ([driveBand]): green with a tick under
- * 30 minutes, yellow with a clock to 60, red with a warning over. Read aloud as "Short drive, 9 minutes", so
- * colour is never the only signal.
+ * A van site's drive time as a pill. While the site is out ([open], [vanOpenNow]) it takes the wait badges' colours
+ * and icons ([driveBand]): green with a tick under 30 minutes, yellow with a clock to 60, red with a warning over,
+ * read aloud as "Short drive, 9 minutes", so colour is never the only signal. Otherwise it's plain grey with no
+ * icon: there's nothing to hurry to.
  */
 @Composable
-fun DriveTimePill(minutes: Int, modifier: Modifier = Modifier) {
+fun DriveTimePill(minutes: Int, open: Boolean, modifier: Modifier = Modifier) {
+    if (!open) {
+        val plain = MaterialTheme.waitColors.stale
+        val description = pluralStringResource(R.plurals.van_drive_desc_plain, minutes, minutes)
+        Text(
+            stringResource(R.string.van_row_drive, minutes),
+            color = plain.content,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = modifier
+                .background(plain.container, RoundedCornerShape(50))
+                .padding(horizontal = 10.dp, vertical = 4.dp)
+                .clearAndSetSemantics { contentDescription = description },
+        )
+        return
+    }
     val band = driveBand(minutes)
     val colors = MaterialTheme.waitColors.forBand(band)
     val description = when (band) {

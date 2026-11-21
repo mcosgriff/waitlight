@@ -71,7 +71,7 @@ class StationDetailScreenTest {
         show(ARVADA, now = denver("2026-11-02T14:20"))
         compose.onNode(hasDescription("Short wait, 13 minutes")).assertExists()
         shown(text(R.string.detail_status_short))
-        shown("≈ 18 min total · 5 min drive (0.0 mi)")
+        shown("≈ 18 min total · 5 min drive")
         shown("AirCare updated 2:14 PM")
         shown(text(R.string.detail_rims_no))
     }
@@ -81,8 +81,8 @@ class StationDetailScreenTest {
         show(ARVADA, now = denver("2026-11-02T14:50"))
         compose.onNode(hasDescription("Last known short wait, 13 minutes as of 2:14 PM, may be out of date")).assertExists()
         shown(text(R.string.detail_status_stale))
-        shown("5 min drive (0.0 mi)")
-        compose.onNode(hasTextSpaced("≈ 18 min total · 5 min drive (0.0 mi)")).assertDoesNotExist()
+        shown("5 min drive")
+        compose.onNode(hasTextSpaced("≈ 18 min total · 5 min drive")).assertDoesNotExist()
     }
 
     @Test
@@ -112,15 +112,15 @@ class StationDetailScreenTest {
         show(ARVADA, now = denver("2026-11-02T14:20"), waits = emptyMap(), here = null)
         compose.onNode(hasDescription(text(R.string.badge_desc_no_reading))).assertExists()
         shown(text(R.string.detail_status_no_reading))
-        compose.onNode(hasTextSpaced("5 min drive (0.0 mi)")).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("5 min drive")).assertDoesNotExist()
     }
 
     @Test
-    fun `outside the routed area - miles, no drive time and no total`() {
+    fun `outside the routed area - no drive time, no total, and no miles instead`() {
         show(ARVADA, now = denver("2026-11-02T14:20"), drives = DriveTable.EMPTY)
-        shown("0.0 mi away")
-        compose.onNode(hasTextSpaced("5 min drive (0.0 mi)")).assertDoesNotExist()
-        compose.onNode(hasTextSpaced("≈ 18 min total · 5 min drive (0.0 mi)")).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("0.0 mi away")).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("5 min drive")).assertDoesNotExist()
+        compose.onNode(hasTextSpaced("≈ 18 min total · 5 min drive")).assertDoesNotExist()
     }
 
     @Test

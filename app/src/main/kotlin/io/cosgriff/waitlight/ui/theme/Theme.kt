@@ -90,7 +90,7 @@ data class BadgeColors(val container: Color, val content: Color, val icon: Color
 @Immutable
 data class BannerColors(val container: Color, val content: Color)
 
-/** The home-screen widget's card, title, muted text (age, miles) and status word, from `design/source/Widget*.dc.html`. */
+/** The home-screen widget's card, title, muted text (age, drive time) and status word, from `design/source/Widget*.dc.html`. */
 @Immutable
 data class WidgetColors(val background: Color, val title: Color, val muted: Color, val status: Color)
 

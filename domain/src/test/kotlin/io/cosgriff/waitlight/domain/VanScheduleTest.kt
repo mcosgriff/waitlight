@@ -138,6 +138,18 @@ class VanScheduleTest {
     }
 
     @Test
+    fun `a site is out only today, within its hours, and not done`() {
+        val now = denver("2026-11-20T12:00")
+        val today = (list(now).days.first().content as VanDayContent.Sites).rows.first { it.site.key == harlan.key }
+        assertTrue(vanOpenNow(today, now))
+        assertFalse(vanOpenNow(today, denver("2026-11-20T06:59")))
+        assertFalse(vanOpenNow(today, denver("2026-11-20T17:00")))
+        assertFalse(vanOpenNow(today.copy(status = VanStatus.Done), now))
+        val monday = (list(now).days.first { it.date == LocalDate.of(2026, 11, 23) }.content as VanDayContent.Sites).rows.first()
+        assertFalse(vanOpenNow(monday, now))
+    }
+
+    @Test
     fun `drive times band like waits`() {
         assertEquals(WaitBand.SHORT, driveBand(29))
         assertEquals(WaitBand.MODERATE, driveBand(30))

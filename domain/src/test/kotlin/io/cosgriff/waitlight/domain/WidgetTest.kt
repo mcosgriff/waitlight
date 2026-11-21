@@ -16,8 +16,26 @@ class WidgetTest {
     private val now = denver("2026-11-02T14:20")
     private val updated = denver("2026-11-02T14:14")
 
-    /** Somewhere in Arvada, 80003: Arvada, Broomfield and Golden are the nearest three. */
+    /** Somewhere in Arvada, 80003. */
     private val arvada = GeoPoint(39.8277, -105.0656)
+
+    /**
+     * One cell round [arvada]: Arvada 6 minutes, Golden 14, Broomfield 15, Boulder 30, the rest an hour, Fort Collins
+     * none. Broomfield is nearer than Golden as the crow flies but the longer drive here.
+     */
+    private val drives = driveTableAround(
+        arvada,
+        Stations.all.associate { station ->
+            station.id to when (station.name) {
+                "Arvada" -> 6
+                "Golden" -> 14
+                "Broomfield" -> 15
+                "Boulder" -> 30
+                "Fort Collins" -> 255
+                else -> 60
+            }
+        },
+    )
 
     private fun id(name: String) = Stations.all.single { it.name == name }.id
 
@@ -28,16 +46,22 @@ class WidgetTest {
         waits: Map<Int, Pair<WaitReading, Instant>> = readings,
         here: GeoPoint? = arvada,
         outcome: FetchOutcome = FetchOutcome.OK,
-    ) = widgetContent(WaitTimes(waits, outcome), here, at)
+        table: DriveTable = drives,
+    ) = widgetContent(WaitTimes(waits, outcome), here, table, at)
 
     private fun nearest(content: WidgetContent) = content as WidgetContent.Nearest
 
     @Test
-    fun `shows the nearest three, nearest first`() {
+    fun `shows the three shortest drives, shortest first`() {
         val rows = nearest(content()).rows
-        assertEquals(listOf("Arvada", "Broomfield", "Golden"), rows.map { it.station.name })
-        assertTrue(rows.zipWithNext().all { (a, b) -> a.distanceMiles!! <= b.distanceMiles!! })
+        assertEquals(listOf("Arvada", "Golden", "Broomfield"), rows.map { it.station.name })
+        assertEquals(listOf(6, 14, 15), rows.map { it.driveMinutes })
         assertEquals(WIDGET_STATIONS, rows.size)
+    }
+
+    @Test
+    fun `no drive time to any station is out of the area, never a guess`() {
+        assertEquals(WidgetContent.OutOfArea, content(table = DriveTable.EMPTY))
     }
 
     @Test
@@ -51,19 +75,19 @@ class WidgetTest {
             id("Arvada") to (WaitReading.Minutes(45) to updated),
             id("Broomfield") to (WaitReading.NoEstimate to updated),
         )
-        val rows = nearest(content(waits = waits)).rows
-        assertEquals(Badge.Live(WaitBand.MODERATE, ShownWait.Exact(45)), rows[0].badge)
-        assertEquals(Badge.Open, rows[1].badge)
-        assertEquals(Badge.Live(WaitBand.SHORT, ShownWait.Exact(13)), rows[2].badge)
+        val rows = nearest(content(waits = waits)).rows.associateBy { it.station.name }
+        assertEquals(Badge.Live(WaitBand.MODERATE, ShownWait.Exact(45)), rows.getValue("Arvada").badge)
+        assertEquals(Badge.Open, rows.getValue("Broomfield").badge)
+        assertEquals(Badge.Live(WaitBand.SHORT, ShownWait.Exact(13)), rows.getValue("Golden").badge)
     }
 
     @Test
     fun `a station goes stale on its own timestamp`() {
         val goldenUpdated = denver("2026-11-02T13:20")
         val waits = readings + (id("Golden") to (WaitReading.Minutes(8) to goldenUpdated))
-        val rows = nearest(content(waits = waits)).rows
-        assertEquals(Badge.Stale(WaitBand.SHORT, ShownWait.Exact(8), goldenUpdated), rows[2].badge)
-        assertTrue(rows[0].badge is Badge.Live)
+        val rows = nearest(content(waits = waits)).rows.associateBy { it.station.name }
+        assertEquals(Badge.Stale(WaitBand.SHORT, ShownWait.Exact(8), goldenUpdated), rows.getValue("Golden").badge)
+        assertTrue(rows.getValue("Arvada").badge is Badge.Live)
     }
 
     @Test
@@ -94,7 +118,7 @@ class WidgetTest {
         assertEquals(goldenUpdated.plus(Freshness.STALE_AFTER).plusSeconds(1), at)
         // Still fresh at exactly 30 minutes; stale just after.
         assertTrue(Freshness.isFresh(goldenUpdated, at.minusSeconds(1)))
-        assertTrue(nearest(content(at = at, waits = waits)).rows[2].badge is Badge.Stale)
+        assertTrue(nearest(content(at = at, waits = waits)).rows.single { it.station.name == "Golden" }.badge is Badge.Stale)
     }
 
     @Test

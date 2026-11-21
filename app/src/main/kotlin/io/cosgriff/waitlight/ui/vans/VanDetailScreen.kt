@@ -75,6 +75,7 @@ import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.domain.VanSiteWeek
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.currentVanWeek
+import io.cosgriff.waitlight.domain.vanOpenNow
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.DriveTimePill
 import io.cosgriff.waitlight.ui.components.VanBadge
@@ -176,7 +177,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
                     if (ui.isToday) {
                         ui.fetchedAt?.let { Text(stringResource(R.string.van_detail_checked, TimeText.dateTime(it)), style = small, color = muted) }
                     }
-                    row.driveMinutes?.let { DriveTimePill(it, Modifier.padding(top = 4.dp)) }
+                    row.driveMinutes?.let { DriveTimePill(it, open = vanOpenNow(row, ui.now), modifier = Modifier.padding(top = 4.dp)) }
                 }
             }
 
