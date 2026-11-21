@@ -8,6 +8,7 @@ import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.vans.DriveByRepository
 import io.cosgriff.waitlight.data.vans.VanDriveTimes
 import io.cosgriff.waitlight.data.vans.VanRepository
+import io.cosgriff.waitlight.data.vans.VanTabFetches
 import io.cosgriff.waitlight.data.vehicles.VehicleRepository
 import io.cosgriff.waitlight.domain.DriveByLog
 import io.cosgriff.waitlight.domain.FetchReason
@@ -84,8 +85,8 @@ private data class VanChoices(val selected: LocalDate?, val readingOnly: Boolean
 
 /**
  * The vans list. While on screen it ticks every [TICK_MILLIS] to re-age the statuses and give the repository a
- * chance to fetch: the first tick is the tab opening ([FetchReason.LAUNCH]), the rest when 15 minutes have passed
- * ([FetchReason.DUE]). Drive times are read for the day on screen only.
+ * chance to fetch ([VanTabFetches]: the tab's opening fetch first, then every 15 minutes while units can be out). A
+ * tap on refresh asks for [FetchReason.MANUAL]. Drive times are read for the day on screen only.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -101,13 +102,12 @@ class VansViewModel @Inject constructor(
     private val selected = MutableStateFlow<LocalDate?>(null)
     private val readingOnly = MutableStateFlow(false)
 
+    private val fetches = vans.forTab()
+
     private val ticks = flow {
-        var reason = FetchReason.LAUNCH
         while (true) {
             emit(clock.instant())
-            val now = reason
-            viewModelScope.launch { vans.refresh(now) }
-            reason = FetchReason.DUE
+            viewModelScope.launch { fetches.tick() }
             delay(TICK_MILLIS)
         }
     }

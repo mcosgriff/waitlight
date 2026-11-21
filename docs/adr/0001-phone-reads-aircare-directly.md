@@ -25,9 +25,10 @@ updated" times in it. Decided 2026-11-02.
 The app also reads `https://aircarecolorado.com/locations/van-locations`, AirCare's roadside van (RapidScreen)
 page, and each of its tabs' tables (`/packages/customaircare/vanlocationstabledisplay_new.php?day=N`, the ids read
 from the page). Same host, same user agent, nothing about the user sent. It is fetched at launch and when the
-vans tab opens, whatever the time, then at most every 15 minutes while the tab is on screen on weekdays from
-5:30 AM to 7 PM Denver time, when units can be out (`vanWorthFetching`). A launch and the tab opening within a
-minute of each other are one fetch. There is no background fetch for vans.
+vans tab first opens, whatever the time, then at most every 15 minutes while the tab is on screen on weekdays from
+5:30 AM to 7 PM Denver time, when units can be out (`vanWorthFetching`). The app opening on the vans tab is one
+fetch: the tab's opening, asked while the launch fetch is under way, takes it as its own (`VanRepository`). There
+is no background fetch for vans.
 
 The page has no API either, and a broken tab makes it answer HTTP 500 with the other tabs still in it, so the 500
 is read like a 200. AirCare gives no time for its van statuses, so their age is the fetch time

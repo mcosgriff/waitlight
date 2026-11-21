@@ -233,8 +233,6 @@ class VanScheduleTest {
     fun `fetching the van page`() {
         val weekday = denver("2026-11-20T12:00")
         assertTrue(vanWorthFetching(FetchReason.LAUNCH, denver("2026-11-21T23:00"), weekday))
-        // The app starting on the vans tab is one launch, not two.
-        assertFalse(vanWorthFetching(FetchReason.LAUNCH, weekday.plusSeconds(59), weekday))
         assertTrue(vanWorthFetching(FetchReason.DUE, weekday, weekday.minus(Duration.ofMinutes(15))))
         assertFalse(vanWorthFetching(FetchReason.DUE, weekday, weekday.minus(Duration.ofMinutes(14))))
         assertTrue(vanWorthFetching(FetchReason.DUE, weekday, null))

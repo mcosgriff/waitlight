@@ -13,6 +13,12 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -28,6 +34,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class VanRepositoryTest {
     private class SetClock(var now: Instant) : Clock() {
         override fun instant() = now
@@ -123,5 +130,67 @@ class VanRepositoryTest {
         assertEquals(first, requests.size)
         repository.refresh(FetchReason.LAUNCH)
         assertTrue(requests.size > first)
+    }
+
+    @Test
+    fun `opening the tab fetches even right after launch`() = runTest {
+        repository.refresh(FetchReason.LAUNCH) // the app's launch
+        clock.now = clock.now.plusSeconds(10)
+        repository.forTab().tick()
+        assertEquals(2, pageRequests())
+    }
+
+    @Test
+    fun `the tab coming back doesn't fetch again`() = runTest {
+        val tab = repository.forTab()
+        tab.tick() // the tab opening
+        clock.now = clock.now.plus(Duration.ofMinutes(1))
+        tab.tick() // back on screen
+        assertEquals(1, pageRequests())
+        clock.now = clock.now.plus(Duration.ofMinutes(14))
+        tab.tick() // 15 minutes on, while units can be out
+        assertEquals(2, pageRequests())
+        clock.now = denver("2026-11-20T19:30")
+        tab.tick()
+        assertEquals(2, pageRequests())
+    }
+
+    @Test
+    fun `the app opening on the vans tab is one fetch`() = runTest {
+        val release = Channel<Unit>()
+        page = { release.receive(); respond(savedVanPage(), HttpStatusCode.InternalServerError) }
+        val launch = launch { repository.refresh(FetchReason.LAUNCH) }
+        val tab = launch { repository.forTab().tick() }
+        runCurrent()
+        release.send(Unit)
+        launch.join()
+        tab.join()
+        assertEquals(1, pageRequests())
+    }
+
+    @Test
+    fun `overlapping refreshes show as one fetch`() = runTest {
+        val release = Channel<Unit>()
+        page = { release.receive(); respond(savedVanPage(), HttpStatusCode.InternalServerError) }
+        val seen = watchFetching()
+        val tick = launch { repository.refresh(FetchReason.DUE) }
+        val tap = launch { repository.refresh(FetchReason.MANUAL) }
+        runCurrent()
+        release.send(Unit) // the tick's fetch
+        release.send(Unit) // the tap's, which waited for it
+        tick.join()
+        tap.join()
+        assertEquals(2, pageRequests())
+        assertEquals(listOf(false, true, false), seen)
+    }
+
+    /** How many times the van page itself was asked for, its tables aside. */
+    private fun pageRequests() = requests.count { it.url.parameters["day"] == null }
+
+    /** Every value [VanRepository.fetching] takes from now on, the current one first. */
+    private fun TestScope.watchFetching(): List<Boolean> {
+        val seen = mutableListOf<Boolean>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.fetching.collect { seen += it } }
+        return seen
     }
 }
