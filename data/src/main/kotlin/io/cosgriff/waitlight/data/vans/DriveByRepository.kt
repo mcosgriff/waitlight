@@ -38,10 +38,16 @@ class DriveByRepository(
 
     private val loaded = scope.async(io) { load() }
 
-    /** Logs a drive-by past [description] at [point] (site [siteKey]) at [at]. */
-    suspend fun add(siteKey: String, description: String, point: GeoPoint, at: Instant) = change { entries ->
+    /** Logs a drive-by past [description] at [point] (site [siteKey]) at [at], by [vehicleId] if one is known. */
+    suspend fun add(siteKey: String, description: String, point: GeoPoint, at: Instant, vehicleId: Long? = null) = change { entries ->
         val id = (entries.maxOfOrNull { it.id } ?: 0) + 1
-        entries + DriveBy(id, siteKey, description, point, at)
+        entries + DriveBy(id, siteKey, description, point, at, vehicleId)
+    }
+
+    /** Waits for the log to be read from its file. */
+    suspend fun loaded(): List<DriveBy> {
+        loaded.await()
+        return state.value
     }
 
     suspend fun remove(id: Long) = change { entries -> entries.filterNot { it.id == id } }
@@ -80,12 +86,21 @@ class DriveByRepository(
         }
     }
 
+    /** One entry as the file keeps it. [vehicleId] came with vehicles; entries saved before them have none. */
     @Serializable
-    private data class Stored(val id: Long, val siteKey: String, val description: String, val lat: Double, val lon: Double, val at: Long) {
-        fun toDriveBy() = DriveBy(id, siteKey, description, GeoPoint(lat, lon), Instant.ofEpochMilli(at))
+    private data class Stored(
+        val id: Long,
+        val siteKey: String,
+        val description: String,
+        val lat: Double,
+        val lon: Double,
+        val at: Long,
+        val vehicleId: Long? = null,
+    ) {
+        fun toDriveBy() = DriveBy(id, siteKey, description, GeoPoint(lat, lon), Instant.ofEpochMilli(at), vehicleId)
 
         companion object {
-            fun of(d: DriveBy) = Stored(d.id, d.siteKey, d.description, d.point.latitude, d.point.longitude, d.at.toEpochMilli())
+            fun of(d: DriveBy) = Stored(d.id, d.siteKey, d.description, d.point.latitude, d.point.longitude, d.at.toEpochMilli(), d.vehicleId)
         }
     }
 

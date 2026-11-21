@@ -18,6 +18,7 @@ import io.cosgriff.waitlight.data.settings.SettingsStore
 import io.cosgriff.waitlight.data.vans.DriveByRepository
 import io.cosgriff.waitlight.data.vans.VanDriveTimes
 import io.cosgriff.waitlight.data.vans.VanStore
+import io.cosgriff.waitlight.data.vehicles.VehicleRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
@@ -92,6 +93,12 @@ object DataModule {
     @Singleton
     fun driveBys(@ApplicationContext context: Context, @ApplicationScope scope: CoroutineScope): DriveByRepository =
         DriveByRepository({ File(context.filesDir, DriveByRepository.FILE_NAME) }, scope)
+
+    /** The user's vehicles: their own record, so they are backed up, as the drive-by log is. */
+    @Provides
+    @Singleton
+    fun vehicles(@ApplicationContext context: Context, @ApplicationScope scope: CoroutineScope): VehicleRepository =
+        VehicleRepository({ File(context.filesDir, VehicleRepository.FILE_NAME) }, scope)
 
     /** The phone's fix, from Android's own LocationManager (ADR-0002). */
     @Provides
