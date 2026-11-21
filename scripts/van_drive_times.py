@@ -10,6 +10,10 @@ same OSRM car profile, so the vans list shows real drive times with no routing s
     uv run scripts/van_drive_times.py --page https://aircarecolorado.com/locations/van-locations
     uv run scripts/van_drive_times.py --page data/src/test/resources/vans/van-locations-2026-11-20.html
     uv run scripts/van_drive_times.py            # route catalog sites the table hasn't got yet
+    uv run scripts/van_drive_times.py --page <url> --dry-run   # only say how many sites are new
+
+The daily workflow (`.github/workflows/van-sites.yml`, ADR-0008) runs the dry run, and the real run only when
+there are new sites.
 
 Van sites move weekly, so the sites come from a catalog that only grows, `scripts/van_sites.json`: every site
 seen on AirCare's van page, keyed by its rounded coordinates and normalised description (never AirCare's
@@ -40,6 +44,7 @@ reads only the sites on the day it shows:
 
 import argparse
 import json
+import os
 import re
 import struct
 import subprocess
@@ -212,17 +217,34 @@ def route_some(cells, sites):
     return {site["key"]: bytes(column) for site, column in zip(sites, columns)}
 
 
+def report(new):
+    """The new sites' count, for the daily workflow's later steps (GITHUB_OUTPUT), and a line for a person."""
+    output = os.environ.get("GITHUB_OUTPUT")
+    if output:
+        with open(output, "a") as out:
+            out.write(f"new_sites={len(new)}\n")
+    print(f"{len(new)} new sites")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--page", action="append", default=[], help="add the sites on this van page (file or URL)")
     parser.add_argument("--refresh-roads", action="store_true", help="route every site again, not just new ones")
+    parser.add_argument("--dry-run", action="store_true", help="only report the pages' new sites; change nothing")
     args = parser.parse_args()
 
     catalog = {s["key"]: s for s in load_catalog()}
+    new = {}
     for page in args.page:
-        added = {k: v for k, v in sites_on_page(page).items() if k not in catalog}
-        catalog.update(added)
+        added = {k: v for k, v in sites_on_page(page).items() if k not in catalog and k not in new}
+        new.update(added)
         print(f"{page}: {len(added)} new sites")
+        for site in added.values():
+            print(f"  {site['description']}")
+    if args.dry_run:
+        report(new)
+        return
+    catalog.update(new)
     save_catalog(list(catalog.values()))
     for s in catalog.values():
         if not (dt.SOUTH <= s["lat"] <= dt.NORTH and dt.WEST <= s["lon"] <= dt.EAST):

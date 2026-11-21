@@ -32,8 +32,11 @@ reads only the sites on the days it shows.
 - **Append-only.** A run never changes a known site's block: old blocks are copied byte for byte and new ones
   added at the end (`scripts/test_van_drive_times.py` checks it). So newer roads in a later extract can't move
   times the app already shows. `--refresh-roads` routes every site again, by hand, after a newer extract.
-- A daily GitHub Action that adds new sites by pull request is planned (#57). Until then, new sites are added by
-  running the script.
+- **Daily**, `.github/workflows/van-sites.yml` fetches the van page and runs the script with `--dry-run`. With
+  new sites, it routes them (the Colorado extract and OSRM's files cached under a fixed key, so the roads stay the
+  same from run to run) and opens or updates a pull request, "fix(vans): add N new van sites", with auto-merge
+  on, so release-please makes a patch release of it. It needs the `VAN_SITES_TOKEN` secret (a fine-grained token
+  with Contents and Pull requests write): a pull request opened with the workflow's own token starts no CI.
 
 ## Consequences
 

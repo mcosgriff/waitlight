@@ -1,0 +1,81 @@
+# Once a day, checks AirCare's van page for van sites the catalog hasn't seen (ADR-0008). With none, it stops
+# after one page fetch. With new ones, it adds them to scripts/van_sites.json, routes them with OSRM in Docker
+# (append-only: known sites keep their drive times byte for byte), and opens or updates a pull request titled
+# "fix(vans): add N new van sites" with auto-merge on, so release-please makes a patch release of it. Approving
+# the release in the `release` environment stays a person's job.
+#
+# Needs the secret VAN_SITES_TOKEN: a fine-grained token for this repository with Contents and Pull requests
+# read and write. The workflow's own GITHUB_TOKEN would do the push, but a pull request it opens starts no other
+# workflows, so CI would never run on it and auto-merge would wait for ever. Auto-merge also has to be allowed in
+# the repository's settings.
+name: van-sites
+
+on:
+  schedule:
+    # 13:20 UTC: 6:20 AM in Denver in summer, 7:20 AM in winter, after AirCare's morning update.
+    - cron: '20 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: van-sites
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      PAGE: https://aircarecolorado.com/locations/van-locations
+      BRANCH: auto/van-sites
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Look for new sites
+        id: look
+        run: uv run scripts/van_drive_times.py --page "$PAGE" --dry-run
+
+      # The Colorado extract and OSRM's files, about 2 GB. A fixed key keeps the same roads from run to run;
+      # newer roads are a manual --refresh-roads (ADR-0008), with this key bumped.
+      - name: Cache the roads
+        if: steps.look.outputs.new_sites != '0'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/drive-times
+          key: osrm-colorado-v1
+
+      - name: Add and route the new sites
+        if: steps.look.outputs.new_sites != '0'
+        run: |
+          uv run scripts/test_van_drive_times.py
+          uv run scripts/van_drive_times.py --page "$PAGE"
+
+      - name: Open or update the pull request
+        if: steps.look.outputs.new_sites != '0'
+        env:
+          GH_TOKEN: ${{ secrets.VAN_SITES_TOKEN }}
+          COUNT: ${{ steps.look.outputs.new_sites }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::The VAN_SITES_TOKEN secret isn't set; see the comment at the top of van-sites.yml"
+            exit 1
+          fi
+          title="fix(vans): add $COUNT new van sites"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add scripts/van_sites.json data/src/main/assets/van_drive_minutes.bin
+          git commit -m "$title" -m "Found on AirCare's van page by the daily van-sites workflow and routed with OSRM (ADR-0008)."
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
+          if gh pr view "$BRANCH" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$BRANCH" --title "$title"
+          else
+            gh pr create --base main --head "$BRANCH" --title "$title" \
+              --body "New van sites on AirCare's van page, added to the catalog and routed (append-only; ADR-0008). Opened by the daily van-sites workflow."
+          fi
+          gh pr merge "$BRANCH" --auto --squash
