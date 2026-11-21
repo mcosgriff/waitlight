@@ -63,7 +63,7 @@ AREA_MARGIN_DEGREES = 0.015
 MAX_AREA_GAP_DEGREES = 0.01  # the KML's border lines meet to within this
 WORK = ROOT / "build/drive-times"
 
-EXTRACT_URL = "https://download.geofabrik.de/north-america/us/colorado-latest.osm.pbf"
+EXTRACT_URL = "https://download.geofabrik.de/north-america/us/colorado/colorado-latest.osm.pbf"
 EXTRACT = "colorado-latest.osm.pbf"
 OSRM_IMAGE = "ghcr.io/project-osrm/osrm-backend:v5.27.1"
 PORT = 5055

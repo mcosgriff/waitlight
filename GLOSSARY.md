@@ -12,3 +12,9 @@
 - **Fastest overall** — least routed drive plus wait (wait capped at 90 minutes).
 - **Hero** — the "Fastest overall right now" card at the top of the list.
 - **Low-profile rims** — 17″+ rims or wheels over 34″; only four stations can test them.
+- **RapidScreen** — AirCare's roadside emissions readers: units in white vans or small green boxes beside
+  on-ramps that read passing cars' exhaust. Two clean readings can let a vehicle skip its next test. "Van" for short.
+- **Van site** — a place a RapidScreen unit is posted for, on certain weekdays and hours; known by its site key
+  (rounded coordinates and normalised description), never AirCare's `locationID`.
+- **Catalog** — every van site ever seen on AirCare's van page (`scripts/van_sites.json`); it only grows, and the
+  van drive-time table covers it (ADR-0008).

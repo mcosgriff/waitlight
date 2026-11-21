@@ -1,0 +1,320 @@
+[
+ {
+  "key": "39.41405,-104.86840|on-ramp to nb i-25 from founders pkwy (exit 184)",
+  "description": "ON-RAMP to NB I-25 from FOUNDERS PKWY (Exit 184)",
+  "lat": 39.41405,
+  "lon": -104.8684
+ },
+ {
+  "key": "39.42186,-104.87470|on-ramp to sb i-25 from castle rock pkwy",
+  "description": "ON-RAMP TO SB I-25 from CASTLE ROCK PKWY",
+  "lat": 39.42186,
+  "lon": -104.8747
+ },
+ {
+  "key": "39.47107,-104.87240|on-ramp to nb i-25 from eb castle pines pkwy",
+  "description": "ON-RAMP TO NB I-25 from EB CASTLE PINES PKWY",
+  "lat": 39.47107,
+  "lon": -104.8724
+ },
+ {
+  "key": "39.47189,-104.70480|eb hilltop rd after merryvale trail",
+  "description": "EB HILLTOP RD after MERRYVALE TRAIL",
+  "lat": 39.47189,
+  "lon": -104.7048
+ },
+ {
+  "key": "39.47271,-104.70580|wb hilltop rd after merryvale trail",
+  "description": "WB HILLTOP RD after MERRYVALE TRAIL",
+  "lat": 39.47271,
+  "lon": -104.7058
+ },
+ {
+  "key": "39.52213,-104.86710|on-ramp to nb i-25 from eb ridgegate pkwy",
+  "description": "ON-RAMP TO NB I-25 from EB RIDGEGATE PKWY",
+  "lat": 39.52213,
+  "lon": -104.8671
+ },
+ {
+  "key": "39.52460,-104.86850|on-ramp to sb i-25 from wb ridgegate pkwy",
+  "description": "ON-RAMP TO SB I-25 FROM WB RIDGEGATE PKWY",
+  "lat": 39.5246,
+  "lon": -104.8685
+ },
+ {
+  "key": "39.55406,-105.08750|on-ramp to wb c-470 from wadsworth",
+  "description": "ON-RAMP TO WB C-470 FROM WADSWORTH",
+  "lat": 39.55406,
+  "lon": -105.0875
+ },
+ {
+  "key": "39.55972,-105.10780|on-ramp to eb c-470 from kipling",
+  "description": "ON-RAMP to EB C-470 from KIPLING",
+  "lat": 39.55972,
+  "lon": -105.1078
+ },
+ {
+  "key": "39.56117,-105.01010|on-ramp to wb c-470 from lucent",
+  "description": "ON-RAMP to WB C-470 from LUCENT",
+  "lat": 39.56117,
+  "lon": -105.0101
+ },
+ {
+  "key": "39.56349,-104.87230|on-ramp to sb i-25 from eb county line rd",
+  "description": "ON-RAMP to SB I-25 from EB COUNTY LINE RD.",
+  "lat": 39.56349,
+  "lon": -104.8723
+ },
+ {
+  "key": "39.56488,-104.98400|on-ramp to eb c-470 from broadway",
+  "description": "ON-RAMP TO EB C-470 from BROADWAY",
+  "lat": 39.56488,
+  "lon": -104.984
+ },
+ {
+  "key": "39.56568,-104.87290|on-ramp to sb i-25 from eb county line rd. (two units on site)",
+  "description": "ON-RAMP TO SB I-25 from EB COUNTY LINE RD. (two units on site)",
+  "lat": 39.56568,
+  "lon": -104.8729
+ },
+ {
+  "key": "39.57708,-105.14180|on-ramp to eb c-470 from ken caryl ave",
+  "description": "ON-RAMP TO EB C-470 from KEN CARYL AVE.",
+  "lat": 39.57708,
+  "lon": -105.1418
+ },
+ {
+  "key": "39.62486,-105.01230|on-ramp to nb santa fe from belleview ave",
+  "description": "ON-RAMP to NB SANTA FE from BELLEVIEW AVE",
+  "lat": 39.62486,
+  "lon": -105.0123
+ },
+ {
+  "key": "39.65180,-105.02390|on-ramp to nb us-285 (hampden ave) from federal blvd",
+  "description": "ON-RAMP TO NB US-285 (HAMPDEN AVE) from FEDERAL BLVD.",
+  "lat": 39.6518,
+  "lon": -105.0239
+ },
+ {
+  "key": "39.65254,-105.02630|on-ramp to sb us-285 (hampden) from federal blvd",
+  "description": "ON-RAMP TO SB US-285 (HAMPDEN) FROM FEDERAL BLVD",
+  "lat": 39.65254,
+  "lon": -105.0263
+ },
+ {
+  "key": "39.65369,-105.05480|on-ramp to sb us-285 (hampden ave) from sheridan blvd",
+  "description": "ON-RAMP to SB US-285 (HAMPDEN ave) from SHERIDAN blvd",
+  "lat": 39.65369,
+  "lon": -105.0548
+ },
+ {
+  "key": "39.70894,-104.82750|on-ramp to sb i-225 from alameda ave",
+  "description": "ON-RAMP to SB I-225 from ALAMEDA ave",
+  "lat": 39.70894,
+  "lon": -104.8275
+ },
+ {
+  "key": "39.72484,-105.10760|on-ramp to eb us-6 from kipling blvd",
+  "description": "ON-RAMP TO EB US-6 from KIPLING BLVD",
+  "lat": 39.72484,
+  "lon": -105.1076
+ },
+ {
+  "key": "39.72503,-105.08250|on-ramp to eb us-6 ave from sb wadsworth",
+  "description": "ON-RAMP TO EB US-6 AVE from SB WADSWORTH",
+  "lat": 39.72503,
+  "lon": -105.0825
+ },
+ {
+  "key": "39.72504,-105.11120|on-ramp to eb us-6 ave from sb kipling",
+  "description": "ON-RAMP TO EB US-6 AVE from SB KIPLING",
+  "lat": 39.72504,
+  "lon": -105.1112
+ },
+ {
+  "key": "39.76769,-104.79580|on-ramp to wb i-70 from airport blvd",
+  "description": "ON-RAMP to WB I-70 from AIRPORT blvd",
+  "lat": 39.76769,
+  "lon": -104.7958
+ },
+ {
+  "key": "39.77496,-104.86290|on-ramp to eb i-70 from havana st",
+  "description": "ON-RAMP TO EB I-70 from HAVANA ST.",
+  "lat": 39.77496,
+  "lon": -104.8629
+ },
+ {
+  "key": "39.78134,-104.99040|on-ramp to wb i-70 from washington",
+  "description": "ON-RAMP to WB I-70 from WASHINGTON",
+  "lat": 39.78134,
+  "lon": -104.9904
+ },
+ {
+  "key": "39.78143,-104.98980|on-ramp to wb i-70 from nb i-25 (two units at site)",
+  "description": "ON-RAMP to WB I-70 from NB I-25 (two units at site)",
+  "lat": 39.78143,
+  "lon": -104.9898
+ },
+ {
+  "key": "39.78143,-104.99030|on-ramp to wb i-70 from nb i-25",
+  "description": "ON-RAMP TO WB I-70 from NB I-25",
+  "lat": 39.78143,
+  "lon": -104.9903
+ },
+ {
+  "key": "39.78283,-104.79200|on-ramp to sb pena from green valley ranch blvd",
+  "description": "ON-RAMP to SB PENA from GREEN VALLEY RANCH Blvd",
+  "lat": 39.78283,
+  "lon": -104.792
+ },
+ {
+  "key": "39.78313,-105.05980|on-ramp to eb i-70 from harlan st",
+  "description": "ON-RAMP TO EB I-70 FROM HARLAN ST.",
+  "lat": 39.78313,
+  "lon": -105.0598
+ },
+ {
+  "key": "39.78355,-105.00780|on-ramp to wb i-70 from pecos st",
+  "description": "ON-RAMP TO WB I-70 from PECOS ST.",
+  "lat": 39.78355,
+  "lon": -105.0078
+ },
+ {
+  "key": "39.78392,-105.05160|on-ramp to eb i-70 from sheridan blvd",
+  "description": "ON-RAMP TO EB I-70 from SHERIDAN BLVD.",
+  "lat": 39.78392,
+  "lon": -105.0516
+ },
+ {
+  "key": "39.79662,-105.04980|on-ramp to eb i-76 from sheridan blvd",
+  "description": "ON-RAMP TO EB I-76 from SHERIDAN BLVD",
+  "lat": 39.79662,
+  "lon": -105.0498
+ },
+ {
+  "key": "39.79709,-104.78800|on-ramp to sb pena from e 56th ave",
+  "description": "ON-RAMP to SB PENA from E 56th Ave",
+  "lat": 39.79709,
+  "lon": -104.788
+ },
+ {
+  "key": "39.80889,-105.00830|on-ramp to wb i-76 from pecos blvd",
+  "description": "ON-RAMP TO WB I-76 from PECOS BLVD",
+  "lat": 39.80889,
+  "lon": -105.0083
+ },
+ {
+  "key": "39.83211,-104.74590|on-ramp to nb e-470 from eb pena blvd",
+  "description": "ON-RAMP TO NB E-470 FROM EB PENA BLVD",
+  "lat": 39.83211,
+  "lon": -104.7459
+ },
+ {
+  "key": "39.83274,-104.76770|on-ramp to nb pena from tower rd",
+  "description": "ON-RAMP to NB PENA from Tower Rd",
+  "lat": 39.83274,
+  "lon": -104.7677
+ },
+ {
+  "key": "39.91730,-105.09480|on-ramp to wb us-36 from wadsworth pkwy",
+  "description": "ON-RAMP to WB US-36 from WADSWORTH PKWY",
+  "lat": 39.9173,
+  "lon": -105.0948
+ },
+ {
+  "key": "39.91937,-105.09120|sb wadsworth from wb 287",
+  "description": "SB WADSWORTH from WB 287",
+  "lat": 39.91937,
+  "lon": -105.0912
+ },
+ {
+  "key": "39.91941,-105.09180|eb 287 from sb wadsworth",
+  "description": "EB 287 from SB Wadsworth",
+  "lat": 39.91941,
+  "lon": -105.0918
+ },
+ {
+  "key": "40.08592,-104.98150|on-ramp to sb i-25 from sr-52",
+  "description": "ON-RAMP TO SB I-25 from SR-52",
+  "lat": 40.08592,
+  "lon": -104.9815
+ },
+ {
+  "key": "40.16250,-104.97830|on-ramp to nb i-25 from sr-119",
+  "description": "ON-RAMP TO NB I-25 from SR-119",
+  "lat": 40.1625,
+  "lon": -104.9783
+ },
+ {
+  "key": "40.20343,-104.98070|on-ramp to sb i-25 from sr-66",
+  "description": "ON-RAMP to SB I-25 from SR-66",
+  "lat": 40.20343,
+  "lon": -104.9807
+ },
+ {
+  "key": "40.39167,-104.71500|eb us-34 bypass from 23rd ave",
+  "description": "EB US-34 bypass from 23rd Ave",
+  "lat": 40.39167,
+  "lon": -104.715
+ },
+ {
+  "key": "40.39261,-104.71840|on-ramp to wb us-34 from 27th st",
+  "description": "ON-RAMP TO WB US-34 from 27TH ST",
+  "lat": 40.39261,
+  "lon": -104.7184
+ },
+ {
+  "key": "40.40596,-104.86770|eb us-34 business from co-257",
+  "description": "EB US-34 BUSINESS from CO-257",
+  "lat": 40.40596,
+  "lon": -104.8677
+ },
+ {
+  "key": "40.40736,-104.87120|on-ramp to wb us-34 from sh-257 (cr 21)",
+  "description": "ON-RAMP to WB US-34 from SH-257 (CR 21)",
+  "lat": 40.40736,
+  "lon": -104.8712
+ },
+ {
+  "key": "40.41158,-104.86690|eb us-34 business from nb sh-257",
+  "description": "EB US-34 BUSINESS from NB SH-257",
+  "lat": 40.41158,
+  "lon": -104.8669
+ },
+ {
+  "key": "40.47873,-105.02300|eb sh-192 (carpenter rd) after intersection with cr-9",
+  "description": "EB SH-192 (Carpenter Rd) after intersection with CR-9",
+  "lat": 40.47873,
+  "lon": -105.023
+ },
+ {
+  "key": "40.48154,-104.99120|on-ramp to nb i-25 from lcr-32",
+  "description": "ON-RAMP TO NB I-25 from LCR-32",
+  "lat": 40.48154,
+  "lon": -104.9912
+ },
+ {
+  "key": "40.49451,-105.09440|eb trilby rd just after shields",
+  "description": "EB Trilby Rd just after Shields",
+  "lat": 40.49451,
+  "lon": -105.0944
+ },
+ {
+  "key": "40.50910,-105.09620|sb shields rd after fossil creek",
+  "description": "SB SHIELDS RD after FOSSIL CREEK",
+  "lat": 40.5091,
+  "lon": -105.0962
+ },
+ {
+  "key": "40.52172,-104.99300|on-ramp to sb i-25 from harmony rd",
+  "description": "ON-RAMP TO SB I-25 from HARMONY RD",
+  "lat": 40.52172,
+  "lon": -104.993
+ },
+ {
+  "key": "40.53101,-105.11460|nb taft hill rd. after harmony rd",
+  "description": "NB TAFT HILL RD. after HARMONY RD.",
+  "lat": 40.53101,
+  "lon": -105.1146
+ }
+]

@@ -15,6 +15,9 @@ import io.cosgriff.waitlight.data.location.PhoneFix
 import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
+import io.cosgriff.waitlight.data.vans.DriveByRepository
+import io.cosgriff.waitlight.data.vans.VanDriveTimes
+import io.cosgriff.waitlight.data.vans.VanStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpTimeout
@@ -33,7 +36,7 @@ object DataModule {
     @Singleton
     fun clock(): Clock = Clock.systemUTC()
 
-    /** For AirCare's page, the one host the app talks to (ADR-0001). Error statuses throw. */
+    /** For AirCare's pages, on the one host the app talks to (ADR-0001). Error statuses throw unless a call says otherwise. */
     @Provides
     @Singleton
     fun httpClient(): HttpClient = HttpClient(OkHttp) {
@@ -72,6 +75,23 @@ object DataModule {
     @Singleton
     fun waitTimesStore(@ApplicationContext context: Context): WaitTimesStore =
         WaitTimesStore({ File(context.filesDir, WaitTimesStore.FILE_NAME) })
+
+    /** The last van schedule, in the app's own files and left out of backups (`backup_rules.xml`). */
+    @Provides
+    @Singleton
+    fun vanStore(@ApplicationContext context: Context): VanStore = VanStore({ File(context.filesDir, VanStore.FILE_NAME) })
+
+    /** The bundled van drive-time table (ADR-0008), read a day's sites at a time. */
+    @Provides
+    @Singleton
+    fun vanDriveTimes(@ApplicationContext context: Context): VanDriveTimes =
+        VanDriveTimes(open = { context.assets.open(VanDriveTimes.ASSET) })
+
+    /** The user's drive-by log: their own record, so it is backed up (unlike the fetched data). */
+    @Provides
+    @Singleton
+    fun driveBys(@ApplicationContext context: Context, @ApplicationScope scope: CoroutineScope): DriveByRepository =
+        DriveByRepository({ File(context.filesDir, DriveByRepository.FILE_NAME) }, scope)
 
     /** The phone's fix, from Android's own LocationManager (ADR-0002). */
     @Provides

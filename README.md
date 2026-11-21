@@ -6,21 +6,22 @@
 [![Android 14+](https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white)](#install)
 
 AirCare Colorado emissions-test wait times on your phone, nearest station first, with green / yellow / red
-wait badges. Waitlight reads AirCare's public wait-times page itself, only during opening hours. It has no
-account, no server, no ads and no tracking.
+wait badges, and where AirCare's roadside RapidScreen vans are, so you can drive past one and maybe skip the
+test. Waitlight reads AirCare's public pages itself. It has no account, no server, no ads and no tracking.
 
 Not affiliated with AirCare Colorado or Envirotest. Wait times are AirCare's own estimates and don't include
 time in line outside the ticket gate.
 
-> **Status: in development, no release yet.** The business rules (stations, hours and holidays, badges,
-> freshness, sorting) are built and tested; reading AirCare's page, location and the screens are next.
+> **Status: in development, pre-1.0 releases on GitHub.** Expect changes between versions.
 
 ## What it does
 
-What's planned, from the design in [`design/`](design/README.md):
+From the design in [`design/`](design/README.md) and [`design/vans/`](design/vans/):
 
-- **All 18 AirCare stations, nearest first**, or sorted by **fastest overall**: estimated drive time plus the
-  current wait. A card at the top names the fastest station right now.
+**Wait times**
+
+- **All 18 AirCare stations, nearest first**, or sorted by **fastest overall**: drive time plus the current
+  wait. A card at the top names the fastest station right now.
 - **Wait badges you can read without colour:** green under 30 minutes, yellow 30–60, red over 60, each with
   its own icon and a spoken description. Grey when a station is open with no estimate, or closed.
 - **Honest about old data.** Each station goes by its own "Last updated" time from AirCare. A station more
@@ -29,18 +30,33 @@ What's planned, from the design in [`design/`](design/README.md):
   them it says when the stations open next, and doesn't fetch.
 - **Low-profile rims filter** for the four stations that test 17″+ rims (Sheridan, Boulder, Ken Caryl, Fort
   Collins).
-- Station detail with lanes, phone and directions in Google Maps, and a home-screen widget.
+- Station detail with a map, lanes, phone and directions in the map app you pick, and a home-screen widget
+  with the three nearest stations.
+
+**Roadside vans** (RapidScreen), the second tab
+
+- **Where the vans are** today and on each posted weekday through next week, nearest first by drive time,
+  with each site's hours and AirCare's live status: reading cars now, set up but not reading, done for the day.
+  A card names the nearest van reading cars now.
+- **Site detail** with a sketch of the ramp turned to the way the traffic goes, directions, and the site's week.
+- **A drive-by log:** note when you drove past a van. It counts the ones in the last 14 months. The app can't
+  see your readings, so it never says you qualify; your renewal postcard does ("PASSED ROADSIDE EMISSIONS").
+- Says so when AirCare's page is broken, a day isn't posted yet, there are no vans that day, it's the weekend,
+  or the nearest van is far enough away that a station test may be quicker.
 
 ## Privacy
 
-- **One network host:** `aircarecolorado.com`, to read the public wait-times page. Nothing is sent to it but
-  the page request; nothing is sent anywhere else.
-- **Your location stays on the phone.** It's used only to measure the straight-line distance to each
-  station, through Android's own location service, with no Google Play services. Without location
-  permission the list is alphabetical.
-- Drive times are estimates from that distance, always marked "≈". There's no routing service.
-- No Google SDKs, analytics, crash reporting or ads. Directions open Google Maps by an ordinary link, which
-  you choose to tap.
+- **One network host:** `aircarecolorado.com`, to read its public wait-times and van-location pages. Nothing
+  is sent to it but the page requests; nothing is sent anywhere else. The van page is read when the app opens
+  and every 15 minutes while the vans tab is on screen, on weekdays when units can be out.
+- **Your location stays on the phone**, from Android's own location service (no Google Play services),
+  precise or approximate as you choose; or type a ZIP code instead. Without either, the list is alphabetical.
+- **Drive times are looked up on the phone** in tables bundled with the app, routed in advance on
+  OpenStreetMap's roads (no traffic). There's no routing service, and no straight-line guesses.
+- **Your drive-by log stays on the phone.** It's included in your phone's own backup, like your other app
+  data, so a new phone keeps it; the fetched AirCare data isn't.
+- No Google SDKs, analytics, crash reporting or ads. Directions open the map app you pick (CoMaps, OsmAnd,
+  Google Maps…) by an ordinary `geo:` link.
 
 ## Install
 
@@ -70,9 +86,9 @@ provenance as `waitlight-vX.Y.Z.apk.intoto.jsonl`, which `gh attestation verify`
 
 | Module | What lives there |
 |---|---|
-| `:domain` | Pure Kotlin: the station list, hours and holidays, reading AirCare's wording, badges, freshness, sorting. Unit-tested, no Android. |
-| `:data` | Fetching and reading AirCare's page, location, settings, the Hilt module. |
-| `:app` | Jetpack Compose UI, Navigation 3, theme; later the widget and background refresh. |
+| `:domain` | Pure Kotlin: the station list, hours and holidays, reading AirCare's wording, badges, freshness, sorting, drive-time tables, and the van rules (site names, days, statuses, the drive-by log). Unit-tested, no Android. |
+| `:data` | Fetching and reading AirCare's wait-times and van pages, location, settings, the stored waits, van schedule and drive-by log, the Hilt module. |
+| `:app` | Jetpack Compose UI, Navigation 3, theme, the bottom navigation, the widget and background refresh. |
 
 1. Open this folder in Android Studio and let Gradle sync. JDK 17.
 2. Run on a device or emulator with the `app` run configuration (debug app id `io.cosgriff.waitlight.debug`).
@@ -123,6 +139,6 @@ If you find something that looks careless, open an issue: it's mine to fix, whoe
 
 ## Licence
 
-GPL-3.0 ([`LICENSE`](LICENSE)). Roboto Flex is under the SIL Open Font License, and the station maps are
-drawn from OpenStreetMap data, © OpenStreetMap contributors, under the ODbL
+GPL-3.0 ([`LICENSE`](LICENSE)). Roboto Flex is under the SIL Open Font License. The station maps and both
+drive-time tables are made from OpenStreetMap data, © OpenStreetMap contributors, under the ODbL
 (`app/src/main/assets/licences/`).
