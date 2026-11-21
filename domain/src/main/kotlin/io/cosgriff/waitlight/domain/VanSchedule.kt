@@ -295,6 +295,17 @@ fun nearestFarAway(day: VanDay?): Int? {
 }
 
 /**
+ * Whether [row]'s site is out at [now]: today, within its hours, and not done for the day (AirCare may have shut it
+ * early). Only then is its drive time coloured by band ([driveBand]); a drive to a site that isn't out is plain.
+ */
+fun vanOpenNow(row: VanRow, now: Instant): Boolean {
+    val local = now.atZone(AirCareHours.zone)
+    if (row.date != local.toLocalDate() || row.status == VanStatus.Done) return false
+    val time = local.toLocalTime()
+    return time >= row.site.opens && time < row.site.closes
+}
+
+/**
  * The band a drive of [minutes] falls in, by the wait badges' own thresholds ([WaitThresholds.STANDARD]): short
  * under 30, moderate 30 to 60, long over 60, so a van's drive reads like a station's wait.
  */

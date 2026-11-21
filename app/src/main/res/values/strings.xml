@@ -227,6 +227,10 @@
     <string name="van_two_units">2 units</string>
     <string name="van_row_place_hours">%1$s · %2$s</string>
     <string name="van_row_drive">%1$d min</string>
+    <plurals name="van_drive_desc_plain">
+        <item quantity="one">%d minute drive</item>
+        <item quantity="other">%d minute drive</item>
+    </plurals>
     <plurals name="van_drive_desc_short">
         <item quantity="one">Short drive, %d minute</item>
         <item quantity="other">Short drive, %d minutes</item>

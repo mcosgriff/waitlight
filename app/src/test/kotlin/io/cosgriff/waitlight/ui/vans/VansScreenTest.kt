@@ -140,6 +140,8 @@ class VansScreenTest {
         compose.onNodeWithText("4 sites today · 1 reading now").assertExists()
         compose.onNode(hasTextSpaced("Status checked Nov 20, 4:52 PM")).assertExists()
         compose.onNode(hasDescription("Short drive, 9 minutes")).assertExists()
+        // Done for the day: its drive is plain, not banded.
+        compose.onNode(hasDescription("25 minute drive")).assertExists()
     }
 
     @Test

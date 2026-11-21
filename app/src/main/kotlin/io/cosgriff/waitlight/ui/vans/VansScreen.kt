@@ -89,6 +89,7 @@ import io.cosgriff.waitlight.domain.VanListState
 import io.cosgriff.waitlight.domain.VanRow
 import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.domain.nearestFarAway
+import io.cosgriff.waitlight.domain.vanOpenNow
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.DriveTimePill
 import io.cosgriff.waitlight.ui.components.VanBadge
@@ -99,6 +100,7 @@ import io.cosgriff.waitlight.ui.components.vanStatusColor
 import io.cosgriff.waitlight.ui.components.vanStatusText
 import io.cosgriff.waitlight.ui.theme.BannerColors
 import io.cosgriff.waitlight.ui.theme.waitColors
+import java.time.Instant
 import java.time.LocalDate
 
 @Composable
@@ -170,7 +172,7 @@ fun VansContent(
                 }
             }
             items(ui.rows, key = { "${it.site.key}@${it.date}" }) { row ->
-                VanRowItem(row, ui.state, isToday = day?.isToday == true, onClick = { onOpenSite(row.site.key, row.date) })
+                VanRowItem(row, ui.state, isToday = day?.isToday == true, now = ui.now, onClick = { onOpenSite(row.site.key, row.date) })
             }
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -471,7 +473,7 @@ internal fun rowStatusText(row: VanRow, state: VanListState, isToday: Boolean, s
 }
 
 @Composable
-private fun VanRowItem(row: VanRow, state: VanListState, isToday: Boolean, onClick: () -> Unit) {
+private fun VanRowItem(row: VanRow, state: VanListState, isToday: Boolean, now: Instant, onClick: () -> Unit) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val status = rowStatusText(row, state, isToday)
     val spokenStatus = rowStatusText(row, state, isToday, spoken = true)
@@ -512,7 +514,7 @@ private fun VanRowItem(row: VanRow, state: VanListState, isToday: Boolean, onCli
                     }
                 }
             }
-            row.driveMinutes?.let { DriveTimePill(it) }
+            row.driveMinutes?.let { DriveTimePill(it, open = vanOpenNow(row, now)) }
         }
     }
 }
