@@ -54,6 +54,9 @@ object TimeText {
     /** "Thu, Nov 26". */
     fun shortDate(date: LocalDate, locale: Locale = Locale.getDefault()): String = format(date.atStartOfDay(AirCareHours.zone), "EEEMMMd", locale)
 
+    /** "Mon, Aug 11, 2025". */
+    fun shortDateWithYear(date: LocalDate, locale: Locale = Locale.getDefault()): String = format(date.atStartOfDay(AirCareHours.zone), "yEEEMMMd", locale)
+
     /** "Fri 20". */
     fun weekdayAndDay(date: LocalDate, locale: Locale = Locale.getDefault()): String = format(date.atStartOfDay(AirCareHours.zone), "EEEd", locale)
 

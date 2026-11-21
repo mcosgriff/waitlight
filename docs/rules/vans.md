@@ -85,3 +85,15 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
 - "When it's here": every date on the page's tabs the site is posted for, today in bold; "Next week: Not
   scheduled" when next week's tabs are read and it isn't on them.
 - Disclaimer: weather, eligibility, unofficial.
+
+## Drive-by log
+
+- The user logs a drive-by from a site's detail: a date (none after today) and a time (none after now), in
+  Denver (`driveByAt`). The site's key, description and point are kept with it, so an entry outlives the site.
+- Kept in `drive_bys.json` in the app's files. It is the user's own record, so unlike the fetched data it **is**
+  in backups and device transfers. A file that can't be read is kept aside as `drive_bys.json.bad`, never lost.
+- "N logged in the last 14 months" counts entries on or after the same day 14 months back (`driveByLog`). The
+  app never says a vehicle qualifies: it can't see readings or whether they were clean; the renewal postcard's
+  "PASSED ROADSIDE EMISSIONS" is the official word.
+- The log lists entries newest first, older-than-14-months ones marked, each deletable. A year shows on dates
+  outside the current year.

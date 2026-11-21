@@ -18,3 +18,7 @@ data class StationDetail(val stationId: Int) : NavKey
 /** Asks for location or a ZIP code, before the list on first launch or from the list's "Location off" or ZIP. */
 @Serializable
 data object LocationPrompt : NavKey
+
+/** The user's drive-by log. */
+@Serializable
+data object DriveBys : NavKey

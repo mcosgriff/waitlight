@@ -15,6 +15,7 @@ import io.cosgriff.waitlight.data.location.PhoneFix
 import io.cosgriff.waitlight.data.location.DriveTimes
 import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.settings.SettingsStore
+import io.cosgriff.waitlight.data.vans.DriveByRepository
 import io.cosgriff.waitlight.data.vans.VanDriveTimes
 import io.cosgriff.waitlight.data.vans.VanStore
 import io.ktor.client.HttpClient
@@ -85,6 +86,12 @@ object DataModule {
     @Singleton
     fun vanDriveTimes(@ApplicationContext context: Context): VanDriveTimes =
         VanDriveTimes(open = { context.assets.open(VanDriveTimes.ASSET) })
+
+    /** The user's drive-by log: their own record, so it is backed up (unlike the fetched data). */
+    @Provides
+    @Singleton
+    fun driveBys(@ApplicationContext context: Context, @ApplicationScope scope: CoroutineScope): DriveByRepository =
+        DriveByRepository({ File(context.filesDir, DriveByRepository.FILE_NAME) }, scope)
 
     /** The phone's fix, from Android's own LocationManager (ADR-0002). */
     @Provides

@@ -3,6 +3,7 @@ package io.cosgriff.waitlight.ui.vans
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.Navigation
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
@@ -29,11 +31,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -71,6 +77,7 @@ import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
 import io.cosgriff.waitlight.ui.components.vanStatusColor
 import io.cosgriff.waitlight.ui.theme.waitColors
+import java.time.Instant
 import java.time.LocalDate
 
 @Composable
@@ -86,6 +93,7 @@ fun VanDetailScreen(key: String, date: LocalDate, onBack: () -> Unit) {
     VanDetailContent(
         ui = current,
         onBack = onBack,
+        onLogDriveBy = viewModel::logDriveBy,
         onDirections = {
             // The system's own picker every time, so the user chooses the map app, as for a station.
             val map = Intent(Intent.ACTION_VIEW, row.site.mapUri(label).toUri())
@@ -100,8 +108,17 @@ fun VanDetailScreen(key: String, date: LocalDate, onBack: () -> Unit) {
 
 /** A van site, as drawn in `design/vans/source/VanDetail.dc.html`: a drawn diagram (no map tiles), then a sheet. */
 @Composable
-fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Unit) {
+fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Unit, onLogDriveBy: (Instant) -> Unit = {}) {
     val row = ui.row ?: return
+    var picking by rememberSaveable { mutableStateOf(false) }
+    if (picking) {
+        DriveByPicker(
+            now = ui.now,
+            initialDate = row.date,
+            onPicked = { at -> picking = false; onLogDriveBy(at) },
+            onDismiss = { picking = false },
+        )
+    }
     val site = row.site
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val background = MaterialTheme.colorScheme.background
@@ -161,6 +178,26 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
             Button(onClick = onDirections, modifier = Modifier.fillMaxWidth().height(48.dp)) {
                 Icon(Icons.Outlined.Navigation, contentDescription = null, modifier = Modifier.size(20.dp))
                 Text(stringResource(R.string.van_detail_directions), modifier = Modifier.padding(start = 8.dp), fontSize = 16.sp)
+            }
+
+            OutlinedButton(
+                onClick = { picking = true },
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+            ) {
+                Icon(Icons.Outlined.AddTask, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.driveby_log), modifier = Modifier.padding(start = 8.dp), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+            }
+
+            if (ui.driveBys.isNotEmpty()) {
+                Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(stringResource(R.string.driveby_logged_here), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
+                        ui.driveBys.forEach { driveBy ->
+                            Text(driveByWhen(driveBy.at, ui.now), style = MaterialTheme.typography.bodyMedium, color = muted)
+                        }
+                    }
+                }
             }
 
             Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
@@ -285,3 +322,11 @@ private fun SiteDiagram(name: VanName, status: VanStatus, modifier: Modifier = M
 }
 
 private val DIAGRAM_HEIGHT = 220.dp
+
+/** "Fri, Nov 20, 7:15 AM": a drive-by's moment, in Denver; with the year when it isn't this year's. */
+@Composable
+internal fun driveByWhen(at: Instant, now: Instant): String {
+    val date = at.atZone(AirCareHours.zone).toLocalDate()
+    val day = if (date.year == now.atZone(AirCareHours.zone).year) TimeText.shortDate(date) else TimeText.shortDateWithYear(date)
+    return stringResource(R.string.driveby_when, day, TimeText.time(at))
+}

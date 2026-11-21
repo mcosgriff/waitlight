@@ -43,14 +43,14 @@ enum class HomeTab { WAITS, VANS }
  * Material 3 navigation bar under them. The vans tab's badge counts the vans reading cars now.
  */
 @Composable
-fun HomeTabs(onOpenStation: (Int) -> Unit, onOpenVanSite: (String, LocalDate) -> Unit, onChangeLocation: () -> Unit) {
+fun HomeTabs(onOpenStation: (Int) -> Unit, onOpenVanSite: (String, LocalDate) -> Unit, onChangeLocation: () -> Unit, onOpenDriveBys: () -> Unit) {
     val viewModel: HomeViewModel = hiltViewModel()
     val reading by viewModel.readingNow.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(HomeTab.WAITS) }
     HomeTabsContent(tab, reading, onSelect = { tab = it }) {
         when (tab) {
             HomeTab.WAITS -> StationListScreen(onOpenStation = onOpenStation, onChangeLocation = onChangeLocation)
-            HomeTab.VANS -> VansScreen(onOpenSite = onOpenVanSite, onChangeLocation = onChangeLocation)
+            HomeTab.VANS -> VansScreen(onOpenSite = onOpenVanSite, onChangeLocation = onChangeLocation, onOpenDriveBys = onOpenDriveBys)
         }
     }
 }

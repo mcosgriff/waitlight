@@ -10,7 +10,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import io.cosgriff.waitlight.R
+import io.cosgriff.waitlight.domain.DriveBy
 import io.cosgriff.waitlight.domain.FetchOutcome
+import io.cosgriff.waitlight.domain.driveByLog
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.VanDriveTable
@@ -194,10 +196,61 @@ class VansScreenTest {
     }
 
     @Test
+    fun `the drive-by line counts the last 14 months and opens the log`() {
+        var opens = 0
+        val now = denver("2026-11-20T16:52")
+        val log = driveByLog(
+            listOf(
+                DriveBy(1, HARLAN.key, HARLAN.description, HARLAN.point, denver("2026-11-20T07:15")),
+                DriveBy(2, HARLAN.key, HARLAN.description, HARLAN.point, denver("2025-01-10T07:15")),
+            ),
+            now,
+        )
+        val ui = vansUi(now, VanTimes(SCHEDULE), Here.Zip(ZIP_80003), DRIVES, ZipTable(listOf(ZIP_80003)), null, false, false, false).copy(driveBys = log)
+        compose.setContent {
+            WaitlightTheme(dark = false) {
+                VansContent(ui, {}, {}, {}, { _, _ -> }, {}, {}, onOpenDriveBys = { opens++ })
+            }
+        }
+        compose.onNodeWithText("1 logged in the last 14 months").performClick()
+        assertEquals(1, opens)
+    }
+
+    @Test
     fun `the info button opens how it works`() {
         show()
         compose.onNodeWithContentDescription(text(R.string.vans_info)).performClick()
         compose.onNodeWithText(text(R.string.vans_how_title)).assertExists()
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+@Config(application = Application::class, qualifiers = TALL_PHONE, sdk = [35])
+class DriveByLogScreenTest {
+    @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun `newest first, older ones marked, each deletable`() {
+        val deleted = mutableListOf<Long>()
+        val now = denver("2026-11-20T16:52")
+        val log = driveByLog(
+            listOf(
+                DriveBy(1, HARLAN.key, HARLAN.description, HARLAN.point, denver("2025-01-10T07:15")),
+                DriveBy(2, PECOS.key, PECOS.description, PECOS.point, denver("2026-11-20T07:15")),
+            ),
+            now,
+        )
+        compose.setContent { WaitlightTheme(dark = false) { DriveByLogContent(DriveByLogUi(now, log), onBack = {}, onDelete = { deleted += it }) } }
+        compose.onNodeWithText("1 logged in the last 14 months").assertExists()
+        compose.onNodeWithText(text(R.string.driveby_older)).assertExists()
+        compose.onNode(hasDescription("Delete drive-by Pecos St to WB I-70, Fri, Nov 20, 7:15 AM")).performClick()
+        assertEquals(listOf(2L), deleted)
+    }
+
+    @Test
+    fun `an empty log says how to start`() {
+        compose.setContent { WaitlightTheme(dark = false) { DriveByLogContent(DriveByLogUi(denver("2026-11-20T16:52"), driveByLog(emptyList(), denver("2026-11-20T16:52"))), {}, {}) } }
+        compose.onNodeWithText(text(R.string.driveby_list_empty)).assertExists()
     }
 }
 

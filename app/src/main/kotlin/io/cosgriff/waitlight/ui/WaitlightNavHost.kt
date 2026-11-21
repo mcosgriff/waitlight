@@ -12,6 +12,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.cosgriff.waitlight.ui.detail.StationDetailScreen
 import io.cosgriff.waitlight.ui.location.LocationPromptScreen
+import io.cosgriff.waitlight.ui.vans.DriveByLogScreen
 import io.cosgriff.waitlight.ui.vans.VanDetailScreen
 import java.time.LocalDate
 
@@ -47,8 +48,10 @@ private fun WaitlightNavDisplay(start: NavKey, openStation: Int?, onLocationProm
                     onOpenStation = { backStack.add(StationDetail(it)) },
                     onOpenVanSite = { key, date -> backStack.add(VanDetail(key, date.toString())) },
                     onChangeLocation = { backStack.add(LocationPrompt) },
+                    onOpenDriveBys = { backStack.add(DriveBys) },
                 )
             }
+            entry<DriveBys> { DriveByLogScreen(onBack = { backStack.removeLastOrNull() }) }
             entry<VanDetail> { key ->
                 VanDetailScreen(key.siteKey, LocalDate.parse(key.date), onBack = { backStack.removeLastOrNull() })
             }

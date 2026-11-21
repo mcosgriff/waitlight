@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.outlined.LocationOn
@@ -99,7 +100,7 @@ import io.cosgriff.waitlight.ui.theme.waitColors
 import java.time.LocalDate
 
 @Composable
-fun VansScreen(onOpenSite: (key: String, date: LocalDate) -> Unit, onChangeLocation: () -> Unit) {
+fun VansScreen(onOpenSite: (key: String, date: LocalDate) -> Unit, onChangeLocation: () -> Unit, onOpenDriveBys: () -> Unit) {
     val viewModel: VansViewModel = hiltViewModel()
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -110,6 +111,7 @@ fun VansScreen(onOpenSite: (key: String, date: LocalDate) -> Unit, onChangeLocat
         onRefresh = viewModel::refresh,
         onOpenSite = onOpenSite,
         onChangeLocation = onChangeLocation,
+        onOpenDriveBys = onOpenDriveBys,
         onOpenVanPage = {
             try {
                 context.startActivity(Intent(Intent.ACTION_VIEW, VanClient.PAGE_URL.toUri()))
@@ -130,6 +132,7 @@ fun VansContent(
     onOpenSite: (key: String, date: LocalDate) -> Unit,
     onChangeLocation: () -> Unit,
     onOpenVanPage: () -> Unit,
+    onOpenDriveBys: () -> Unit = {},
 ) {
     var showHow by rememberSaveable { mutableStateOf(false) }
     val day = ui.day
@@ -140,6 +143,7 @@ fun VansContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item(key = "header") { Header(ui, onInfo = { showHow = true }, onRefresh = onRefresh, onChangeLocation = onChangeLocation) }
+            item(key = "drive-bys") { DriveBysLine(ui, onOpenDriveBys) }
             banner(ui)?.let { kind -> item(key = "banner") { Banner(kind, ui) } }
             ui.hero?.let { hero -> item(key = "hero") { HeroCard(hero, onOpenSite) } }
             if (ui.list.days.isNotEmpty()) item(key = "days") { DayChips(ui, onPick) }
@@ -565,5 +569,35 @@ private fun HowStep(icon: ImageVector?, text: String) {
             }
         }
         Text(text, style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp))
+    }
+}
+
+/** "My drive-bys · 2 logged in the last 14 months", opening the log. */
+@Composable
+private fun DriveBysLine(ui: VansUi, onOpen: () -> Unit) {
+    val count = ui.driveBys.inWindow
+    val detail = if (ui.driveBys.entries.isEmpty()) {
+        stringResource(R.string.driveby_summary_none)
+    } else {
+        pluralStringResource(R.plurals.driveby_summary, count, count)
+    }
+    Surface(
+        onClick = onOpen,
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.heightIn(min = 48.dp).padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(Icons.Outlined.AddTask, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.driveby_list_title), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
+                Text(detail, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }

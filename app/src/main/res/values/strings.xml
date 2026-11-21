@@ -314,4 +314,24 @@
     <string name="van_detail_next_week">Next week</string>
     <string name="van_detail_not_scheduled">Not scheduled</string>
     <string name="van_detail_footer">Rain, snow or high wind can shut a site early. A reading counts only if your vehicle qualifies for RapidScreen; AirCare matches readings to your registration. Unofficial app, not affiliated with AirCare Colorado.</string>
+    <!-- Drive-by log -->
+    <string name="driveby_log">Log a drive-by</string>
+    <string name="driveby_pick_date">When did you drive past?</string>
+    <string name="driveby_pick_time">What time?</string>
+    <string name="driveby_next">Next</string>
+    <string name="driveby_save">Save</string>
+    <string name="driveby_cancel">Cancel</string>
+    <string name="driveby_logged_here">Your drive-bys here</string>
+    <string name="driveby_when">%1$s, %2$s</string>
+    <string name="driveby_delete">Delete drive-by %1$s</string>
+    <string name="driveby_list_title">My drive-bys</string>
+    <plurals name="driveby_summary">
+        <item quantity="one">%d logged in the last 14 months</item>
+        <item quantity="other">%d logged in the last 14 months</item>
+    </plurals>
+    <string name="driveby_summary_none">Log the vans you drive past</string>
+    <string name="driveby_list_body">Your own record of the vans you drove past. The app can’t see whether a unit read your car or whether the reading was clean; your renewal postcard says “PASSED ROADSIDE EMISSIONS” when two clean readings counted.</string>
+    <string name="driveby_list_empty">No drive-bys yet. Open a van site and tap “Log a drive-by” after you pass it.</string>
+    <string name="driveby_older">Older than 14 months</string>
+    <string name="driveby_back">Back</string>
 </resources>

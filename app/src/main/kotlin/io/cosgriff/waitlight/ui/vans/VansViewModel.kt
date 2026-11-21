@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.data.location.HereSource
 import io.cosgriff.waitlight.data.location.ZipCodes
+import io.cosgriff.waitlight.data.vans.DriveByRepository
 import io.cosgriff.waitlight.data.vans.VanDriveTimes
 import io.cosgriff.waitlight.data.vans.VanRepository
+import io.cosgriff.waitlight.domain.DriveByLog
 import io.cosgriff.waitlight.domain.FetchReason
+import io.cosgriff.waitlight.domain.driveByLog
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Here
 import io.cosgriff.waitlight.domain.VanDay
@@ -51,6 +54,8 @@ data class VansUi(
     val here: Here?,
     val locationAllowed: Boolean,
     val refreshing: Boolean,
+    /** The user's drive-by log. */
+    val driveBys: DriveByLog = DriveByLog(emptyList(), 0),
 ) {
     val state: VanListState get() = list.state
 
@@ -86,6 +91,7 @@ class VansViewModel @Inject constructor(
     private val hereSource: HereSource,
     private val zips: ZipCodes,
     private val driveTimes: VanDriveTimes,
+    private val driveByLog: DriveByRepository,
     private val clock: Clock,
 ) : ViewModel() {
     private val selected = MutableStateFlow<LocalDate?>(null)
@@ -111,8 +117,11 @@ class VansViewModel @Inject constructor(
 
     private val choices = combine(selected, readingOnly, vans.fetching, hereSource.locationAllowed, ::VanChoices)
 
-    val ui: StateFlow<VansUi> = combine(ticks, vans.vans, hereSource.here, combine(drives, zipTable, ::Pair), choices) { now, times, here, (drives, zipTable), choices ->
+    private val tables = combine(drives, zipTable, driveByLog.driveBys, ::Triple)
+
+    val ui: StateFlow<VansUi> = combine(ticks, vans.vans, hereSource.here, tables, choices) { now, times, here, (drives, zipTable, log), choices ->
         vansUi(now, times, here, drives, zipTable, choices.selected, choices.readingOnly, choices.locationAllowed, choices.refreshing)
+            .copy(driveBys = driveByLog(log, now))
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(STOP_AFTER_MILLIS),
