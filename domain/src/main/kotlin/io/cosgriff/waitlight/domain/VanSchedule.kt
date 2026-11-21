@@ -70,9 +70,6 @@ object VanRules {
     /** Farther than this by road, the nearest van is out of the way, and the list says so. */
     const val FAR_MINUTES = 20
 
-    /** A launch fetch this soon after another is the same one. */
-    val LAUNCH_GAP: Duration = Duration.ofMinutes(1)
-
     /** Units read cars on weekdays between these times; the page is fetched only then (apart from launch). */
     val COLLECTION_STARTS: LocalTime = LocalTime.of(5, 30)
     val COLLECTION_ENDS: LocalTime = LocalTime.of(19, 0)
@@ -88,12 +85,12 @@ object VanRules {
 
 /**
  * Whether to fetch the van page now, for [reason], given when it was [lastFetch]ed: at launch and when the vans
- * tab opens ([FetchReason.LAUNCH]) whatever the time, unless it was fetched under [VanRules.LAUNCH_GAP] ago (the
- * launch and the tab opening at once); a tap on refresh while units can be out; otherwise every
- * [VanRules.REFRESH_INTERVAL] while units can be out ([VanRules.collecting]).
+ * tab opens ([FetchReason.LAUNCH]) whatever the time; a tap on refresh while units can be out; otherwise every
+ * [VanRules.REFRESH_INTERVAL] while units can be out ([VanRules.collecting]). The app opening on the vans tab is one
+ * launch, not two: the repository makes a tab opening during the launch fetch wait for it rather than fetch again.
  */
 fun vanWorthFetching(reason: FetchReason, now: Instant, lastFetch: Instant?): Boolean = when (reason) {
-    FetchReason.LAUNCH -> lastFetch == null || Duration.between(lastFetch, now) >= VanRules.LAUNCH_GAP
+    FetchReason.LAUNCH -> true
     FetchReason.MANUAL -> VanRules.collecting(now)
     FetchReason.DUE -> VanRules.collecting(now) &&
         (lastFetch == null || Duration.between(lastFetch, now) >= VanRules.REFRESH_INTERVAL)

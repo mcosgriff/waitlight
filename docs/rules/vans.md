@@ -20,8 +20,9 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
   "Scheduled", and a banner says so. A table that can't be fetched leaves that tab's sites without a status.
 - A pin whose text has no days and hours, or with no row in a table that was fetched, is left out and logged.
 - The last good schedule is saved to `vans.json` in the app's files (out of backups) and loaded at start.
-- Fetched at launch and when the vans tab opens, then every 15 minutes while it's on screen on weekdays,
-  5:30 AM to 7 PM Denver time (`vanWorthFetching`); never from the background.
+- Fetched at launch and when the vans tab first opens, then every 15 minutes while it's on screen on weekdays,
+  5:30 AM to 7 PM Denver time (`vanWorthFetching`, `VanTabFetches`); the tab coming back doesn't fetch again
+  unless 15 minutes are up. The app opening on the vans tab is one fetch, not two. Never from the background.
 
 ## Sites
 
