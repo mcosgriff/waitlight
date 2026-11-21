@@ -7,10 +7,7 @@ import io.cosgriff.waitlight.data.vans.DriveByRepository
 import io.cosgriff.waitlight.data.vans.VanSiteAt
 import io.cosgriff.waitlight.data.vans.VanSitesNow
 import io.cosgriff.waitlight.data.vehicles.VehicleRepository
-import io.cosgriff.waitlight.domain.DriveBy
-import io.cosgriff.waitlight.domain.VanListState
-import io.cosgriff.waitlight.domain.VanRow
-import io.cosgriff.waitlight.domain.VanSiteWeek
+import io.cosgriff.waitlight.domain.VanSiteDetail
 import io.cosgriff.waitlight.domain.VehicleWindow
 import io.cosgriff.waitlight.domain.vehicleWindows
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,16 +23,10 @@ import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 
-/** One site on one day, with its week on the page's tabs. [row] is null once the site is no longer on the page. */
+/** One site on one day at [now] ([VanSiteDetail]), and the user's vehicles. [detail] is null once the site is no longer on the page. */
 data class VanDetailUi(
     val now: Instant,
-    val row: VanRow?,
-    val week: VanSiteWeek?,
-    val state: VanListState,
-    val fetchedAt: Instant?,
-    val isToday: Boolean,
-    /** The user's drive-bys past this site, newest first. */
-    val driveBys: List<DriveBy> = emptyList(),
+    val detail: VanSiteDetail?,
     /** The user's vehicles, for the drive-by's "which vehicle?". */
     val vehicles: List<VehicleWindow> = emptyList(),
 )
@@ -63,7 +54,7 @@ class VanDetailViewModel @Inject constructor(
 
     /** The user drove past the site on screen at [at], in [vehicleId] if they have vehicles. */
     fun logDriveBy(at: Instant, vehicleId: Long?) {
-        val row = ui.value?.row ?: return
+        val row = ui.value?.detail?.row ?: return
         viewModelScope.launch { driveBys.add(row.site.key, row.site.description, row.site.point, at, vehicleId) }
     }
 
@@ -74,4 +65,4 @@ class VanDetailViewModel @Inject constructor(
 
 /** The detail from its site at now ([VanSiteAt]) and the user's vehicles. */
 internal fun vanDetailUi(site: VanSiteAt, vehicles: List<VehicleWindow>): VanDetailUi =
-    VanDetailUi(site.now, site.row, site.week, site.state, site.fetchedAt, site.isToday, site.driveBys, vehicles)
+    VanDetailUi(site.now, site.detail, vehicles)

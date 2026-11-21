@@ -71,10 +71,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.Heading
 import io.cosgriff.waitlight.domain.VanName
-import io.cosgriff.waitlight.domain.VanStatus
-import io.cosgriff.waitlight.domain.VanSiteWeek
-import io.cosgriff.waitlight.domain.AirCareHours
-import io.cosgriff.waitlight.domain.currentVanWeek
+import io.cosgriff.waitlight.domain.VanDetailHours
+import io.cosgriff.waitlight.domain.VanPin
+import io.cosgriff.waitlight.domain.VanWeekLine
 import io.cosgriff.waitlight.domain.vanRowStatus
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.DriveTimePill
@@ -95,7 +94,7 @@ fun VanDetailScreen(key: String, date: LocalDate, onBack: () -> Unit) {
     LaunchedEffect(key, date) { viewModel.show(key, date) }
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val current = ui ?: return
-    val row = current.row ?: return
+    val row = current.detail?.row ?: return
     val context = LocalContext.current
     val chooserTitle = stringResource(R.string.van_detail_directions_chooser)
     val label = vanNameSpoken(row.site.name)
@@ -118,7 +117,8 @@ fun VanDetailScreen(key: String, date: LocalDate, onBack: () -> Unit) {
 /** A van site, as drawn in `design/vans/source/VanDetail.dc.html`: a drawn diagram (no map tiles), then a sheet. */
 @Composable
 fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Unit, onLogDriveBy: (Instant, Long?) -> Unit = { _, _ -> }) {
-    val row = ui.row ?: return
+    val detail = ui.detail ?: return
+    val row = detail.row
     var picking by rememberSaveable { mutableStateOf(false) }
     if (picking) {
         DriveBySheet(
@@ -133,7 +133,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
     val site = row.site
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val background = MaterialTheme.colorScheme.background
-    val status = rowStatusText(vanRowStatus(row, ui.state, ui.isToday))
+    val status = rowStatusText(vanRowStatus(row, detail.state, detail.isToday))
     Column(
         Modifier
             .fillMaxSize()
@@ -142,7 +142,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
             .navigationBarsPadding(),
     ) {
         Box(Modifier.fillMaxWidth().height(DIAGRAM_HEIGHT)) {
-            SiteDiagram(site.name, row.status, Modifier.matchParentSize())
+            SiteDiagram(site.name, detail.pin, Modifier.matchParentSize())
             FilledIconButton(
                 onClick = onBack,
                 colors = IconButtonDefaults.filledIconButtonColors(
@@ -171,16 +171,13 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
                         modifier = Modifier.semantics { heading() },
                     )
                     Text(status, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold), color = vanStatusColor(row.status))
-                    val hours = if (ui.isToday && row.status != VanStatus.Done) {
-                        stringResource(R.string.van_detail_until, TimeText.time(site.closes))
-                    } else {
-                        vanHoursText(site.opens, site.closes)
+                    val hours = when (val shown = detail.hours) {
+                        is VanDetailHours.Until -> stringResource(R.string.van_detail_until, TimeText.time(shown.closes))
+                        is VanDetailHours.Range -> vanHoursText(shown.opens, shown.closes)
                     }
                     val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
                     Text(stringResource(R.string.van_detail_place, row.place, hours), style = small, color = muted)
-                    if (ui.isToday) {
-                        ui.fetchedAt?.let { Text(stringResource(R.string.van_detail_checked, TimeText.dateTime(it)), style = small, color = muted) }
-                    }
+                    detail.checkedAt?.let { Text(stringResource(R.string.van_detail_checked, TimeText.dateTime(it)), style = small, color = muted) }
                     row.drive?.let { DriveTimePill(it, Modifier.padding(top = 4.dp)) }
                 }
             }
@@ -199,11 +196,11 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
                 Text(stringResource(R.string.driveby_log), modifier = Modifier.padding(start = 8.dp), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
             }
 
-            if (ui.driveBys.isNotEmpty()) {
+            if (detail.driveBys.isNotEmpty()) {
                 Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(stringResource(R.string.driveby_logged_here), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
-                        ui.driveBys.forEach { driveBy ->
+                        detail.driveBys.forEach { driveBy ->
                             Text(driveByWhen(driveBy.at, ui.now), style = MaterialTheme.typography.bodyMedium, color = muted)
                         }
                     }
@@ -223,7 +220,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
                 }
             }
 
-            ui.week?.let { week -> WeekCard(week, today = ui.now.atZone(AirCareHours.zone).toLocalDate()) }
+            WeekCard(detail.week)
 
             Text(stringResource(R.string.van_detail_footer), style = MaterialTheme.typography.bodySmall.copy(lineHeight = 17.sp), color = muted)
         }
@@ -231,8 +228,7 @@ fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Un
 }
 
 @Composable
-private fun WeekCard(week: VanSiteWeek, today: LocalDate) {
-    val nextMonday = currentVanWeek(today).plusWeeks(1)
+private fun WeekCard(lines: List<VanWeekLine>) {
     Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
             Text(
@@ -240,15 +236,16 @@ private fun WeekCard(week: VanSiteWeek, today: LocalDate) {
                 style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
             )
-            week.visits.forEach { visit ->
+            lines.forEach { line ->
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                val isToday = visit.date == today
-                val day = if (isToday) stringResource(R.string.van_detail_today, TimeText.shortDate(visit.date)) else TimeText.shortDate(visit.date)
-                WeekLine(day, vanHoursText(visit.opens, visit.closes), bold = isToday, muted = visit.date < today)
-            }
-            if (week.nextWeekPosted && week.visits.none { it.date >= nextMonday }) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                WeekLine(stringResource(R.string.van_detail_next_week), stringResource(R.string.van_detail_not_scheduled), bold = false, muted = true)
+                when (line) {
+                    is VanWeekLine.Visit -> {
+                        val day = if (line.isToday) stringResource(R.string.van_detail_today, TimeText.shortDate(line.date)) else TimeText.shortDate(line.date)
+                        WeekLine(day, vanHoursText(line.opens, line.closes), bold = line.isToday, muted = line.isPast)
+                    }
+                    VanWeekLine.NextWeekNotScheduled ->
+                        WeekLine(stringResource(R.string.van_detail_next_week), stringResource(R.string.van_detail_not_scheduled), bold = false, muted = true)
+                }
             }
             Box(Modifier.height(6.dp))
         }
@@ -273,15 +270,15 @@ private fun WeekLine(day: String, hours: String, bold: Boolean, muted: Boolean) 
  * description says the same in words, and the status is in the text below, so colour is not the only signal.
  */
 @Composable
-private fun SiteDiagram(name: VanName, status: VanStatus, modifier: Modifier = Modifier) {
+private fun SiteDiagram(name: VanName, pin: VanPin, modifier: Modifier = Modifier) {
     val road = MaterialTheme.colorScheme.background
     val ground = MaterialTheme.colorScheme.surfaceContainerHighest
     val lane = MaterialTheme.colorScheme.outline
     val accent = MaterialTheme.colorScheme.primary
-    val pin = when (status) {
-        VanStatus.Reading -> MaterialTheme.waitColors.short.container
-        VanStatus.Paused -> MaterialTheme.waitColors.open.container
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    val pinColor = when (pin) {
+        VanPin.READING -> MaterialTheme.waitColors.short.container
+        VanPin.SET_UP -> MaterialTheme.waitColors.open.container
+        VanPin.OTHER -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val labelStyle = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     val unitStyle = labelStyle.copy(color = accent, fontSize = 12.sp)
@@ -336,7 +333,7 @@ private fun SiteDiagram(name: VanName, status: VanStatus, modifier: Modifier = M
             frame.at(if (crossLabel != null) crossA + 0.35f else 0f, laneB)
         }
         drawCircle(Color.White, radius = 17.dp.toPx(), center = unitAt)
-        drawCircle(pin, radius = 14.dp.toPx(), center = unitAt)
+        drawCircle(pinColor, radius = 14.dp.toPx(), center = unitAt)
         drawCircle(Color.White, radius = 2.5.dp.toPx(), center = unitAt)
         // Labels stay upright: the highway's on its far side from the ramp, the cross street's beside it.
         label(measurer, mainLabel, labelStyle, frame.at(0.15f, roadB - frame.acrossFraction(band * 0.5f + 16.dp.toPx())))

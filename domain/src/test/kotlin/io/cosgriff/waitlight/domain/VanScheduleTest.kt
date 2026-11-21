@@ -220,16 +220,6 @@ class VanScheduleTest {
     }
 
     @Test
-    fun `the site's week, from every tab`() {
-        val week = vanSiteWeek(schedule, harlan.key, denver("2026-11-20T16:52"))
-        assertEquals(
-            listOf(friday, LocalDate.of(2026, 11, 23), LocalDate.of(2026, 11, 24), LocalDate.of(2026, 11, 25)),
-            week.visits.map { it.date },
-        )
-        assertTrue(week.nextWeekPosted)
-    }
-
-    @Test
     fun `fetching the van page`() {
         val weekday = denver("2026-11-20T12:00")
         assertTrue(vanWorthFetching(FetchReason.LAUNCH, denver("2026-11-21T23:00"), weekday))

@@ -324,9 +324,11 @@ class VanDetailScreenTest {
         compose.onNodeWithText(text(R.string.driveby_which)).assertDoesNotExist()
     }
 
+    /** When it says so is `VanSiteDetailTest`'s; this is the wording. */
     @Test
-    fun `a site not on next week's tabs says so`() {
+    fun `next week's "Not scheduled" line is worded`() {
         show(PECOS.key, LocalDate.of(2026, 11, 20))
+        compose.onNodeWithText(text(R.string.van_detail_next_week)).assertExists()
         compose.onNodeWithText(text(R.string.van_detail_not_scheduled)).assertExists()
     }
 }

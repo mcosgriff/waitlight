@@ -10,17 +10,14 @@ import io.cosgriff.waitlight.domain.VanDay
 import io.cosgriff.waitlight.domain.VanDayContent
 import io.cosgriff.waitlight.domain.VanDriveTable
 import io.cosgriff.waitlight.domain.VanList
-import io.cosgriff.waitlight.domain.VanListState
-import io.cosgriff.waitlight.domain.VanRow
 import io.cosgriff.waitlight.domain.VanSite
-import io.cosgriff.waitlight.domain.VanSiteWeek
+import io.cosgriff.waitlight.domain.VanSiteDetail
 import io.cosgriff.waitlight.domain.VanTimes
 import io.cosgriff.waitlight.domain.ZipTable
-import io.cosgriff.waitlight.domain.at
 import io.cosgriff.waitlight.domain.driveByLog
 import io.cosgriff.waitlight.domain.readingCount
 import io.cosgriff.waitlight.domain.vanList
-import io.cosgriff.waitlight.domain.vanSiteWeek
+import io.cosgriff.waitlight.domain.vanSiteDetail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -49,37 +46,18 @@ data class VanSitesAt(
     /** The day [selected], else the first. */
     fun day(selected: LocalDate?): VanDay? = list.days.firstOrNull { it.date == selected } ?: list.days.firstOrNull()
 
-    /** The site with [key] on [date], for its detail. */
-    fun site(key: String, date: LocalDate): VanSiteAt {
-        val day = list.days.firstOrNull { it.date == date }
-        return VanSiteAt(
-            now = now,
-            key = key,
-            row = (day?.content as? VanDayContent.Sites)?.rows?.firstOrNull { it.site.key == key },
-            week = times.schedule?.let { vanSiteWeek(it, key, now) },
-            state = list.state,
-            fetchedAt = list.fetchedAt,
-            isToday = day?.isToday == true,
-            log = driveBys,
-        )
-    }
+    /** The site with [key] on [date], for its detail ([vanSiteDetail]). */
+    fun site(key: String, date: LocalDate): VanSiteAt =
+        VanSiteAt(now, vanSiteDetail(list, times.schedule, key, date, now, driveBys), driveBys)
 }
 
-/** One site on one day at [now], with its week on the page's tabs. [row] is null once the site is no longer on the page. */
+/** One site on one day at [now]. [detail] is null once the site is no longer on the page for that day. */
 data class VanSiteAt(
     val now: Instant,
-    val key: String,
-    val row: VanRow?,
-    val week: VanSiteWeek?,
-    val state: VanListState,
-    val fetchedAt: Instant?,
-    val isToday: Boolean,
-    /** The user's whole drive-by log. */
+    val detail: VanSiteDetail?,
+    /** The user's whole drive-by log, for their vehicles' windows. */
     val log: DriveByLog,
-) {
-    /** The user's drive-bys past this site, newest first. */
-    val driveBys: List<DriveBy> get() = log.at(key)
-}
+)
 
 /** The drive-by log at [now]. */
 data class DriveBysAt(val now: Instant, val log: DriveByLog)
