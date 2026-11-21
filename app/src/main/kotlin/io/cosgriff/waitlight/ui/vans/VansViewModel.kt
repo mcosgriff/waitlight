@@ -15,19 +15,17 @@ import io.cosgriff.waitlight.domain.FetchReason
 import io.cosgriff.waitlight.domain.driveByLog
 import io.cosgriff.waitlight.domain.GeoPoint
 import io.cosgriff.waitlight.domain.Here
-import io.cosgriff.waitlight.domain.VanDay
 import io.cosgriff.waitlight.domain.VanDayContent
 import io.cosgriff.waitlight.domain.VanDriveTable
 import io.cosgriff.waitlight.domain.VanList
+import io.cosgriff.waitlight.domain.VanListHeader
 import io.cosgriff.waitlight.domain.VanListState
-import io.cosgriff.waitlight.domain.VanRow
 import io.cosgriff.waitlight.domain.VanSite
-import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.domain.VanTimes
 import io.cosgriff.waitlight.domain.ZipTable
-import io.cosgriff.waitlight.domain.nearestReading
 import io.cosgriff.waitlight.domain.readingCount
 import io.cosgriff.waitlight.domain.vanList
+import io.cosgriff.waitlight.domain.vanListHeader
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,12 +47,8 @@ import javax.inject.Inject
 data class VansUi(
     val now: Instant,
     val list: VanList,
-    /** The day chip picked; null for the first. */
-    val selected: LocalDate?,
-    /** The "Reading now" filter, today only. */
-    val readingOnly: Boolean,
-    val here: Here?,
-    val locationAllowed: Boolean,
+    /** What the header, banner, hero, chips and rows show, decided in `:domain` ([vanListHeader]). */
+    val header: VanListHeader,
     val refreshing: Boolean,
     /** The user's drive-by log. */
     val driveBys: DriveByLog = DriveByLog(emptyList(), 0),
@@ -62,22 +56,6 @@ data class VansUi(
     val vehicles: Int = 0,
 ) {
     val state: VanListState get() = list.state
-
-    /** The day on screen: the one picked, else the first. */
-    val day: VanDay? get() = list.days.firstOrNull { it.date == selected } ?: list.days.firstOrNull()
-
-    /** The day's rows, after the "Reading now" filter. */
-    val rows: List<VanRow>
-        get() {
-            val day = day ?: return emptyList()
-            val all = (day.content as? VanDayContent.Sites)?.rows ?: return emptyList()
-            return if (readingOnly && showReadingFilter) all.filter { it.status == VanStatus.Reading } else all
-        }
-
-    val hero: VanRow? get() = day?.let(::nearestReading)?.takeIf { state == VanListState.LIVE }
-
-    /** The filter shows on today only, while live status can be read. */
-    val showReadingFilter: Boolean get() = day?.isToday == true && state != VanListState.BROKEN
 }
 
 /** The day chip and filter, and what's being waited on. */
@@ -172,21 +150,21 @@ internal fun vansUi(
     readingOnly: Boolean,
     locationAllowed: Boolean,
     refreshing: Boolean,
-): VansUi = VansUi(
-    now = now,
-    list = vanList(
+): VansUi {
+    val list = vanList(
         times,
         now,
         here?.point,
         drives = { site: VanSite, from: GeoPoint -> drives.minutes(from, site.key) },
         places = { point -> zips.placeOf(point)?.place },
-    ),
-    selected = selected,
-    readingOnly = readingOnly,
-    here = here,
-    locationAllowed = locationAllowed,
-    refreshing = refreshing,
-)
+    )
+    return VansUi(
+        now = now,
+        list = list,
+        header = vanListHeader(list, selected, readingOnly, here, locationAllowed, refreshing),
+        refreshing = refreshing,
+    )
+}
 
 /** Today's reading count for the bottom bar, from the schedule alone. */
 internal fun readingNow(times: VanTimes, now: Instant): Int {

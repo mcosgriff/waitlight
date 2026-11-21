@@ -2,7 +2,6 @@ package io.cosgriff.waitlight.ui.list
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
@@ -68,7 +65,6 @@ import io.cosgriff.waitlight.domain.ListBanner
 import io.cosgriff.waitlight.domain.NextLine
 import io.cosgriff.waitlight.domain.Opening
 import io.cosgriff.waitlight.domain.OpeningDay
-import io.cosgriff.waitlight.domain.PlaceLine
 import io.cosgriff.waitlight.domain.UpdatedLine
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.StationRow
@@ -77,6 +73,7 @@ import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.WaitThresholds
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.BadgeSize
+import io.cosgriff.waitlight.ui.components.PlaceLine
 import io.cosgriff.waitlight.ui.components.WaitBadge
 import io.cosgriff.waitlight.ui.components.forBand
 import io.cosgriff.waitlight.ui.components.icon
@@ -157,7 +154,7 @@ private fun Header(ui: StationListUi, onRefresh: () -> Unit, onChangeLocation: (
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.padding(top = 2.dp),
         ) {
-            PlaceLine(ui, onChangeLocation)
+            PlaceLine(ui.header.place, onChangeLocation)
             // For the eye only.
             Text("·", color = muted, modifier = Modifier.clearAndSetSemantics {})
             Text(updatedText(ui), style = MaterialTheme.typography.bodyMedium, color = muted)
@@ -172,51 +169,6 @@ private fun Header(ui: StationListUi, onRefresh: () -> Unit, onChangeLocation: (
             )
         }
         if (ui.refreshing) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp, end = 4.dp))
-    }
-}
-
-/**
- * Where "here" is, as [placeLine] decides it: a typed ZIP code's place and "Location off" open the location prompt,
- * to change or clear the ZIP or turn location on.
- */
-@Composable
-private fun PlaceLine(ui: StationListUi, onChangeLocation: () -> Unit) {
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    when (val line = ui.header.place) {
-        is PlaceLine.Zip -> PromptLink(
-            Icons.Outlined.LocationOn,
-            stringResource(R.string.list_place, line.place.place, line.place.zip),
-            stringResource(R.string.list_change_zip),
-            onChangeLocation,
-        )
-        PlaceLine.LocationOff -> PromptLink(
-            Icons.Outlined.LocationOff,
-            stringResource(R.string.list_location_off),
-            stringResource(R.string.list_location_turn_on),
-            onChangeLocation,
-        )
-        is PlaceLine.Device, PlaceLine.NearYou, PlaceLine.Finding -> {
-            Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = muted, modifier = Modifier.size(16.dp))
-            val text = when (line) {
-                is PlaceLine.Device -> stringResource(R.string.list_place, line.place.place, line.place.zip)
-                PlaceLine.NearYou -> stringResource(R.string.list_near_you)
-                else -> stringResource(R.string.list_finding_location)
-            }
-            Text(text, style = MaterialTheme.typography.bodyMedium, color = muted)
-        }
-    }
-}
-
-/** A tappable place line, in the primary colour, that opens the location prompt. */
-@Composable
-private fun PromptLink(icon: ImageVector, text: String, clickLabel: String, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.heightIn(min = 48.dp).clickable(onClickLabel = clickLabel, onClick = onClick),
-    ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 
