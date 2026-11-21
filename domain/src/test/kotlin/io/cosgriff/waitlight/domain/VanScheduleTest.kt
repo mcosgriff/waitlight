@@ -138,23 +138,41 @@ class VanScheduleTest {
     }
 
     @Test
-    fun `a site is out only today, within its hours, and not done`() {
-        val now = denver("2026-11-20T12:00")
-        val today = (list(now).days.first().content as VanDayContent.Sites).rows.first { it.site.key == harlan.key }
-        assertTrue(vanOpenNow(today, now))
-        assertFalse(vanOpenNow(today, denver("2026-11-20T06:59")))
-        assertFalse(vanOpenNow(today, denver("2026-11-20T17:00")))
-        assertFalse(vanOpenNow(today.copy(status = VanStatus.Done), now))
-        val monday = (list(now).days.first { it.date == LocalDate.of(2026, 11, 23) }.content as VanDayContent.Sites).rows.first()
-        assertFalse(vanOpenNow(monday, now))
+    fun `a drive is banded only while its site is out - today, within its hours, and not done`() {
+        fun harlanAt(now: Instant, times: VanTimes = VanTimes(schedule)) =
+            (vanList(times, now, here, drives) { "Arvada" }.days.first().content as VanDayContent.Sites).rows.first { it.site.key == harlan.key }.drive
+
+        val noon = denver("2026-11-20T12:00")
+        assertEquals(VanDrive.Banded(9, WaitBand.SHORT), harlanAt(noon))
+        assertEquals(VanDrive.Plain(9), harlanAt(denver("2026-11-20T06:59")))
+        assertEquals(VanDrive.Plain(9), harlanAt(denver("2026-11-20T17:00")))
+        // AirCare shut it early: done for the day within its hours.
+        val shut = VanSchedule(listOf(VanTab(VanTabKind(VanWeek.CURRENT, VanTabDays.FRIDAY), listOf(harlan.copy(status = VanLiveStatus.NOT_ON_SITE_UNSCHEDULED)))), noon)
+        assertEquals(VanDrive.Plain(9), harlanAt(noon, VanTimes(shut)))
+        // Another day.
+        val monday = (list(noon).days.first { it.date == LocalDate.of(2026, 11, 23) }.content as VanDayContent.Sites).rows
+        assertEquals(listOf(VanDrive.Plain(9)), monday.map { it.drive })
+        // No drive time, no drive.
+        assertNull((list(noon).days.first().content as VanDayContent.Sites).rows.first { it.site.key == lcr.key }.drive)
     }
 
     @Test
     fun `drive times band like waits`() {
-        assertEquals(WaitBand.SHORT, driveBand(29))
-        assertEquals(WaitBand.MODERATE, driveBand(30))
-        assertEquals(WaitBand.MODERATE, driveBand(60))
-        assertEquals(WaitBand.LONG, driveBand(61))
+        val minutes = listOf(29, 30, 60, 61)
+        val sites = minutes.map { site("SITE $it", status = VanLiveStatus.TESTING) }
+        val noon = denver("2026-11-20T12:00")
+        val times = VanTimes(VanSchedule(listOf(VanTab(VanTabKind(VanWeek.CURRENT, VanTabDays.FRIDAY), sites)), noon))
+        val drive = sites.zip(minutes).associate { (s, m) -> s.key to m }
+        val rows = (vanList(times, noon, here, { s, _ -> drive[s.key] }) { "Arvada" }.days.first().content as VanDayContent.Sites).rows
+        assertEquals(
+            listOf(
+                VanDrive.Banded(29, WaitBand.SHORT),
+                VanDrive.Banded(30, WaitBand.MODERATE),
+                VanDrive.Banded(60, WaitBand.MODERATE),
+                VanDrive.Banded(61, WaitBand.LONG),
+            ),
+            rows.map { it.drive },
+        )
     }
 
     @Test

@@ -133,12 +133,15 @@ fun WaitColors.forBand(band: WaitBand): BadgeColors = when (band) {
     WaitBand.LONG -> long
 }
 
+/** A band's icon, shown with its colour so colour is never the only signal: a tick, a clock, a warning. */
+fun WaitBand.icon(): ImageVector = when (this) {
+    WaitBand.SHORT -> Icons.Rounded.CheckCircle
+    WaitBand.MODERATE -> Icons.Rounded.Schedule
+    WaitBand.LONG -> Icons.Rounded.Warning
+}
+
 fun Badge.icon(): ImageVector = when (this) {
-    is Badge.Live -> when (band) {
-        WaitBand.SHORT -> Icons.Rounded.CheckCircle
-        WaitBand.MODERATE -> Icons.Rounded.Schedule
-        WaitBand.LONG -> Icons.Rounded.Warning
-    }
+    is Badge.Live -> band.icon()
     Badge.Open -> Icons.Rounded.RemoveCircle
     Badge.Closed -> Icons.Rounded.Bedtime
     Badge.NoReading -> Icons.Rounded.HourglassEmpty

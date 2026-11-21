@@ -164,9 +164,25 @@ data class VanRow(
     val status: VanStatus,
     /** The place it's in, from the bundled ZIP table by its coordinates ([ZipTable.placeOf]); AirCare's city if none. */
     val place: String,
-    /** Routed drive minutes from "here" (the van drive table), or null without a location or a time for the site. */
-    val driveMinutes: Int?,
-)
+    /** Routed drive minutes from "here" (the van drive table) and how they show, or null without a location or a time for the site. */
+    val drive: VanDrive?,
+) {
+    val driveMinutes: Int? get() = drive?.minutes
+}
+
+/**
+ * How a site's drive time shows. [Banded] while the site is out (today, within its hours, not done for the day), in
+ * the wait badges' bands; [Plain] otherwise: there's nothing to hurry to.
+ */
+sealed interface VanDrive {
+    val minutes: Int
+
+    /** The site is out: short under 30 minutes, moderate 30 to 60, long over 60, as a station's wait. */
+    data class Banded(override val minutes: Int, val band: WaitBand) : VanDrive
+
+    /** The site isn't out. */
+    data class Plain(override val minutes: Int) : VanDrive
+}
 
 /** What a day shows. */
 sealed interface VanDayContent {
@@ -260,12 +276,15 @@ private fun dayContent(
     val rows = sites
         .filter { date.dayOfWeek in it.days }
         .map { site ->
+            val status = vanStatus(site, date, now, schedule.fetchedAt, liveUsable)
             VanRow(
                 site = site,
                 date = date,
-                status = vanStatus(site, date, now, schedule.fetchedAt, liveUsable),
+                status = status,
                 place = places(site.point) ?: site.city,
-                driveMinutes = from?.let { drives(site, it) },
+                drive = from?.let { drives(site, it) }?.let { minutes ->
+                    if (vanOpenNow(site, date, status, now)) VanDrive.Banded(minutes, driveBand(minutes)) else VanDrive.Plain(minutes)
+                },
             )
         }
     if (rows.isEmpty()) return VanDayContent.NoSites(AirCareHours.holidayOn(date))
@@ -295,21 +314,21 @@ fun nearestFarAway(day: VanDay?): Int? {
 }
 
 /**
- * Whether [row]'s site is out at [now]: today, within its hours, and not done for the day (AirCare may have shut it
- * early). Only then is its drive time coloured by band ([driveBand]); a drive to a site that isn't out is plain.
+ * Whether [site] is out on [date] at [now], given its [status]: today, within its hours, and not done for the day
+ * (AirCare may have shut it early). Only then is its drive [VanDrive.Banded].
  */
-fun vanOpenNow(row: VanRow, now: Instant): Boolean {
+private fun vanOpenNow(site: VanSite, date: LocalDate, status: VanStatus, now: Instant): Boolean {
     val local = now.atZone(AirCareHours.zone)
-    if (row.date != local.toLocalDate() || row.status == VanStatus.Done) return false
+    if (date != local.toLocalDate() || status == VanStatus.Done) return false
     val time = local.toLocalTime()
-    return time >= row.site.opens && time < row.site.closes
+    return time >= site.opens && time < site.closes
 }
 
 /**
  * The band a drive of [minutes] falls in, by the wait badges' own thresholds ([WaitThresholds.STANDARD]): short
  * under 30, moderate 30 to 60, long over 60, so a van's drive reads like a station's wait.
  */
-fun driveBand(minutes: Int, thresholds: WaitThresholds = WaitThresholds.STANDARD): WaitBand =
+private fun driveBand(minutes: Int, thresholds: WaitThresholds = WaitThresholds.STANDARD): WaitBand =
     WaitReading.Minutes(minutes).band(thresholds)!!
 
 /** How many of [day]'s sites are reading now: the bottom bar's badge and the "6 reading now" line. */
