@@ -514,14 +514,11 @@ private fun StationRowItem(row: StationRow, ui: StationListUi, onClick: () -> Un
                 }
             }
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                row.distanceMiles?.let {
-                    Text(stringResource(R.string.list_row_miles, it), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
+                // The drive, never a straight-line distance (ADR-0007); while closed, when the stations open too.
+                row.driveMinutes?.let {
+                    Text(stringResource(R.string.list_row_drive, it), style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
                 }
-                val sub = when {
-                    ui.state == ListState.CLOSED -> opensText(ui.now)
-                    else -> row.driveMinutes?.let { stringResource(R.string.list_row_drive, it) }
-                }
-                if (sub != null) Text(sub, style = MaterialTheme.typography.bodySmall, color = muted)
+                if (ui.state == ListState.CLOSED) Text(opensText(ui.now), style = MaterialTheme.typography.bodySmall, color = muted)
             }
         }
     }

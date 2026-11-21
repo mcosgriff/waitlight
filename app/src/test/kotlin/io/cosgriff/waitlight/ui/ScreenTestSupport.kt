@@ -32,7 +32,10 @@ val AT_ARVADA: GeoPoint = Stations.all.first { it.name == "Arvada" }.location
  * A drive-time table of one cell, 10 degrees on a side around [AT_ARVADA], so anywhere in Colorado has every
  * station [minutes] away. In the layout `scripts/drive_times.py` writes.
  */
-fun uniformDrives(minutes: Int): DriveTable {
+fun uniformDrives(minutes: Int): DriveTable = DriveTable.parse(uniformDriveBytes(minutes))
+
+/** [uniformDrives]' bytes, as the asset holds them. */
+fun uniformDriveBytes(minutes: Int): ByteArray {
     val bytes = ByteArrayOutputStream()
     DataOutputStream(bytes).apply {
         write("WLDT".toByteArray())
@@ -49,7 +52,7 @@ fun uniformDrives(minutes: Int): DriveTable {
         writeInt(1)
         repeat(Stations.all.size) { writeByte(minutes) }
     }
-    return DriveTable.parse(bytes.toByteArray())
+    return bytes.toByteArray()
 }
 
 /** Every station a 5-minute drive away. */

@@ -143,15 +143,15 @@ fun StationDetailContent(row: StationRow, onBack: () -> Unit, onDirections: () -
                     val (status, statusColor) = status(badge)
                     Text(status, style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold), color = statusColor)
                     val drive = row.driveMinutes
-                    val miles = row.distanceMiles
                     val total = row.totalMinutes
                     val small = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp)
-                    if (miles != null) {
-                        // A total only while the wait it adds is current; no drive time outside the routed area.
-                        val text = when {
-                            drive == null -> stringResource(R.string.detail_miles, miles)
-                            total != null && badge is Badge.Live -> stringResource(R.string.detail_total, total, drive, miles)
-                            else -> stringResource(R.string.detail_drive, drive, miles)
+                    // A total only while the wait it adds is current; no drive time outside the routed area, and
+                    // never a straight-line distance instead (ADR-0007).
+                    if (drive != null) {
+                        val text = if (total != null && badge is Badge.Live) {
+                            stringResource(R.string.detail_total, total, drive)
+                        } else {
+                            stringResource(R.string.detail_drive, drive)
                         }
                         Text(text, style = small, color = muted)
                     }

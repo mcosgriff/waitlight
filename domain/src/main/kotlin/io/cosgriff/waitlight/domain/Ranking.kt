@@ -3,17 +3,18 @@ package io.cosgriff.waitlight.domain
 import java.time.Instant
 
 /**
- * One station at a moment, as the list, the detail and the widget show it: its fixed facts, its last reading, how
- * far it is from the user, and its badge then. [reading] and [updatedAt] are null until the app has read a wait for
- * it. Made by [rowsFor].
+ * One station at a moment, as the list, the detail and the widget show it: its fixed facts, its last reading, the
+ * routed drive to it from the user, and its badge then. [reading] and [updatedAt] are null until the app has read
+ * a wait for it. Made by [rowsFor]. There is no straight-line distance: drive minutes are the only measure shown
+ * or sorted by (ADR-0007).
  */
 data class StationRow(
     val station: Station,
     val reading: WaitReading?,
     /** AirCare's "Last updated" for this station. */
     val updatedAt: Instant?,
-    /** Straight-line miles from the user, or null when the app has no location. */
-    val distanceMiles: Double?,
+    /** The app knows where the user is ("here"), so the list can go by drive time rather than by name. */
+    val located: Boolean,
     /**
      * Routed drive minutes from the user ([DriveTable]), or null without a location or where the table has none
      * (outside the gas emissions program area).
@@ -47,9 +48,9 @@ data class StationRow(
 enum class SortOrder { NEAREST, FASTEST_OVERALL }
 
 /**
- * Every station at [now]: its reading in [times] if there is one, the straight-line distance from [from], the
- * drive time from it in [drives], and its badge ([WaitThresholds.STANDARD]). Each badge goes stale on its own
- * station's time; all of them after an unreadable page. Null [from] (no location) gives no distance or drive.
+ * Every station at [now]: its reading in [times] if there is one, the drive time from [from] in [drives], and its
+ * badge ([WaitThresholds.STANDARD]). Each badge goes stale on its own station's time; all of them after an
+ * unreadable page. Null [from] (no location) gives no drive.
  */
 fun rowsFor(times: WaitTimes, from: GeoPoint?, drives: DriveTable, now: Instant): List<StationRow> =
     Stations.all.map { station ->
@@ -58,7 +59,7 @@ fun rowsFor(times: WaitTimes, from: GeoPoint?, drives: DriveTable, now: Instant)
             station,
             latest?.first,
             latest?.second,
-            distanceMiles = from?.let { station.location.milesTo(it) },
+            located = from != null,
             driveMinutes = from?.let { drives.minutes(it, station.id) },
             badge = badgeAt(latest, now, times.dataUsable),
         )
@@ -72,8 +73,10 @@ private fun badgeAt(latest: Pair<WaitReading, Instant>?, now: Instant, dataUsabl
 
 /**
  * The list as shown. Without a location, alphabetical whatever the chip says; while closed, nearest first, since
- * there are no waits to add. Fastest overall puts stations with an estimate first, by drive plus wait, then the
- * rest by distance; ties go to the nearer one. [lowProfileRimsOnly] keeps only the stations that can test them.
+ * there are no waits to add. Nearest is the shortest drive; stations with no drive time (outside the routed area)
+ * go last, by name, never by straight-line distance. Fastest overall puts stations with an estimate first, by
+ * drive plus wait, then the rest by drive; ties go to the shorter drive. [lowProfileRimsOnly] keeps only the
+ * stations that can test them.
  */
 fun arrange(
     rows: List<StationRow>,
@@ -82,8 +85,8 @@ fun arrange(
     state: ListState,
 ): List<StationRow> {
     val shown = if (lowProfileRimsOnly) rows.filter { it.station.lowProfileRims } else rows
-    if (shown.any { it.distanceMiles == null }) return shown.sortedBy { it.station.name }
-    val nearest = compareBy<StationRow> { it.distanceMiles }
+    if (shown.any { !it.located }) return shown.sortedBy { it.station.name }
+    val nearest = compareBy<StationRow, Int?>(nullsLast()) { it.driveMinutes }.thenBy { it.station.name }
     return when {
         order == SortOrder.FASTEST_OVERALL && state != ListState.CLOSED ->
             shown.sortedWith(compareBy<StationRow, Int?>(nullsLast()) { it.totalMinutes }.then(nearest))
@@ -100,5 +103,5 @@ fun fastestOverall(rows: List<StationRow>, state: ListState): StationRow? {
     if (state != ListState.LIVE && state != ListState.DUE) return null
     return rows
         .filter { row -> row.totalMinutes != null && row.badge is Badge.Live }
-        .minWithOrNull(compareBy<StationRow> { it.totalMinutes }.thenBy { it.distanceMiles })
+        .minWithOrNull(compareBy<StationRow> { it.totalMinutes }.thenBy { it.driveMinutes })
 }

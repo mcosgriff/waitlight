@@ -126,6 +126,10 @@ private fun WidgetBody(drawing: WidgetDrawing) {
                 resources.getString(R.string.widget_needs_location),
                 style = TextStyle(color = themed { it.widget.status }, fontSize = 14.sp),
             )
+            WidgetContent.OutOfArea -> Text(
+                resources.getString(R.string.widget_out_of_area),
+                style = TextStyle(color = themed { it.widget.status }, fontSize = 14.sp),
+            )
             is WidgetContent.Nearest -> content.rows.forEachIndexed { index, row ->
                 if (index > 0) Spacer(GlanceModifier.height(10.dp))
                 // An equal share each of a widget made taller than the rows, rather than a gap below them.
@@ -153,7 +157,7 @@ private fun StationRowItem(row: StationRow, resources: Resources) {
                 maxLines = 1,
             )
             Text(
-                resources.getString(R.string.widget_miles, row.distanceMiles),
+                row.driveMinutes?.let { resources.getString(R.string.widget_drive, it) }.orEmpty(),
                 style = TextStyle(color = themed { it.widget.muted }, fontSize = 12.sp),
                 maxLines = 1,
             )

@@ -2,6 +2,8 @@ package io.cosgriff.waitlight.ui.list
 
 import android.app.Application
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -121,6 +123,16 @@ class StationListScreenTest {
         badge("Short wait, 13 minutes")
         badge("Moderate wait, 45 minutes")
         badge("Long wait, over 60 minutes")
+    }
+
+    @Test
+    fun `rows show the drive time, never miles`() {
+        show(now = denver("2026-11-02T14:20"))
+        shown("5 min drive")
+        val miles = Regex("""\d mi\b""")
+        compose.onAllNodes(SemanticsMatcher("text in miles") { node ->
+            node.config.getOrNull(androidx.compose.ui.semantics.SemanticsProperties.Text).orEmpty().any { miles.containsMatchIn(it.text) }
+        }).assertCountEquals(0)
     }
 
     @Test
