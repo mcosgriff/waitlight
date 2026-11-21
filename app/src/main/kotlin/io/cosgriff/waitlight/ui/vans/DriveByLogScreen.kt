@@ -41,30 +41,32 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.data.vans.DriveByRepository
+import io.cosgriff.waitlight.data.vehicles.VehicleRepository
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.DriveBy
 import io.cosgriff.waitlight.domain.DriveByLog
 import io.cosgriff.waitlight.domain.DriveByRules
 import io.cosgriff.waitlight.domain.driveByLog
+import io.cosgriff.waitlight.ui.components.driveByWhen
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.Instant
 import javax.inject.Inject
 
-/** The drive-by log at [now]. */
-data class DriveByLogUi(val now: Instant, val log: DriveByLog)
+/** The drive-by log at [now], with each vehicle's description by its id. */
+data class DriveByLogUi(val now: Instant, val log: DriveByLog, val vehicles: Map<Long, String> = emptyMap())
 
 @HiltViewModel
-class DriveByLogViewModel @Inject constructor(private val driveBys: DriveByRepository, private val clock: Clock) : ViewModel() {
-    val ui: StateFlow<DriveByLogUi> = driveBys.driveBys
-        .map { DriveByLogUi(clock.instant(), driveByLog(it, clock.instant())) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DriveByLogUi(clock.instant(), driveByLog(driveBys.driveBys.value, clock.instant())))
+class DriveByLogViewModel @Inject constructor(private val driveBys: DriveByRepository, vehicles: VehicleRepository, private val clock: Clock) : ViewModel() {
+    val ui: StateFlow<DriveByLogUi> = combine(driveBys.driveBys, vehicles.vehicles) { log, list ->
+        DriveByLogUi(clock.instant(), driveByLog(log, clock.instant()), list.associate { it.id to it.description })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DriveByLogUi(clock.instant(), driveByLog(driveBys.driveBys.value, clock.instant())))
 
     fun delete(id: Long) {
         viewModelScope.launch { driveBys.remove(id) }
@@ -122,14 +124,14 @@ fun DriveByLogContent(ui: DriveByLogUi, onBack: () -> Unit, onDelete: (Long) -> 
             }
         }
         items(ui.log.entries, key = { it.id }) { driveBy ->
-            DriveByRow(driveBy, ui.now, older = driveBy.at.isBefore(windowStart), onDelete = { onDelete(driveBy.id) })
+            DriveByRow(driveBy, ui.now, ui.vehicles[driveBy.vehicleId], older = driveBy.at.isBefore(windowStart), onDelete = { onDelete(driveBy.id) })
         }
         item(key = "end") { Spacer(Modifier.navigationBarsPadding()) }
     }
 }
 
 @Composable
-private fun DriveByRow(driveBy: DriveBy, now: Instant, older: Boolean, onDelete: () -> Unit) {
+private fun DriveByRow(driveBy: DriveBy, now: Instant, vehicle: String?, older: Boolean, onDelete: () -> Unit) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val whenText = driveByWhen(driveBy.at, now)
     Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()) {
@@ -137,6 +139,7 @@ private fun DriveByRow(driveBy: DriveBy, now: Instant, older: Boolean, onDelete:
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(vanNameText(driveBy.name), style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold))
                 Text(whenText, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = muted)
+                if (vehicle != null) Text(vehicle, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp), color = muted)
                 if (older) Text(stringResource(R.string.driveby_older), style = MaterialTheme.typography.bodySmall, color = muted)
             }
             IconButton(onClick = onDelete, modifier = Modifier.size(48.dp)) {

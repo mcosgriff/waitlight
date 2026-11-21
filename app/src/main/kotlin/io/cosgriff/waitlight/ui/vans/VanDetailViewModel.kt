@@ -8,6 +8,9 @@ import io.cosgriff.waitlight.data.location.ZipCodes
 import io.cosgriff.waitlight.data.vans.DriveByRepository
 import io.cosgriff.waitlight.data.vans.VanDriveTimes
 import io.cosgriff.waitlight.data.vans.VanRepository
+import io.cosgriff.waitlight.data.vehicles.VehicleRepository
+import io.cosgriff.waitlight.domain.VehicleWindow
+import io.cosgriff.waitlight.domain.vehicleWindows
 import io.cosgriff.waitlight.domain.DriveBy
 import io.cosgriff.waitlight.domain.VanDayContent
 import io.cosgriff.waitlight.domain.at
@@ -45,6 +48,8 @@ data class VanDetailUi(
     val isToday: Boolean,
     /** The user's drive-bys past this site, newest first. */
     val driveBys: List<DriveBy> = emptyList(),
+    /** The user's vehicles, for the drive-by's "which vehicle?". */
+    val vehicles: List<VehicleWindow> = emptyList(),
 )
 
 /** A van site's detail. Re-ages its status as the list does; fetching is left to the list. */
@@ -56,6 +61,7 @@ class VanDetailViewModel @Inject constructor(
     zips: ZipCodes,
     driveTimes: VanDriveTimes,
     private val driveBys: DriveByRepository,
+    vehicles: VehicleRepository,
     private val clock: Clock,
 ) : ViewModel() {
     private val site = MutableStateFlow<Pair<String, LocalDate>?>(null)
@@ -70,9 +76,9 @@ class VanDetailViewModel @Inject constructor(
     private val zipTable = flow { emit(zips.table()) }.onStart { emit(ZipTable.EMPTY) }
     private val drives = site.filterNotNull().mapLatest { driveTimes.table(setOf(it.first)) }.onStart { emit(VanDriveTable.EMPTY) }
 
-    private val siteAndLog = combine(site, driveBys.driveBys, ::Pair)
+    private val siteAndLog = combine(site, driveBys.driveBys, vehicles.vehicles, ::Triple)
 
-    val ui: StateFlow<VanDetailUi?> = combine(ticks, vans.vans, hereSource.here, combine(drives, zipTable, ::Pair), siteAndLog) { now, times, here, (drives, zipTable), (site, log) ->
+    val ui: StateFlow<VanDetailUi?> = combine(ticks, vans.vans, hereSource.here, combine(drives, zipTable, ::Pair), siteAndLog) { now, times, here, (drives, zipTable), (site, log, vehicleList) ->
         site ?: return@combine null
         val (key, date) = site
         val list = vansUi(now, times, here, drives, zipTable, date, readingOnly = false, locationAllowed = false, refreshing = false)
@@ -81,6 +87,7 @@ class VanDetailViewModel @Inject constructor(
         VanDetailUi(
             now, row, times.schedule?.let { vanSiteWeek(it, key, now) }, list.state, list.list.fetchedAt, day?.isToday == true,
             driveByLog(log, now).at(key),
+            vehicleWindows(vehicleList, log, now),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_AFTER_MILLIS), null)
 
@@ -88,10 +95,10 @@ class VanDetailViewModel @Inject constructor(
         site.value = key to date
     }
 
-    /** The user drove past the site on screen at [at]. */
-    fun logDriveBy(at: Instant) {
+    /** The user drove past the site on screen at [at], in [vehicleId] if they have vehicles. */
+    fun logDriveBy(at: Instant, vehicleId: Long?) {
         val row = ui.value?.row ?: return
-        viewModelScope.launch { driveBys.add(row.site.key, row.site.description, row.site.point, at) }
+        viewModelScope.launch { driveBys.add(row.site.key, row.site.description, row.site.point, at, vehicleId) }
     }
 
     private companion object {

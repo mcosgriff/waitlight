@@ -333,7 +333,6 @@
     <string name="driveby_log">Log a drive-by</string>
     <string name="driveby_pick_date">When did you drive past?</string>
     <string name="driveby_pick_time">What time?</string>
-    <string name="driveby_next">Next</string>
     <string name="driveby_save">Save</string>
     <string name="driveby_cancel">Cancel</string>
     <string name="driveby_logged_here">Your drive-bys here</string>
@@ -349,4 +348,155 @@
     <string name="driveby_list_empty">No drive-bys yet. Open a van site and tap “Log a drive-by” after you pass it.</string>
     <string name="driveby_older">Older than 14 months</string>
     <string name="driveby_back">Back</string>
+    <string name="driveby_done">Done</string>
+    <string name="driveby_which">Which vehicle drove past?</string>
+    <string name="driveby_date">Date</string>
+    <string name="driveby_time">Time</string>
+    <string name="driveby_choice_open">In its window · would be %1$d of %2$d</string>
+    <string name="driveby_choice_open_many">In its window</string>
+    <string name="driveby_choice_closing">In its window · closes %1$s · would be %2$d of %3$d</string>
+    <string name="driveby_choice_closing_many">In its window · closes %1$s</string>
+    <string name="driveby_choice_before">Window opens %1$s</string>
+    <string name="driveby_choice_closed">Window closed · won’t count for %1$s</string>
+    <string name="driveby_choice_past">Renewal passed</string>
+
+    <!-- The vans list's line to the vehicles -->
+    <string name="vans_vehicles_title">My vehicles</string>
+    <plurals name="vans_vehicles_count">
+        <item quantity="one">%d vehicle · your RapidScreen window</item>
+        <item quantity="other">%d vehicles · your RapidScreen windows</item>
+    </plurals>
+    <string name="vans_vehicles_none">Add yours to see its RapidScreen window</string>
+
+    <!-- A vehicle's window, as the list, the detail and the drive-by sheet word it -->
+    <plurals name="window_open">
+        <item quantity="one">In your window · %d day left</item>
+        <item quantity="other">In your window · %d days left</item>
+    </plurals>
+    <string name="window_open_last_day">In your window · last day today</string>
+    <plurals name="window_before">
+        <item quantity="one">Window opens %1$s · in %2$d day</item>
+        <item quantity="other">Window opens %1$s · in %2$d days</item>
+    </plurals>
+    <string name="window_closed">Window closed · plan a station test</string>
+    <string name="window_past">Renewal passed</string>
+    <!-- The quantity is the number needed, %2$d. -->
+    <plurals name="window_count">
+        <item quantity="one">%1$d of %2$d drive-by</item>
+        <item quantity="other">%1$d of %2$d drive-bys</item>
+    </plurals>
+    <plurals name="window_count_many">
+        <item quantity="one">%d drive-by</item>
+        <item quantity="other">%d drive-bys</item>
+    </plurals>
+    <plurals name="window_bar_desc">
+        <item quantity="one">Window from %1$s to %2$s; today is about %3$d percent through it</item>
+        <item quantity="other">Window from %1$s to %2$s; today is about %3$d percent through it</item>
+    </plurals>
+
+    <!-- My vehicles -->
+    <string name="vehicles_title">My vehicles</string>
+    <string name="vehicles_back">Back to roadside vans</string>
+    <string name="vehicles_intro">Your RapidScreen window and when the test is due, from each renewal month. Stays on this phone.</string>
+    <string name="vehicles_renews">Renews %1$s · test due by %2$s</string>
+    <string name="vehicles_add">Add a vehicle</string>
+    <string name="vehicles_footer">The window and due dates follow AirCare’s stated rules. The app can’t see your readings: your renewal postcard says “PASSED ROADSIDE EMISSIONS” when two clean readings counted.</string>
+    <plurals name="vehicles_closing_title">
+        <item quantity="one">Window closes %1$s · %2$d day left.</item>
+        <item quantity="other">Window closes %1$s · %2$d days left.</item>
+    </plurals>
+    <string name="vehicles_closing_today">Window closes today.</string>
+    <string name="vehicles_closing_none">No drive-bys logged yet. After that, plan a station test.</string>
+    <string name="vehicles_closing_one">1 of 2 drive-bys logged. After that, plan a station test.</string>
+    <string name="vehicles_closed_short">Window closed %1$s.</string>
+    <string name="vehicles_closed_short_body">Plan a station test by %1$s.</string>
+    <plurals name="vehicles_closed_logged">
+        <item quantity="one">Window closed %1$s with %2$d drive-by logged. Your renewal postcard says whether a test is still needed, by %3$s.</item>
+        <item quantity="other">Window closed %1$s with %2$d drive-bys logged. Your renewal postcard says whether a test is still needed, by %3$s.</item>
+    </plurals>
+    <string name="vehicles_past">%1$s has passed. Most vehicles test every two years, so likely %2$s next; set it from your next renewal postcard.</string>
+
+    <!-- A vehicle's window -->
+    <string name="vehicle_back">Back to my vehicles</string>
+    <string name="vehicle_edit">Edit this vehicle</string>
+    <string name="vehicle_window_label">RapidScreen window</string>
+    <plurals name="vehicle_hero_before">
+        <item quantity="one">Opens in %d day</item>
+        <item quantity="other">Opens in %d days</item>
+    </plurals>
+    <string name="vehicle_hero_closed">Window closed</string>
+    <string name="vehicle_hero_past">Renewal passed</string>
+    <string name="vehicle_opened">Opened %1$s</string>
+    <string name="vehicle_opens">Opens %1$s</string>
+    <string name="vehicle_closes">Closes %1$s</string>
+    <string name="vehicle_closed_on">Closed %1$s</string>
+    <string name="vehicle_drivebys_title">Drive-bys in the window</string>
+    <string name="vehicle_drivebys_count">%1$d of %2$d</string>
+    <string name="vehicle_drivebys_none">None logged in this window yet.</string>
+    <string name="vehicle_drivebys_note">Your own log. The app can’t tell whether a unit read the car or whether the reading was clean.</string>
+    <string name="vehicle_renews">Registration renews</string>
+    <string name="vehicle_due">Emissions test due</string>
+    <string name="vehicle_due_value">By %1$s</string>
+    <string name="vehicle_fallback">If the vans don’t count</string>
+    <string name="vehicle_fallback_value">Station test in %1$s</string>
+    <string name="vehicle_reminders">Reminders</string>
+    <string name="reminder_switch_opens">When the window opens</string>
+    <string name="reminder_switch_halfway">Halfway, if under 2 drive-bys</string>
+    <string name="reminder_switch_closing">2 weeks before it closes</string>
+    <string name="reminder_switch_due">A month before the test is due</string>
+    <string name="vehicle_notifications_off">Notifications are off for Waitlight, so reminders can’t show.</string>
+    <string name="vehicle_notifications_settings">Turn on in settings</string>
+    <string name="vehicle_find_van">Find a van this week</string>
+
+    <!-- Add or edit a vehicle -->
+    <string name="vehicle_edit_add_title">Add a vehicle</string>
+    <string name="vehicle_edit_edit_title">Edit vehicle</string>
+    <string name="vehicle_edit_close">Close</string>
+    <string name="vehicle_edit_label">Vehicle</string>
+    <string name="vehicle_edit_hint">Year, make and model, however you like to call it.</string>
+    <string name="vehicle_edit_renews">Registration renews</string>
+    <string name="vehicle_edit_month">Month</string>
+    <string name="vehicle_edit_year">Year</string>
+    <string name="vehicle_edit_month_none">Choose</string>
+    <string name="vehicle_edit_renews_hint">It’s on the county’s renewal postcard, the one that says whether a test is required.</string>
+    <string name="vehicle_edit_preview_title">Your RapidScreen window</string>
+    <string name="vehicle_edit_preview_dates">%1$s to %2$s</string>
+    <string name="vehicle_edit_preview_body">Two clean readings in this window, at least 90 days before %1$s, can skip the %2$s test. Otherwise the test is due by %3$s.</string>
+    <string name="vehicle_edit_preview_closed">Too late for the vans this time: the window closed %1$s. The test is due by %2$s.</string>
+    <string name="vehicle_edit_preview_past">That renewal has passed. Choose the one on your next renewal postcard.</string>
+    <string name="vehicle_edit_remind">Remind me</string>
+    <string name="vehicle_edit_remind_detail">Window opening and closing, and the test date</string>
+    <string name="vehicle_edit_note">Stays on this phone. Turning reminders on asks Android for permission to send notifications.</string>
+    <string name="vehicle_edit_save">Save vehicle</string>
+    <string name="vehicle_edit_delete">Delete this vehicle</string>
+    <string name="vehicle_delete_title">Delete %1$s?</string>
+    <string name="vehicle_delete_body">Its drive-bys stay in your log.</string>
+    <string name="vehicle_delete_confirm">Delete</string>
+    <string name="vehicle_delete_cancel">Cancel</string>
+
+    <!-- Reminders (notifications) -->
+    <string name="reminder_channel">Vehicle reminders</string>
+    <string name="reminder_channel_desc">When a vehicle’s RapidScreen window opens or is about to close, and when its test is due.</string>
+    <string name="reminder_opens_title">%1$s: your RapidScreen window is open</string>
+    <string name="reminder_opens_body">Two clean van readings by %1$s can skip the %2$s test. See where the vans are this week.</string>
+    <string name="reminder_halfway_title">%1$s: halfway through your window</string>
+    <string name="reminder_halfway_none">No drive-bys logged. %1$s left to pass two vans.</string>
+    <string name="reminder_halfway_one">1 of 2 drive-bys logged. %1$s left to pass another van.</string>
+    <string name="reminder_closing_title">%1$s: window closes in 2 weeks</string>
+    <string name="reminder_closing_none">No drive-bys logged. Readings after %1$s won’t count for the %2$s renewal.</string>
+    <string name="reminder_closing_one">1 of 2 drive-bys logged. Readings after %1$s won’t count for the %2$s renewal.</string>
+    <plurals name="reminder_closing_many">
+        <item quantity="one">%3$d drive-by logged. Readings after %1$s won’t count for the %2$s renewal.</item>
+        <item quantity="other">%3$d drive-bys logged. Readings after %1$s won’t count for the %2$s renewal.</item>
+    </plurals>
+    <string name="reminder_due_title">%1$s: emissions test due by %2$s</string>
+    <string name="reminder_due_body">Check your renewal postcard. If it says a test is required, see today’s station waits.</string>
+    <plurals name="reminder_months">
+        <item quantity="one">%d month</item>
+        <item quantity="other">%d months</item>
+    </plurals>
+    <plurals name="reminder_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
 </resources>

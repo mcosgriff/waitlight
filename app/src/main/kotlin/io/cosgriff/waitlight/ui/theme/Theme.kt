@@ -108,6 +108,8 @@ data class WaitColors(
     /** The hero card's small heading and its line of detail. Its name is white. */
     val heroLabel: Color,
     val heroDetail: Color,
+    /** A bar's fill on the hero card: the vehicle window's progress. */
+    val heroAccent: Color,
     val warning: BannerColors,
     val info: BannerColors,
     val error: BannerColors,
@@ -124,6 +126,7 @@ private val LightWaitColors = WaitColors(
     hero = Color(0xFF1F4E5F),
     heroLabel = Color(0xFFCFE3EA),
     heroDetail = Color(0xFFE3EEF1),
+    heroAccent = Color(0xFF6FCF8A),
     warning = BannerColors(Color(0xFFFFF1C7), Color(0xFF4A3A00)),
     info = BannerColors(Color(0xFFE3E6E1), Color(0xFF17201B)),
     error = BannerColors(Color(0xFFFBE3E1), Color(0xFF7A1A14)),
@@ -140,6 +143,7 @@ private val DarkWaitColors = WaitColors(
     hero = Color(0xFF16343E),
     heroLabel = Color(0xFFA9D6E2),
     heroDetail = Color(0xFFD3E6EB),
+    heroAccent = Color(0xFF6FCF8A),
     warning = BannerColors(Color(0xFF2A2410), Color(0xFFF2E3AE)),
     info = BannerColors(Color(0xFF222D29), Color(0xFFE4EBE7)),
     error = BannerColors(Color(0xFF3A1714), Color(0xFFFFC9C3)),

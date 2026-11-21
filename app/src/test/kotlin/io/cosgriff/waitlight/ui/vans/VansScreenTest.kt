@@ -24,6 +24,7 @@ import io.cosgriff.waitlight.domain.VanTabDays
 import io.cosgriff.waitlight.domain.VanTabKind
 import io.cosgriff.waitlight.domain.VanTimes
 import io.cosgriff.waitlight.domain.VanWeek
+import io.cosgriff.waitlight.domain.VehicleWindow
 import io.cosgriff.waitlight.domain.ZipTable
 import io.cosgriff.waitlight.domain.vanSiteWeek
 import io.cosgriff.waitlight.ui.TALL_PHONE
@@ -33,6 +34,7 @@ import io.cosgriff.waitlight.ui.hasDescription
 import io.cosgriff.waitlight.ui.hasTextSpaced
 import io.cosgriff.waitlight.ui.text
 import io.cosgriff.waitlight.ui.theme.WaitlightTheme
+import io.cosgriff.waitlight.ui.vehicles.WINDOWS
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -278,11 +280,11 @@ class VanDetailScreenTest {
 
     private var directions = 0
 
-    private fun show(key: String, date: LocalDate, now: Instant = denver("2026-11-20T16:52")) {
+    private fun show(key: String, date: LocalDate, now: Instant = denver("2026-11-20T16:52"), vehicles: List<VehicleWindow> = emptyList()) {
         val list = vansUi(now, VanTimes(SCHEDULE), Here.Zip(ZIP_80003), DRIVES, ZipTable(listOf(ZIP_80003)), date, false, false, false)
         val day = list.list.days.first { it.date == date }
         val row = (day.content as io.cosgriff.waitlight.domain.VanDayContent.Sites).rows.first { it.site.key == key }
-        val ui = VanDetailUi(now, row, vanSiteWeek(SCHEDULE, key, now), list.state, SCHEDULE.fetchedAt, day.isToday)
+        val ui = VanDetailUi(now, row, vanSiteWeek(SCHEDULE, key, now), list.state, SCHEDULE.fetchedAt, day.isToday, vehicles = vehicles)
         compose.setContent {
             WaitlightTheme(dark = false) { VanDetailContent(ui, onBack = {}, onDirections = { directions++ }) }
         }
@@ -301,6 +303,23 @@ class VanDetailScreenTest {
         compose.onNode(hasDescription("Diagram: the unit sits on the on-ramp from Harlan St onto EB I-70")).assertExists()
         compose.onNodeWithText(text(R.string.van_detail_directions)).assertHeightIsAtLeast(48.dp).performClick()
         assertEquals(1, directions)
+    }
+
+    @Test
+    fun `with two vehicles, the drive-by asks which drove past`() {
+        show(HARLAN.key, LocalDate.of(2026, 11, 20), vehicles = WINDOWS)
+        compose.onNodeWithText(text(R.string.driveby_log)).performClick()
+        compose.onNodeWithText(text(R.string.driveby_which)).assertExists()
+        compose.onNodeWithText("In its window · would be 2 of 2").assertExists()
+        compose.onNode(hasTextSpaced("In its window · closes Dec 1 · would be 1 of 2")).assertExists()
+    }
+
+    @Test
+    fun `with one vehicle, it doesn't ask`() {
+        show(HARLAN.key, LocalDate.of(2026, 11, 20), vehicles = WINDOWS.take(1))
+        compose.onNodeWithText(text(R.string.driveby_log)).performClick()
+        compose.onNode(hasTextSpaced("Fri, Nov 20")).assertExists()
+        compose.onNodeWithText(text(R.string.driveby_which)).assertDoesNotExist()
     }
 
     @Test

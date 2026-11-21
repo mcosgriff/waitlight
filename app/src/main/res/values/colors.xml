@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="background">#FFF6F7F4</color>
+    <!-- The reminders' accent: the theme's primary. -->
+    <color name="notification_accent">#FF1F4E5F</color>
 </resources>

@@ -79,6 +79,7 @@ import io.cosgriff.waitlight.domain.vanOpenNow
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.DriveTimePill
 import io.cosgriff.waitlight.ui.components.VanBadge
+import io.cosgriff.waitlight.ui.components.driveByWhen
 import io.cosgriff.waitlight.ui.components.vanHoursText
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
@@ -115,14 +116,16 @@ fun VanDetailScreen(key: String, date: LocalDate, onBack: () -> Unit) {
 
 /** A van site, as drawn in `design/vans/source/VanDetail.dc.html`: a drawn diagram (no map tiles), then a sheet. */
 @Composable
-fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Unit, onLogDriveBy: (Instant) -> Unit = {}) {
+fun VanDetailContent(ui: VanDetailUi, onBack: () -> Unit, onDirections: () -> Unit, onLogDriveBy: (Instant, Long?) -> Unit = { _, _ -> }) {
     val row = ui.row ?: return
     var picking by rememberSaveable { mutableStateOf(false) }
     if (picking) {
-        DriveByPicker(
+        DriveBySheet(
+            site = vanNameText(row.site.name),
             now = ui.now,
             initialDate = row.date,
-            onPicked = { at -> picking = false; onLogDriveBy(at) },
+            vehicles = ui.vehicles,
+            onSave = { at, vehicle -> picking = false; onLogDriveBy(at, vehicle) },
             onDismiss = { picking = false },
         )
     }
@@ -379,10 +382,3 @@ private val DIAGRAM_HEIGHT = 220.dp
 /** Room for the status bar above the back button, which sits under it. */
 private val WindowStatusAllowance = 8.dp
 
-/** "Fri, Nov 20, 7:15 AM": a drive-by's moment, in Denver; with the year when it isn't this year's. */
-@Composable
-internal fun driveByWhen(at: Instant, now: Instant): String {
-    val date = at.atZone(AirCareHours.zone).toLocalDate()
-    val day = if (date.year == now.atZone(AirCareHours.zone).year) TimeText.shortDate(date) else TimeText.shortDateWithYear(date)
-    return stringResource(R.string.driveby_when, day, TimeText.time(at))
-}

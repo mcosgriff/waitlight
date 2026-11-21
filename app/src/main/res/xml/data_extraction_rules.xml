@@ -3,6 +3,7 @@
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
 -->
 <data-extraction-rules>
+    <!-- The user's own records, drive_bys.json and vehicles.json, are backed up and moved: everything not excluded here is. -->
     <!-- The last waits (WaitTimesStore.FILE_NAME): minutes old at best, so not worth restoring. -->
     <!-- The last location found (LastLocationStore.FILE_NAME), for the widget: it stays on this phone. -->
     <!-- The last van schedule (VanStore.FILE_NAME): this week's at best. -->

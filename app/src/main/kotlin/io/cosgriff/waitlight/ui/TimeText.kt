@@ -5,6 +5,7 @@ import io.cosgriff.waitlight.domain.AirCareHours
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -62,6 +63,18 @@ object TimeText {
 
     /** "23". */
     fun dayOfMonth(date: LocalDate, locale: Locale = Locale.getDefault()): String = format(date.atStartOfDay(AirCareHours.zone), "d", locale)
+
+    /** "May 1, 2026". */
+    fun mediumDate(date: LocalDate, locale: Locale = Locale.getDefault()): String = format(date.atStartOfDay(AirCareHours.zone), "yMMMd", locale)
+
+    /** "Dec 1". */
+    fun monthDay(date: LocalDate, locale: Locale = Locale.getDefault()): String = format(date.atStartOfDay(AirCareHours.zone), "MMMd", locale)
+
+    /** "July 2027". */
+    fun monthYear(month: YearMonth, locale: Locale = Locale.getDefault()): String = format(month.atDay(1).atStartOfDay(AirCareHours.zone), "yMMMM", locale)
+
+    /** "July", standing alone. */
+    fun month(month: YearMonth, locale: Locale = Locale.getDefault()): String = format(month.atDay(1).atStartOfDay(AirCareHours.zone), "LLLL", locale)
 
     private fun format(at: ZonedDateTime, skeleton: String, locale: Locale): String =
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale).format(at)
