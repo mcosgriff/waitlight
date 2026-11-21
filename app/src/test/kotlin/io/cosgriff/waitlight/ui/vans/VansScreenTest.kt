@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import io.cosgriff.waitlight.R
+import io.cosgriff.waitlight.data.vans.vanSitesAt
 import io.cosgriff.waitlight.domain.DriveBy
 import io.cosgriff.waitlight.domain.FetchOutcome
 import io.cosgriff.waitlight.domain.driveByLog
@@ -26,7 +27,6 @@ import io.cosgriff.waitlight.domain.VanTimes
 import io.cosgriff.waitlight.domain.VanWeek
 import io.cosgriff.waitlight.domain.VehicleWindow
 import io.cosgriff.waitlight.domain.ZipTable
-import io.cosgriff.waitlight.domain.vanSiteWeek
 import io.cosgriff.waitlight.ui.TALL_PHONE
 import io.cosgriff.waitlight.ui.ZIP_80003
 import io.cosgriff.waitlight.ui.denver
@@ -225,14 +225,11 @@ class VansScreenTest {
     fun `the drive-by line counts the last 14 months and opens the log`() {
         var opens = 0
         val now = denver("2026-11-20T16:52")
-        val log = driveByLog(
-            listOf(
-                DriveBy(1, HARLAN.key, HARLAN.description, HARLAN.point, denver("2026-11-20T07:15")),
-                DriveBy(2, HARLAN.key, HARLAN.description, HARLAN.point, denver("2025-01-10T07:15")),
-            ),
-            now,
+        val log = listOf(
+            DriveBy(1, HARLAN.key, HARLAN.description, HARLAN.point, denver("2026-11-20T07:15")),
+            DriveBy(2, HARLAN.key, HARLAN.description, HARLAN.point, denver("2025-01-10T07:15")),
         )
-        val ui = vansUi(now, VanTimes(SCHEDULE), Here.Zip(ZIP_80003), DRIVES, ZipTable(listOf(ZIP_80003)), null, false, false, false).copy(driveBys = log)
+        val ui = vansUi(vanSitesAt(now, VanTimes(SCHEDULE), Here.Zip(ZIP_80003), DRIVES, ZipTable(listOf(ZIP_80003)), log), null, false, false, false)
         compose.setContent {
             WaitlightTheme(dark = false) {
                 VansContent(ui, {}, {}, {}, { _, _ -> }, {}, {}, onOpenDriveBys = { opens++ })
@@ -288,10 +285,8 @@ class VanDetailScreenTest {
     private var directions = 0
 
     private fun show(key: String, date: LocalDate, now: Instant = denver("2026-11-20T16:52"), vehicles: List<VehicleWindow> = emptyList()) {
-        val list = vansUi(now, VanTimes(SCHEDULE), Here.Zip(ZIP_80003), DRIVES, ZipTable(listOf(ZIP_80003)), date, false, false, false)
-        val day = list.list.days.first { it.date == date }
-        val row = (day.content as io.cosgriff.waitlight.domain.VanDayContent.Sites).rows.first { it.site.key == key }
-        val ui = VanDetailUi(now, row, vanSiteWeek(SCHEDULE, key, now), list.state, SCHEDULE.fetchedAt, day.isToday, vehicles = vehicles)
+        val site = vanSitesAt(now, VanTimes(SCHEDULE), Here.Zip(ZIP_80003), DRIVES, ZipTable(listOf(ZIP_80003)), emptyList()).site(key, date)
+        val ui = vanDetailUi(site, vehicles)
         compose.setContent {
             WaitlightTheme(dark = false) { VanDetailContent(ui, onBack = {}, onDirections = { directions++ }) }
         }
@@ -329,9 +324,11 @@ class VanDetailScreenTest {
         compose.onNodeWithText(text(R.string.driveby_which)).assertDoesNotExist()
     }
 
+    /** When it says so is `VanSiteDetailTest`'s; this is the wording. */
     @Test
-    fun `a site not on next week's tabs says so`() {
+    fun `next week's "Not scheduled" line is worded`() {
         show(PECOS.key, LocalDate.of(2026, 11, 20))
+        compose.onNodeWithText(text(R.string.van_detail_next_week)).assertExists()
         compose.onNodeWithText(text(R.string.van_detail_not_scheduled)).assertExists()
     }
 }

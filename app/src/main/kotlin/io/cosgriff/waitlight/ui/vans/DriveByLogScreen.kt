@@ -41,12 +41,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.data.vans.DriveByRepository
+import io.cosgriff.waitlight.data.vans.VanSitesNow
 import io.cosgriff.waitlight.data.vehicles.VehicleRepository
 import io.cosgriff.waitlight.domain.AirCareHours
 import io.cosgriff.waitlight.domain.DriveBy
 import io.cosgriff.waitlight.domain.DriveByLog
 import io.cosgriff.waitlight.domain.DriveByRules
-import io.cosgriff.waitlight.domain.driveByLog
 import io.cosgriff.waitlight.ui.components.driveByWhen
 import io.cosgriff.waitlight.ui.components.vanNameSpoken
 import io.cosgriff.waitlight.ui.components.vanNameText
@@ -55,18 +55,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Clock
 import java.time.Instant
 import javax.inject.Inject
 
 /** The drive-by log at [now], with each vehicle's description by its id. */
 data class DriveByLogUi(val now: Instant, val log: DriveByLog, val vehicles: Map<Long, String> = emptyMap())
 
+/** The drive-by log, at now from the shared source ([VanSitesNow]). */
 @HiltViewModel
-class DriveByLogViewModel @Inject constructor(private val driveBys: DriveByRepository, vehicles: VehicleRepository, private val clock: Clock) : ViewModel() {
-    val ui: StateFlow<DriveByLogUi> = combine(driveBys.driveBys, vehicles.vehicles) { log, list ->
-        DriveByLogUi(clock.instant(), driveByLog(log, clock.instant()), list.associate { it.id to it.description })
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DriveByLogUi(clock.instant(), driveByLog(driveBys.driveBys.value, clock.instant())))
+class DriveByLogViewModel @Inject constructor(private val driveBys: DriveByRepository, sitesNow: VanSitesNow, vehicles: VehicleRepository) : ViewModel() {
+    val ui: StateFlow<DriveByLogUi> = combine(sitesNow.driveBys(), vehicles.vehicles) { log, list ->
+        DriveByLogUi(log.now, log.log, list.associate { it.id to it.description })
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), sitesNow.current().let { DriveByLogUi(it.now, it.driveBys) })
 
     fun delete(id: Long) {
         viewModelScope.launch { driveBys.remove(id) }

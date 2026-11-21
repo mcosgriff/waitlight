@@ -1,8 +1,8 @@
 # Roadside vans
 
 Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans" tab. The code is in `:domain`
-(`VanSites.kt`, `VanSchedule.kt`, `VanDriveTable.kt`, `VanListHeader.kt`) and `:data` (`vans/`); each rule below
-has a test there.
+(`VanSites.kt`, `VanSchedule.kt`, `VanSiteDetail.kt`, `VanDriveTable.kt`, `VanListHeader.kt`) and `:data`
+(`vans/`); each rule below has a test there.
 
 ## Reading AirCare's van page
 
@@ -93,6 +93,8 @@ has a test there.
 - "Reading now" chip: today only, while a site is reading, a filter to reading sites. The bottom bar's badge: how many are reading now.
 
 ## Detail
+
+What the detail shows is one `:domain` result, `vanSiteDetail` (`VanSiteDetail.kt`); the screen only words and draws it.
 
 - No map tiles for weekly sites: the header is a sketch, turned to the site's direction of travel
   (`VanName.heading`, from "NB/SB/EB/WB" on the highway or road): the road runs that way, an arrow shows the
