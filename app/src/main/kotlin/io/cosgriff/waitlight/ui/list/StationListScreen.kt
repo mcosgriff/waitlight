@@ -25,13 +25,10 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.LocationOff
 import androidx.compose.material.icons.rounded.Bedtime
-import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -75,12 +72,14 @@ import io.cosgriff.waitlight.domain.PlaceLine
 import io.cosgriff.waitlight.domain.UpdatedLine
 import io.cosgriff.waitlight.domain.SortOrder
 import io.cosgriff.waitlight.domain.StationRow
+import io.cosgriff.waitlight.domain.WaitBand
 import io.cosgriff.waitlight.domain.WaitReading
 import io.cosgriff.waitlight.domain.WaitThresholds
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.components.BadgeSize
 import io.cosgriff.waitlight.ui.components.WaitBadge
 import io.cosgriff.waitlight.ui.components.forBand
+import io.cosgriff.waitlight.ui.components.icon
 import io.cosgriff.waitlight.ui.theme.BannerColors
 import io.cosgriff.waitlight.ui.theme.waitColors
 import java.time.Duration
@@ -444,9 +443,9 @@ private fun Legend(ui: StationListUi) {
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier.padding(horizontal = 20.dp),
     ) {
-        LegendItem(Icons.Rounded.CheckCircle, colors.short.icon, stringResource(R.string.list_legend_short, thresholds.greenMax))
-        LegendItem(Icons.Rounded.Schedule, colors.moderate.icon, stringResource(R.string.list_legend_moderate, thresholds.greenMax, thresholds.yellowMax))
-        LegendItem(Icons.Rounded.Warning, colors.long.icon, stringResource(R.string.list_legend_long, thresholds.yellowMax))
+        LegendItem(WaitBand.SHORT.icon(), colors.short.icon, stringResource(R.string.list_legend_short, thresholds.greenMax))
+        LegendItem(WaitBand.MODERATE.icon(), colors.moderate.icon, stringResource(R.string.list_legend_moderate, thresholds.greenMax, thresholds.yellowMax))
+        LegendItem(WaitBand.LONG.icon(), colors.long.icon, stringResource(R.string.list_legend_long, thresholds.yellowMax))
     }
 }
 

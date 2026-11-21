@@ -81,10 +81,10 @@ Rules for the vans list, a van site's detail and the bottom bar's "Roadside vans
   location stays the user's choice.
 - Hero, "Nearest van reading cars now": today's reading site with the least drive, with its place, drive and
   closing time. Hidden on another day, when none is reading, or without a drive time.
-- Each site's drive time is a pill. **Only while the site is out** (`vanOpenNow`: today, within its hours, not
-  done for the day) does it take the wait badges' bands, colours and icons (`driveBand`, `WaitThresholds.STANDARD`):
-  green with a tick under 30 minutes, yellow with a clock 30–60, red with a warning over 60, read aloud as "Short
-  drive, 9 minutes". Otherwise it's plain grey with no icon ("9 minute drive").
+- Each site's drive time is a pill, as its row's `VanDrive` says (`vanList` decides). **Only while the site is
+  out** (today, within its hours, not done for the day) is it `Banded`, in the wait badges' bands, colours and icons
+  (`WaitThresholds.STANDARD`): green with a tick under 30 minutes, yellow with a clock 30–60, red with a warning
+  over 60, read aloud as "Short drive, 9 minutes". Otherwise it's `Plain`, grey with no icon ("9 minute drive").
 - **Out of the way**: when the day's nearest site by drive is over 20 minutes (`nearestFarAway`,
   `VanRules.FAR_MINUTES`), a note says a station test may be quicker. No note without drive times.
 - "Reading now" chip: today only, while a site is reading, a filter to reading sites. The bottom bar's badge: how many are reading now.

@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.HelpOutline
 import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material.icons.rounded.AirportShuttle
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.PauseCircle
@@ -41,8 +39,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.cosgriff.waitlight.R
 import io.cosgriff.waitlight.domain.VanName
+import io.cosgriff.waitlight.domain.VanDrive
 import io.cosgriff.waitlight.domain.WaitBand
-import io.cosgriff.waitlight.domain.driveBand
 import io.cosgriff.waitlight.domain.VanStatus
 import io.cosgriff.waitlight.ui.TimeText
 import io.cosgriff.waitlight.ui.theme.waitColors
@@ -138,39 +136,26 @@ fun vanHoursText(opens: java.time.LocalTime, closes: java.time.LocalTime): Strin
     stringResource(R.string.van_hours, TimeText.time(opens), TimeText.time(closes))
 
 /**
- * A van site's drive time as a pill. While the site is out ([open], [vanOpenNow]) it takes the wait badges' colours
- * and icons ([driveBand]): green with a tick under 30 minutes, yellow with a clock to 60, red with a warning over,
- * read aloud as "Short drive, 9 minutes", so colour is never the only signal. Otherwise it's plain grey with no
- * icon: there's nothing to hurry to.
+ * A van site's drive time as a pill, as the row's [drive] says. [VanDrive.Banded], while the site is out, takes the
+ * wait badges' colours and icons: green with a tick under 30 minutes, yellow with a clock to 60, red with a warning
+ * over, read aloud as "Short drive, 9 minutes", so colour is never the only signal. [VanDrive.Plain] is grey with no
+ * icon, "9 minute drive": there's nothing to hurry to.
  */
 @Composable
-fun DriveTimePill(minutes: Int, open: Boolean, modifier: Modifier = Modifier) {
-    if (!open) {
-        val plain = MaterialTheme.waitColors.stale
-        val description = pluralStringResource(R.plurals.van_drive_desc_plain, minutes, minutes)
-        Text(
-            stringResource(R.string.van_row_drive, minutes),
-            color = plain.content,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = modifier
-                .background(plain.container, RoundedCornerShape(50))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
-                .clearAndSetSemantics { contentDescription = description },
-        )
-        return
+fun DriveTimePill(drive: VanDrive, modifier: Modifier = Modifier) {
+    when (drive) {
+        is VanDrive.Banded -> BandedDrivePill(drive.minutes, drive.band, modifier)
+        is VanDrive.Plain -> PlainDrivePill(drive.minutes, modifier)
     }
-    val band = driveBand(minutes)
+}
+
+@Composable
+private fun BandedDrivePill(minutes: Int, band: WaitBand, modifier: Modifier) {
     val colors = MaterialTheme.waitColors.forBand(band)
     val description = when (band) {
         WaitBand.SHORT -> pluralStringResource(R.plurals.van_drive_desc_short, minutes, minutes)
         WaitBand.MODERATE -> pluralStringResource(R.plurals.van_drive_desc_moderate, minutes, minutes)
         WaitBand.LONG -> pluralStringResource(R.plurals.van_drive_desc_long, minutes, minutes)
-    }
-    val icon = when (band) {
-        WaitBand.SHORT -> Icons.Rounded.CheckCircle
-        WaitBand.MODERATE -> Icons.Rounded.Schedule
-        WaitBand.LONG -> Icons.Rounded.Warning
     }
     Row(
         modifier
@@ -180,7 +165,23 @@ fun DriveTimePill(minutes: Int, open: Boolean, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Icon(icon, contentDescription = null, tint = colors.content, modifier = Modifier.size(16.dp))
+        Icon(band.icon(), contentDescription = null, tint = colors.content, modifier = Modifier.size(16.dp))
         Text(stringResource(R.string.van_row_drive, minutes), color = colors.content, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     }
+}
+
+@Composable
+private fun PlainDrivePill(minutes: Int, modifier: Modifier) {
+    val plain = MaterialTheme.waitColors.stale
+    val description = pluralStringResource(R.plurals.van_drive_desc_plain, minutes, minutes)
+    Text(
+        stringResource(R.string.van_row_drive, minutes),
+        color = plain.content,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.SemiBold,
+        modifier = modifier
+            .background(plain.container, RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .clearAndSetSemantics { contentDescription = description },
+    )
 }
