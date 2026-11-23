@@ -25,7 +25,7 @@ junit = "4.13.2"
 # Robolectric would fetch that jar itself at test time; Gradle resolves and caches it instead (root
 # build.gradle.kts). Each Robolectric release names its own builds of it, so these move together: on a Robolectric
 # upgrade, take the version from its `AndroidSdk` list.
-robolectric = "4.18"
+robolectric = "4.18.1"
 robolectric-androidAll-sdk35 = "15-robolectric-14663667-2-i7"
 
 [libraries]
